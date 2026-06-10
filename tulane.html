@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ===== AMICUS PASSWORD GATE (start) ===== -->
+<style id="amicusGateStyle">
+  html.amicus-locked body > *:not(#amicusLock){display:none !important;}
+  #amicusLock{position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+  #amicusLock .lock-card{width:min(400px,90vw);text-align:center;padding:40px 32px;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:#161616;}
+  #amicusLock .lock-mark{font-family:'Playfair Display',serif;font-weight:900;font-size:32px;color:#fff;letter-spacing:2px;}
+  #amicusLock .lock-sub{color:rgba(255,255,255,0.55);font-size:13px;margin:6px 0 28px;letter-spacing:1px;text-transform:uppercase;}
+  #amicusLock input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0f0f0f;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:1px;}
+  #amicusLock input:focus{border-color:rgba(255,255,255,0.5);}
+  #amicusLock button{width:100%;margin-top:14px;padding:14px 16px;border-radius:10px;border:none;background:#fff;color:#0f0f0f;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  #amicusLock button:hover{background:#e8e8e8;}
+  #amicusLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
+  #amicusLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
+</style>
+<script id="amicusGateScript">
+(function(){
+  var KEY = 'amicus_auth_v1';
+  var HASH = '576998560b830406a1a75b58651422a9d5dd7e09bec82310f52dc3200920a029';
+
+  // Already unlocked on this device? Let the page load normally.
+  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+
+  document.documentElement.classList.add('amicus-locked');
+
+  async function sha256(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+
+  function buildLock(){
+    var wrap = document.createElement('div');
+    wrap.id = 'amicusLock';
+    wrap.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-mark">AMICUS</div>' +
+        '<div class="lock-sub">Team Access Only</div>' +
+        '<input type="password" id="amicusPw" placeholder="Enter team password" autocomplete="current-password"/>' +
+        '<button id="amicusGo">Unlock</button>' +
+        '<div class="lock-err" id="amicusErr"></div>' +
+        '<div class="lock-note">This device will stay signed in.</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    var input = wrap.querySelector('#amicusPw');
+    var err = wrap.querySelector('#amicusErr');
+
+    async function attempt(){
+      var val = input.value.trim();
+      if (!val) return;
+      var h;
+      try { h = await sha256(val); }
+      catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === HASH){
+        try { localStorage.setItem(KEY, HASH); } catch(e) {}
+        document.documentElement.classList.remove('amicus-locked');
+        wrap.remove();
+      } else {
+        err.textContent = 'Incorrect password. Please try again.';
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    wrap.querySelector('#amicusGo').addEventListener('click', attempt);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildLock);
+  } else {
+    buildLock();
+  }
+})();
+</script>
+<!-- ===== AMICUS PASSWORD GATE (end) ===== -->
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tulane — Amicus Marketing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:#0f0f0f;min-height:100vh;color:white;}
+    .header{background:linear-gradient(135deg,#003c33 0%,#00211c 100%);border-bottom:1px solid rgba(255,255,255,0.1);}
+    .header .inner{max-width:960px;margin:0 auto;padding:36px 32px 40px;}
+    .back{display:inline-block;color:rgba(255,255,255,0.55);text-decoration:none;font-size:13px;margin-bottom:24px;}
+    .back:hover{color:white;}
+    .top-row{display:flex;align-items:center;gap:20px;}
+    .logo-wrap img{width:72px;height:72px;border-radius:14px;object-fit:contain;padding:6px;background:rgba(255,255,255,0.1);display:block;}
+    h1{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;}
+    .meta{font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:0.5;margin-top:4px;}
+    .section-label{max-width:960px;margin:0 auto;padding:40px 32px 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:600;}
+    .weeks{max-width:960px;margin:0 auto;padding:20px 32px 60px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+    .week-card{border-radius:18px;padding:28px;background:linear-gradient(135deg,#003c33 0%,#00211c 100%);border:1px solid rgba(255,255,255,0.12);text-decoration:none;color:white;display:block;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
+    .week-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.07) 0%,transparent 60%);pointer-events:none;}
+    .week-card:hover{transform:translateY(-3px);box-shadow:0 16px 50px rgba(0,0,0,0.5);}
+    .week-kicker{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.5;margin-bottom:8px;}
+    .week-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:16px;}
+    .week-pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:7px 15px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.12);color:#71C5E8;}
+    .footer{text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:12px;}
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="inner">
+    <a class="back" href="amicus-marketing-hub.html">&larr; Back to Hub</a>
+    <div class="top-row">
+      <div class="logo-wrap"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48cmVjdCB3aWR0aD0iMTYwIiBoZWlnaHQ9IjE2MCIgcng9IjI4IiBmaWxsPSIjMDA1OTRDIi8+PHRleHQgeD0iODAiIHk9IjgwIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSI4NCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCI+VDwvdGV4dD48L3N2Zz4=" alt="Tulane logo"/></div>
+      <div><h1>Tulane</h1><div class="meta">Tulane University</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="section-label">Weekly Checklists</div>
+<div class="weeks">
+  <!-- WEEK CARDS: newest first -->
+  <a class="week-card" href="tulane-checklist.html">
+    <div class="week-kicker">Current Week</div>
+    <div class="week-title">May 20 &ndash; 26, 2026</div>
+    <div class="week-pill">&rarr; Open Checklist</div>
+  </a>
+</div>
+
+<div class="footer">Amicus Property Management &middot; Tulane Portfolio</div>
+</body>
+</html>

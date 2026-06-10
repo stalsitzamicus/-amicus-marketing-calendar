@@ -14,7 +14,10 @@
   #amicusLock button:hover{background:#e8e8e8;}
   #amicusLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
   #amicusLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
-</style>
+    .qty-row{margin-top:10px;font-size:13px;color:#555;}
+    .qty-select{margin-left:6px;padding:5px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;background:white;cursor:pointer;}
+    .qty-of{color:#999;font-size:12px;margin-left:4px;}
+  </style>
 <script id="amicusGateScript">
 (function(){
   var KEY = 'amicus_auth_v1';
@@ -170,22 +173,23 @@ const schedule=[
   ]},
   {day:"Thu 6/11",tasks:[
     {platform:"Reddit",icon:"🧵",task:"Explore Reddits — build thread list",detail:"Create a list of links to ALL threads, good and bad",goalKey:"Reddit|Thread list created"},
-    {platform:"Content",icon:"🎥",task:"Content day 1 — walkthrough videos & photos",detail:"Work toward 20 walkthrough videos and 20 photo sets of GOOD properties. Log your counts on the Goals tab."},
+    {platform:"Content",icon:"🎥",task:"Film walkthrough videos",detail:"GOOD properties only — running total for the week",qtyGoal:"Content|Walkthrough videos (GOOD properties)",qtyMax:20},
+    {platform:"Content",icon:"🖼️",task:"Take property photos",detail:"GOOD properties only — running total for the week",qtyGoal:"Content|Property photos (GOOD properties)",qtyMax:20},
   ]},
   {day:"Fri 6/12",tasks:[
-    {platform:"Content",icon:"🎥",task:"Content day 2 — panning videos",detail:"Work toward 15 panning videos of GOOD properties. Log counts on the Goals tab."},
+    {platform:"Content",icon:"🎥",task:"Film panning videos",detail:"GOOD properties only — running total for the week",qtyGoal:"Content|Panning videos (GOOD properties)",qtyMax:15},
     {platform:"Google Posts",icon:"📌",task:"Google Post #1",goalKey:"Google Posts|Google Posts published"},
   ]},
   {day:"Sat 6/13",tasks:[
-    {platform:"Content",icon:"🎥",task:"Content day 3 — social media tour videos",detail:"Work toward 15 social media tour videos of GOOD properties. Log counts on the Goals tab."},
+    {platform:"Content",icon:"📱",task:"Film social media tour videos",detail:"GOOD properties only — running total for the week",qtyGoal:"Content|Social media tour videos (GOOD properties)",qtyMax:15},
   ]},
   {day:"Sun 6/14",tasks:[
     {platform:"Google Reviews",icon:"⭐",task:"Respond to 5 Google reviews",detail:"Track responses with the +/− counter on the Goals tab",goalKey:"Google Reviews|Reviews responded to"},
-    {platform:"Content",icon:"🎥",task:"Content catch-up",detail:"Close gaps on any video/photo targets"},
+    {platform:"Content",icon:"🎥",task:"Content catch-up",detail:"Behind on filming? Update the how-many dropdowns on Thu/Fri/Sat as your totals grow"},
   ]},
   {day:"Mon 6/15",tasks:[
     {platform:"Reddit",icon:"🧵",task:"Reddit reflection",detail:"Reflect on how the threads went — not just the thread itself, but how SEO, AI, and Google pull from them",goalKey:"Reddit|Reflection completed"},
-    {platform:"Content",icon:"🎥",task:"Content final push",detail:"Finish remaining videos/photos — Goals tab should be at 100%"},
+    {platform:"Content",icon:"🎥",task:"Content final push",detail:"Finish remaining videos/photos and update the dropdowns — Goals tab should hit 100%"},
   ]},
   {day:"Tue 6/16",tasks:[
     {platform:"Google Posts",icon:"📌",task:"Google Post #2 (late in week)",goalKey:"Google Posts|Google Posts published"},
@@ -196,7 +200,7 @@ const schedule=[
 
 
 const goalCategories=[
-  {platform:"Content",icon:"🎥",color:"#9C27B0",manual:true,goals:[
+  {platform:"Content",icon:"🎥",color:"#9C27B0",manual:false,goals:[
     {label:"Walkthrough videos (GOOD properties)",target:20,unit:"videos"},
     {label:"Property photos (GOOD properties)",target:20,unit:"properties"},
     {label:"Panning videos (GOOD properties)",target:15,unit:"videos"},
@@ -228,6 +232,7 @@ let activeDay="Wed 6/10";
 let checked={};
 let manualGoals={};
 let manualBonus={};
+let taskQty={};
 let dbReady=false;
 let dbRef=null;
 
@@ -253,6 +258,7 @@ function initFirebase(){
     checked     = data.checked     || {};
     manualGoals = data.manualGoals || {};
     manualBonus = data.manualBonus || {};
+    taskQty     = data.taskQty     || {};
     dbReady = true;
     render();
   });
@@ -260,7 +266,7 @@ function initFirebase(){
 
 function saveState(){
   if(!dbRef) return;
-  dbRef.set({ checked, manualGoals, manualBonus });
+  dbRef.set({ checked, manualGoals, manualBonus, taskQty });
 }
 
 function computeAutoGoals(){
@@ -269,6 +275,9 @@ function computeAutoGoals(){
     day.tasks.forEach((t,i)=>{
       if(t.goalKey && checked[safeKey(`${day.day}-${i}`)]) {
         counts[t.goalKey]=(counts[t.goalKey]||0)+1;
+      }
+      if(t.qtyGoal){
+        counts[t.qtyGoal]=(counts[t.qtyGoal]||0)+(parseInt(taskQty[safeKey(`${day.day}-${i}`)])||0);
       }
     });
   });
@@ -341,7 +350,7 @@ function renderContent(){
       const key=safeKey(`${activeDay}-${i}`);
       const isDone=!!checked[key];
       const c=platformColors[t.platform]||"#888";
-      html+=`<div class="task-card${isDone?" done":""}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:""}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:""}</div></div>`;
+      html+=`<div class="task-card${isDone?" done":""}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:""}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:""}${t.qtyGoal?`<div class="qty-row" onclick="event.stopPropagation()">How many? <select class="qty-select" onchange="setQty(\'${key}\',this.value)">${qtyOptions(t,key)}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`:""}</div></div>`;
     });
     html+=`</div>`;
     if(["Sun 6/14"].includes(activeDay)){html+=`<div class="tip" style="background:#FFFDE7;border:1px solid #FFE082"><div class="tip-title" style="color:#F9A825">⭐ Review Tactics</div><ul><li>Move-out helpers → hand QR code for review</li><li>Waiving something in rentroom → "Leave a 5-star with a paragraph about Amicus"</li><li>Doing a favor → ask for a review</li><li>Give maintenance staff QR codes</li><li>Follow up after turnover → request review if positive</li><li>Respond to <strong>every</strong> Google review</li></ul></div>`;}
@@ -363,6 +372,18 @@ function renderContent(){
     html+=`</div>`;
   }
   el.innerHTML=html;
+}
+
+function qtyOptions(t,key){
+  const cur=parseInt(taskQty[key])||0;
+  let out="";
+  for(let n=0;n<=t.qtyMax;n++){ out+=`<option value="${n}"${n===cur?" selected":""}>${n}</option>`; }
+  return out;
+}
+function setQty(key,val){
+  taskQty[key]=parseInt(val)||0;
+  if(taskQty[key]>0){ checked[key]=true; }
+  saveState();
 }
 
 function toggle(key){

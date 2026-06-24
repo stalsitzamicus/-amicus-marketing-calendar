@@ -341,7 +341,7 @@ function renderContent(){
       const key=safeKey(`${activeDay}-${i}`);
       const isDone=!!checked[key];
       const c=platformColors[t.platform]||"#888";
-      html+=`<div class="task-card${isDone?" done":""}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:""}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:""}${t.qtyGoal?`<div class="qty-row" onclick="event.stopPropagation()">How many? <select class="qty-select" onchange="setQty(\'${key}\',this.value)">${qtyOptions(t,key)}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`:""}</div></div>`;
+      html+=`<div class="task-card${isDone?" done":""}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:""}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:""}${t.qtyGoal?`<div class="qty-row" onclick="event.stopPropagation()">How many? <select class="qty-select" onchange="setManual('${safeKey(t.qtyGoal)}',this.value)">${(()=>{const cur=manualGoals[safeKey(t.qtyGoal)]||0;let o='';for(let n=0;n<=t.qtyMax;n++){o+=`<option value="${n}"${n===cur?' selected':''}>${n}</option>`;}return o;})()}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`:``}</div></div>`;
     });
     html+=`</div>`;
     if(["Sun 6/14"].includes(activeDay)){html+=`<div class="tip" style="background:#FFFDE7;border:1px solid #FFE082"><div class="tip-title" style="color:#F9A825">⭐ Review Tactics</div><ul><li>Move-out helpers → hand QR code for review</li><li>Waiving something in rentroom → "Leave a 5-star with a paragraph about Amicus"</li><li>Doing a favor → ask for a review</li><li>Give maintenance staff QR codes</li><li>Follow up after turnover → request review if positive</li><li>Respond to <strong>every</strong> Google review</li></ul></div>`;}
@@ -349,7 +349,7 @@ function renderContent(){
   } else {
     const autoCounts=computeAutoGoals();
     html+=`<div class="sync-banner">🔴 Live — updates instantly for all users</div>`;
-    html+=`<p class="auto-note">Checkboxes auto-update goals · Reviews use manual +/− · +/− unlocks at 100%</p><div class="goals">`;
+    html+=`<p class="auto-note">Use +/− buttons on each goal to track progress · syncs instantly for all users</p><div class="goals">`;
     goalCategories.forEach(cat=>{
       html+=`<div class="gcard" style="border-left:4px solid ${cat.color}"><div class="gcard-head"><span class="gi">${cat.icon}</span><span class="gn" style="color:${cat.color}">${cat.platform}</span></div><div class="gitems">`;
       cat.goals.forEach(g=>{
@@ -389,6 +389,11 @@ function adjManual(key,d){
 function adjBonus(key,d){
   manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d);
   saveState();
+}
+function setManual(goalKey,val){
+  manualGoals[goalKey]=parseInt(val)||0;
+  saveState();
+  render();
 }
 
 // Init on load

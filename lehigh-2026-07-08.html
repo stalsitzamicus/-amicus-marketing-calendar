@@ -14,7 +14,10 @@
   #amicusLock button:hover{background:#e8e8e8;}
   #amicusLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
   #amicusLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
-</style>
+    .qty-row{margin-top:10px;font-size:13px;color:#555;}
+    .qty-select{margin-left:6px;padding:5px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;background:white;cursor:pointer;}
+    .qty-of{color:#999;font-size:12px;margin-left:4px;}
+  </style>
 <script id="amicusGateScript">
 (function(){
   var KEY = 'amicus_auth_v1';
@@ -80,66 +83,561 @@
 
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lehigh — Amicus Marketing</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <title>Lehigh — Amicus Marketing Checklist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Firebase v9 compat (works in plain HTML) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
+
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'DM Sans',sans-serif;background:#0f0f0f;min-height:100vh;color:white;}
-    .header{background:linear-gradient(135deg,#3a2200 0%,#1f1200 100%);border-bottom:1px solid rgba(255,255,255,0.1);}
-    .header .inner{max-width:960px;margin:0 auto;padding:36px 32px 40px;}
-    .back{display:inline-block;color:rgba(255,255,255,0.55);text-decoration:none;font-size:13px;margin-bottom:24px;}
-    .back:hover{color:white;}
-    .top-row{display:flex;align-items:center;gap:20px;}
-    .logo-wrap img{width:72px;height:72px;border-radius:14px;object-fit:contain;padding:6px;background:rgba(255,255,255,0.1);display:block;}
-    h1{font-family:'Playfair Display',serif;font-size:36px;font-weight:900;}
-    .meta{font-size:12px;letter-spacing:2px;text-transform:uppercase;opacity:0.5;margin-top:4px;}
-    .section-label{max-width:960px;margin:0 auto;padding:40px 32px 0;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:600;}
-    .weeks{max-width:960px;margin:0 auto;padding:20px 32px 60px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
-    .week-card{border-radius:18px;padding:28px;background:linear-gradient(135deg,#3a2200 0%,#1f1200 100%);border:1px solid rgba(255,255,255,0.12);text-decoration:none;color:white;display:block;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
-    .week-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.07) 0%,transparent 60%);pointer-events:none;}
-    .week-card:hover{transform:translateY(-3px);box-shadow:0 16px 50px rgba(0,0,0,0.5);}
-    .week-kicker{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.5;margin-bottom:8px;}
-    .week-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:16px;}
-    .week-pill{display:inline-flex;align-items:center;gap:6px;border-radius:99px;padding:7px 15px;font-size:12px;font-weight:600;background:rgba(255,255,255,0.12);color:#FFCC80;}
-    .footer{text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:12px;}
+    body{font-family:'DM Sans',sans-serif;background:#F7F5F2;min-height:100vh;}
+    .header{padding:36px 32px 28px;color:white;}
+    .header .inner{max-width:900px;margin:0 auto;}
+    .header .back{font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;letter-spacing:1px;text-transform:uppercase;display:inline-block;margin-bottom:16px;}
+    .header .back:hover{color:white;}
+    .header .top-row{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
+    .header .logo-wrap{width:58px;height:58px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+    .header .logo-wrap img{width:100%;height:100%;object-fit:contain;padding:4px;}
+    .header h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;}
+    .header .meta{font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+    .tabs-bar{padding:0 32px;overflow-x:auto;}
+    .tabs{max-width:900px;margin:0 auto;display:flex;}
+    .tab{background:transparent;color:rgba(255,255,255,0.5);border:none;padding:13px 16px;font-size:13px;font-weight:400;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+    .tab.active{background:#F7F5F2;font-weight:700;}
+    .content{max-width:900px;margin:0 auto;padding:28px 32px;}
+    .prog-wrap{margin-bottom:24px;}
+    .prog-meta{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:7px;}
+    .prog-track{height:6px;background:#E0E0E0;border-radius:99px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:99px;transition:width 0.4s ease;}
+    .tasks{display:flex;flex-direction:column;gap:11px;}
+    .task-card{background:white;border-radius:12px;padding:15px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:opacity 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .task-card.done{opacity:0.42;box-shadow:none;}
+    .checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #DDD;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:white;transition:all 0.2s;}
+    .checkbox .ck{display:none;color:white;font-size:12px;font-weight:700;}
+    .done .checkbox .ck{display:block;}
+    .task-icon{font-size:21px;flex-shrink:0;margin-top:1px;}
+    .task-body{flex:1;}
+    .plat-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
+    .task-title{font-size:15px;font-weight:600;color:#1a1a1a;}
+    .done .task-title{text-decoration:line-through;}
+    .task-detail{font-size:13px;color:#888;line-height:1.5;margin-top:3px;}
+    .tip{margin-top:24px;border-radius:12px;padding:16px 18px;}
+    .tip-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;}
+    .tip ul{padding-left:16px;font-size:13px;color:#555;line-height:2;}
+    .goals{display:flex;flex-direction:column;gap:14px;}
+    .gcard{background:white;border-radius:14px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .gcard-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+    .gcard-head .gi{font-size:20px;}
+    .gcard-head .gn{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+    .gitems{display:flex;flex-direction:column;gap:16px;}
+    .grow-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;}
+    .glabel{font-size:14px;font-weight:600;color:#1a1a1a;flex:1;}
+    .gcontrols{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+    .gcount{font-size:13px;font-weight:700;color:#333;min-width:90px;text-align:center;}
+    .gbtn{width:27px;height:27px;border-radius:7px;border:1px solid #E0E0E0;background:white;cursor:pointer;font-size:15px;font-weight:700;color:#666;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;line-height:1;flex-shrink:0;}
+    .gtrack{height:8px;background:#F0F0F0;border-radius:99px;overflow:hidden;}
+    .gfill{height:100%;border-radius:99px;transition:width 0.35s ease;}
+    .gpct{text-align:right;font-size:11px;color:#AAA;margin-top:3px;}
+    .gpct.reached{font-weight:700;}
+    .auto-note{font-size:12px;color:#999;text-align:center;margin-bottom:20px;font-style:italic;}
+    .sync-banner{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:10px;padding:10px 16px;margin-bottom:20px;font-size:13px;color:#2E7D32;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px;}
+
+    .header{background:linear-gradient(135deg,#4E2A00 0%,#6D3B00 60%,#8B5E3C 100%);}
+    .tabs-bar{background:#3a1f00;}
+    .tab.active{color:#4E2A00;}
   </style>
 </head>
 <body>
 <div class="header">
   <div class="inner">
-    <a class="back" href="amicus-marketing-hub.html">&larr; Back to Hub</a>
+    <a class="back" href="lehigh.html">← Back to Lehigh</a>
     <div class="top-row">
       <div class="logo-wrap" style="background:white;border-radius:14px;"><img src="data:image/jpeg;base64,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/wCg94O/8DLn/wCR6+VzDCYitXlOMHbofSYHE0KVGMXJXPD4fHnjS3to7eDxRqkcUahERZiAqgYAHsBT/wDhYPjn/obNW/7/AJr23/hif4rf9B7wd/4GXP8A8j0f8MT/ABW/6D3g7/wMuf8A5Hrj/s/FfyM6frmF/mR4l/wsHxz/ANDZq3/f80f8LC8c/wDQ2at/3/Ne2/8ADE/xW/6D3g7/AMDLn/5Ho/4Yn+K3/Qe8Hf8AgZc//I9H9n4r+Rh9bwv8yPEv+FheOf8AobNW/wC/5o/4WD45/wChs1b/AL/mvbf+GJ/it/0HvB3/AIGXP/yPR/wxP8Vv+g94O/8AAy5/+R6P7PxX8jD63hf5keJf8LB8c/8AQ2at/wB/zR/wsLxz/wBDZq3/AH/Ne2/8MT/Fb/oPeDv/AAMuf/kej/hif4rf9B7wd/4GXP8A8j0f2fiv5GH1vC/zI8S/4WF45/6GzVv+/wCaP+Fg+Of+hs1b/v8Amvbf+GJ/it/0HvB3/gZc/wDyPR/wxP8AFb/oPeDv/Ay5/wDkej+z8V/Iw+t4X+ZHiX/CwfHP/Q2at/3/ADR/wsHxz/0Nmrf9/wA17b/wxP8AFb/oPeDv/Ay5/wDkej/hif4rf9B7wd/4GXP/AMj0f2fiv5GH1vC/zI8S/wCFheOf+hs1b/v+aP8AhYPjn/obNW/7/mvbf+GJ/it/0HvB3/gZc/8AyPR/wxP8Vv8AoPeDv/Ay5/8Akej+z8V/Iw+t4X+ZHiX/AAsHxz/0Nmrf9/zR/wALB8c/9DZq3/f817b/AMMT/Fb/AKD3g7/wMuf/AJHo/wCGJ/it/wBB7wd/4GXP/wAj0f2fiv5GH1vC/wAyPEv+Fg+Of+hs1b/v+aP+FheOf+hs1b/v+a9t/wCGJ/it/wBB7wd/4GXP/wAj0f8ADE/xW/6D3g7/AMDLn/5Ho/s/FfyMPreF/mR4l/wsHxz/ANDZq3/f81h3t9ealqEt9qF1Lc3Mp3STStuZzjGSfwFfRP8AwxP8Vv8AoPeDv/Ay5/8Akej/AIYn+K3/AEHvB3/gXc//ACPR/Z2K/kY1jcMtpI6T9iTwj52ueIvG9xFlLeJdNtnPQu5DyfiFWMf8Dr7Przz4J/DiX4W/CCx8L3ktrNqIkkuL2a1JMckrt1UsoJAQIvIH3a9Dr6rAUPYUIwe/U+bxtb21aU1sFFFFdhyhRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAH/9k=" alt="Lehigh logo"/></div>
-      <div><h1>Lehigh</h1><div class="meta">Lehigh University</div></div>
+      <div><h1>Lehigh</h1><div class="meta">Lehigh University · Jul 8 – 14, 2026</div></div>
     </div>
   </div>
 </div>
+<div class="tabs-bar"><div class="tabs" id="tabs"></div></div>
+<div class="content" id="content"></div>
 
-<div class="section-label">Weekly Checklists</div>
-<div class="weeks">
-  <!-- WEEK CARDS: newest first -->
-  <a class="week-card" href="lehigh-2026-07-08.html">
-    <div class="week-kicker">Current Week</div>
-    <div class="week-title">July 8 &ndash; 14, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-  <a class="week-card" href="lehigh-2026-06-17.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">June 17 &ndash; 24, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-  <a class="week-card" href="lehigh-2026-06-10.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">June 10 &ndash; 16, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-  <a class="week-card" href="lehigh-checklist.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">May 20 &ndash; 26, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-</div>
+<script>
+const ACCENT="#6D3B00";
+const PORTFOLIO_KEY="lehigh-2026-07-08";
 
-<div class="footer">Amicus Property Management &middot; Lehigh Portfolio</div>
+const schedule=[
+  {
+    "day": "Wed 7/8",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "Content",
+        "icon": "🎥",
+        "task": "Gather walkthrough videos",
+        "detail": "Target: 40 total for the week. Update the running total as you film.",
+        "qtyGoal": "Content|Walkthrough videos",
+        "qtyMax": 40
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "⭐",
+        "task": "Google review outreach — Batch 1",
+        "detail": "Goal: 3 new Google reviews this week. Reach out to tenants with good deposit scores — personal texts/emails, not copy-paste."
+      }
+    ]
+  },
+  {
+    "day": "Thu 7/9",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "Content",
+        "icon": "🖼️",
+        "task": "Gather property photos",
+        "detail": "Target: 40 total for the week. Same properties as the walkthroughs.",
+        "qtyGoal": "Content|Property photos",
+        "qtyMax": 40
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Upload 2 YouTube videos",
+        "detail": "Goal: 5 uploads this week. Get the first 2 up today — titles with property address + beds/baths.",
+        "goalKey": "YouTube|YouTube videos uploaded"
+      }
+    ]
+  },
+  {
+    "day": "Fri 7/10",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Publish Google Business post #1",
+        "detail": "First of 2 Google posts this week — availability update, featured property, or event.",
+        "goalKey": "Google Posts|Google posts published"
+      },
+      {
+        "platform": "Content",
+        "icon": "🎥",
+        "task": "Content catch-up",
+        "detail": "Behind on walkthroughs or photos? Update the dropdowns as totals climb."
+      }
+    ]
+  },
+  {
+    "day": "Sat 7/11",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Upload 2 more YouTube videos (4 total)",
+        "detail": "Running total should hit 4 of 5 after today.",
+        "goalKey": "YouTube|YouTube videos uploaded"
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "⭐",
+        "task": "Google review outreach — Batch 2",
+        "detail": "Second wave — follow up with anyone who said yes but hasn't posted, and try a different method if Batch 1 was quiet."
+      }
+    ]
+  },
+  {
+    "day": "Sun 7/12",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Publish Google Business post #2",
+        "detail": "Second Google post — hits the weekly goal of 2.",
+        "goalKey": "Google Posts|Google posts published"
+      },
+      {
+        "platform": "Content",
+        "icon": "🖼️",
+        "task": "Content catch-up",
+        "detail": "Keep the walkthrough and photo totals moving — update the dropdowns."
+      }
+    ]
+  },
+  {
+    "day": "Mon 7/13",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Upload final YouTube video (5 total)",
+        "detail": "Fifth upload — YouTube goal complete.",
+        "goalKey": "YouTube|YouTube videos uploaded"
+      },
+      {
+        "platform": "Monday Board",
+        "icon": "📋",
+        "task": "Go through the Monday board",
+        "detail": "Full pass through the Monday board — every item current and accurate. Deadline is tomorrow (Tue 7/14).",
+        "goalKey": "Monday Board|Monday board reviewed"
+      },
+      {
+        "platform": "Content",
+        "icon": "🎥",
+        "task": "Content final push",
+        "detail": "Bring walkthroughs and photos to 40. Goals tab should be at 100%."
+      }
+    ]
+  },
+  {
+    "day": "Tue 7/14",
+    "tasks": [
+      {
+        "platform": "Facebook",
+        "icon": "📘",
+        "task": "Post 3 to Facebook today",
+        "detail": "3 Facebook posts today — property features, tours, community content. Update the running total on the Goals tab.",
+        "goalKey": "Facebook|Facebook posts (3 per day)"
+      },
+      {
+        "platform": "Monday Board",
+        "icon": "📋",
+        "task": "Upload everything to the right folders — DUE TODAY",
+        "detail": "Monday board fully reviewed and every file uploaded to its correct folder by end of day.",
+        "goalKey": "Monday Board|Files uploaded to correct folders"
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "⭐",
+        "task": "Review follow-up — close out at 3",
+        "detail": "Final nudge to anyone who committed. Track new reviews with +/− on the Goals tab.",
+        "goalKey": "Google Reviews|New Google reviews"
+      },
+      {
+        "platform": "Setup",
+        "icon": "✅",
+        "task": "Verify all weekly targets hit",
+        "detail": "Check the Goals tab — Facebook, YouTube, reviews, Google posts, Monday board all at 100%."
+      }
+    ]
+  },
+  {
+    "day": "📊 Goals",
+    "isGoals": true,
+    "tasks": []
+  }
+];
+
+const goalCategories=[
+  {
+    "platform": "Content",
+    "icon": "🎥",
+    "color": "#9C27B0",
+    "manual": true,
+    "goals": [
+      {
+        "label": "Walkthrough videos",
+        "target": 40,
+        "unit": "videos"
+      },
+      {
+        "label": "Property photos",
+        "target": 40,
+        "unit": "properties"
+      }
+    ]
+  },
+  {
+    "platform": "Facebook",
+    "icon": "📘",
+    "color": "#1877F2",
+    "manual": true,
+    "goals": [
+      {
+        "label": "Facebook posts (3 per day)",
+        "target": 21,
+        "unit": "posts"
+      }
+    ]
+  },
+  {
+    "platform": "YouTube",
+    "icon": "▶️",
+    "color": "#FF0000",
+    "manual": true,
+    "goals": [
+      {
+        "label": "YouTube videos uploaded",
+        "target": 5,
+        "unit": "videos"
+      }
+    ]
+  },
+  {
+    "platform": "Google Reviews",
+    "icon": "⭐",
+    "color": "#FBBC04",
+    "manual": true,
+    "goals": [
+      {
+        "label": "New Google reviews",
+        "target": 3,
+        "unit": "reviews"
+      }
+    ]
+  },
+  {
+    "platform": "Google Posts",
+    "icon": "📍",
+    "color": "#4285F4",
+    "manual": true,
+    "goals": [
+      {
+        "label": "Google posts published",
+        "target": 2,
+        "unit": "posts"
+      }
+    ]
+  },
+  {
+    "platform": "Monday Board",
+    "icon": "📋",
+    "color": "#6161FF",
+    "manual": true,
+    "goals": [
+      {
+        "label": "Monday board reviewed",
+        "target": 1,
+        "unit": "board"
+      },
+      {
+        "label": "Files uploaded to correct folders",
+        "target": 1,
+        "unit": "done"
+      }
+    ]
+  }
+];
+
+const platformColors={"Instagram":"#E1306C","Facebook":"#1877F2","Reddit":"#FF4500","Google Reviews":"#FBBC04","Google Uploads":"#34A853","Google Posts":"#4285F4","Website":"#00BCD4","Setup":"#00BCD4","Content":"#9C27B0","Planning":"#FFB300","YouTube":"#FF0000","Monday Board":"#6161FF"};
+
+let activeDay="Wed 7/8";
+let checked={};
+let manualGoals={};
+let manualBonus={};
+let taskQty={};
+let dbReady=false;
+let dbRef=null;
+
+// Safe key for Firebase (no special chars)
+function safeKey(s){ return s.replace(/[^a-zA-Z0-9_]/g,'_'); }
+
+function initFirebase(){
+  const app = firebase.initializeApp({
+    apiKey: "AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
+    authDomain: "amicus-marketing.firebaseapp.com",
+    databaseURL: "https://amicus-marketing-default-rtdb.firebaseio.com",
+    projectId: "amicus-marketing",
+    storageBucket: "amicus-marketing.firebasestorage.app",
+    messagingSenderId: "926415834204",
+    appId: "1:926415834204:web:c6824762be375a180dea99"
+  });
+  const db = firebase.database();
+  dbRef = db.ref("portfolios/" + PORTFOLIO_KEY);
+
+  // Listen for real-time changes from any user
+  dbRef.on("value", (snapshot) => {
+    const data = snapshot.val() || {};
+    checked     = data.checked     || {};
+    manualGoals = data.manualGoals || {};
+    manualBonus = data.manualBonus || {};
+    taskQty     = data.taskQty     || {};
+    dbReady = true;
+    render();
+  });
+}
+
+function saveState(){
+  if(!dbRef) return;
+  dbRef.set({ checked, manualGoals, manualBonus, taskQty });
+}
+
+function computeAutoGoals(){
+  const counts={};
+  schedule.forEach(day=>{
+    day.tasks.forEach((t,i)=>{
+      if(t.goalKey && checked[safeKey(`${day.day}-${i}`)]) {
+        counts[t.goalKey]=(counts[t.goalKey]||0)+1;
+      }
+      if(t.qtyGoal){
+        counts[t.qtyGoal]=(counts[t.qtyGoal]||0)+(parseInt(taskQty[safeKey(`${day.day}-${i}`)])||0);
+      }
+    });
+  });
+  return counts;
+}
+
+function render(){renderTabs();renderContent();}
+
+function renderTabs(){
+  const el=document.getElementById("tabs");el.innerHTML="";
+  schedule.forEach(s=>{
+    const b=document.createElement("button");
+    b.className="tab"+(s.day===activeDay?" active":"");
+    b.textContent=s.day;
+    b.onclick=()=>{activeDay=s.day;render();};
+    el.appendChild(b);
+  });
+}
+
+function renderGoalBar(cat,g,rawVal,key){
+  const atTarget=rawVal>=g.target;
+  const pct=atTarget?100:Math.min(99,Math.round((rawVal/g.target)*100));
+  const bar=atTarget
+    ?`linear-gradient(90deg,${cat.color},${cat.color}cc)`
+    :`linear-gradient(90deg,${cat.color}99,${cat.color})`;
+  const noteHtml=g.note?`<span style="font-size:11px;color:#AAA;margin-left:6px;">(${g.note})</span>`:"";
+  let controls="";
+  if(cat.manual){
+    controls=`
+      <button class="gbtn" onclick="adjManual('${safeKey(key)}',-1)">−</button>
+      <span class="gcount" style="${atTarget?`color:${cat.color}`:""}">${rawVal} / ${g.target} ${g.unit}</span>
+      <button class="gbtn" onclick="adjManual('${safeKey(key)}',1)" style="${atTarget?`background:${cat.color};color:white;border-color:${cat.color}`:""}">+</button>
+      ${atTarget?`<span style="font-size:16px">✅</span>`:""}`;
+  } else {
+    if(atTarget){
+      controls=`
+        <button class="gbtn" onclick="adjBonus('${safeKey(key)}',-1)">−</button>
+        <span class="gcount" style="color:${cat.color}">${rawVal} / ${g.target} ${g.unit}</span>
+        <button class="gbtn" onclick="adjBonus('${safeKey(key)}',1)" style="background:${cat.color};color:white;border-color:${cat.color}">+</button>
+        <span style="font-size:16px">✅</span>`;
+    } else {
+      controls=`<span class="gcount">${rawVal} / ${g.target} ${g.unit}</span>`;
+    }
+  }
+  return `<div>
+    <div class="grow-top"><span class="glabel">${g.label}${noteHtml}</span><div class="gcontrols">${controls}</div></div>
+    <div class="gtrack"><div class="gfill" style="width:${pct}%;background:${bar}"></div></div>
+    <div class="gpct${atTarget?" reached":""}" style="${atTarget?`color:${cat.color}`:""}">${atTarget?"Goal reached! 🎉":`${pct}%`}</div>
+  </div>`;
+}
+
+function renderContent(){
+  const el=document.getElementById("content");
+  const day=schedule.find(s=>s.day===activeDay);
+  if(!day)return;
+  let html="";
+
+  if(!dbReady){
+    el.innerHTML=`<div style="text-align:center;padding:60px;color:#999;font-family:sans-serif;">🔄 Connecting to live database...</div>`;
+    return;
+  }
+
+  if(!day.isGoals){
+    const total=day.tasks.length;
+    const done=day.tasks.filter((_,i)=>checked[safeKey(`${activeDay}-${i}`)]).length;
+    const pct=total?Math.round((done/total)*100):0;
+    html+=`<div class="sync-banner">🔴 Live — changes sync instantly for all users</div>`;
+    html+=`<div class="prog-wrap"><div class="prog-meta"><span>${done} of ${total} tasks complete</span><span style="color:${ACCENT};font-weight:700">${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${ACCENT}"></div></div></div><div class="tasks">`;
+    day.tasks.forEach((t,i)=>{
+      const key=safeKey(`${activeDay}-${i}`);
+      const isDone=!!checked[key];
+      const c=platformColors[t.platform]||"#888";
+      html+=`<div class="task-card${isDone?" done":""}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:""}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:""}${t.qtyGoal?`<div class="qty-row" onclick="event.stopPropagation()">How many? <select class="qty-select" onchange="setManual('${safeKey(t.qtyGoal)}',this.value)">${(()=>{const cur=manualGoals[safeKey(t.qtyGoal)]||0;let o='';for(let n=0;n<=t.qtyMax;n++){o+=`<option value="${n}"${n===cur?' selected':''}>${n}</option>`;}return o;})()}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`:``}</div></div>`;
+    });
+    html+=`</div>`;
+    if(["Wed 7/8","Sat 7/11"].includes(activeDay)){html+=`<div class="tip" style="background:#FFFDE7;border:1px solid #FFE082"><div class="tip-title" style="color:#F9A825">⭐ Review Tactics</div><ul><li>Move-out helpers → hand QR code for review</li><li>Waiving something in rentroom → "Leave a 5-star with a paragraph about Amicus"</li><li>Doing a favor → ask for a review</li><li>Give maintenance staff QR codes</li><li>Follow up after turnover → request review if positive</li><li>Respond to <strong>every</strong> Google review</li></ul></div>`;}
+    if(["Thu 6/11","Mon 6/15"].includes(activeDay)){html+=`<div class="tip" style="background:#FFF3E0;border:1px solid #FFCC80"><div class="tip-title" style="color:#E65100">🧵 Reddit Format</div><ul><li>Use 2–4 accounts with credible post history</li><li>Keep conversation natural</li></ul></div>`;}
+  } else {
+    const autoCounts=computeAutoGoals();
+    html+=`<div class="sync-banner">🔴 Live — updates instantly for all users</div>`;
+    html+=`<p class="auto-note">Use +/− buttons on each goal to track progress · syncs instantly for all users</p><div class="goals">`;
+    goalCategories.forEach(cat=>{
+      html+=`<div class="gcard" style="border-left:4px solid ${cat.color}"><div class="gcard-head"><span class="gi">${cat.icon}</span><span class="gn" style="color:${cat.color}">${cat.platform}</span></div><div class="gitems">`;
+      cat.goals.forEach(g=>{
+        const key=`${cat.platform}|${g.label}`;
+        const safeK=safeKey(key);
+        let rawVal=cat.manual?(manualGoals[safeK]||0):((autoCounts[key]||0)+(manualBonus[safeK]||0));
+        html+=renderGoalBar(cat,g,rawVal,safeK);
+      });
+      html+=`</div></div>`;
+    });
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+}
+
+function qtyOptions(t,key){
+  const cur=parseInt(taskQty[key])||0;
+  let out="";
+  for(let n=0;n<=t.qtyMax;n++){ out+=`<option value="${n}"${n===cur?" selected":""}>${n}</option>`; }
+  return out;
+}
+function setQty(key,val){
+  taskQty[key]=parseInt(val)||0;
+  if(taskQty[key]>0){ checked[key]=true; }
+  saveState();
+}
+
+function toggle(key){
+  checked[key]=!checked[key];
+  if(!checked[key]) delete checked[key];
+  saveState();
+}
+function adjManual(key,d){
+  manualGoals[key]=Math.max(0,(manualGoals[key]||0)+d);
+  saveState();
+}
+function adjBonus(key,d){
+  manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d);
+  saveState();
+}
+function setManual(goalKey,val){
+  manualGoals[goalKey]=parseInt(val)||0;
+  saveState();
+  render();
+}
+
+// Init on load
+initFirebase();
+
+</script>
 </body>
 </html>

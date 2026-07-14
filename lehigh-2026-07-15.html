@@ -179,9 +179,9 @@ const schedule=[
       {
         "platform": "Content",
         "icon": "🏠",
-        "task": "Get houses done",
-        "detail": "Target: 40 houses done this week. Update the dropdown as the total climbs.",
-        "qtyGoal": "Content|Houses done",
+        "task": "Gather house media (photos + walkthrough)",
+        "detail": "Target: 40 houses this week — photos and walkthrough video for each. Update the dropdown as the total climbs.",
+        "qtyGoal": "Content|House media gathered",
         "qtyMax": 40
       },
       {
@@ -189,12 +189,6 @@ const schedule=[
         "icon": "⭐",
         "task": "Google review outreach — Batch 1",
         "detail": "Goal: 3 new Google reviews this week. Reach out to tenants with good deposit scores — personal texts/emails, not copy-paste."
-      },
-      {
-        "platform": "Monday Board",
-        "icon": "📋",
-        "task": "Sort media — first pass",
-        "detail": "Start sorting media and marking it in Monday. Goal is 100% by Tue 7/21."
       }
     ]
   },
@@ -211,10 +205,18 @@ const schedule=[
       {
         "platform": "Content",
         "icon": "🏠",
-        "task": "Get houses done",
-        "detail": "Target: 40 houses done this week. Update the dropdown as the total climbs.",
-        "qtyGoal": "Content|Houses done",
+        "task": "Gather house media (photos + walkthrough)",
+        "detail": "Target: 40 houses this week — photos and walkthrough video for each. Update the dropdown as the total climbs.",
+        "qtyGoal": "Content|House media gathered",
         "qtyMax": 40
+      },
+      {
+        "platform": "Content",
+        "icon": "🎬",
+        "task": "Shoot panning videos",
+        "detail": "Target: 20 panning videos this week. Update the dropdown as you film.",
+        "qtyGoal": "Content|Panning videos",
+        "qtyMax": 20
       },
       {
         "platform": "YouTube",
@@ -245,9 +247,9 @@ const schedule=[
       {
         "platform": "Content",
         "icon": "🏠",
-        "task": "Get houses done",
-        "detail": "Target: 40 houses done this week. Update the dropdown as the total climbs.",
-        "qtyGoal": "Content|Houses done",
+        "task": "Gather house media (photos + walkthrough)",
+        "detail": "Target: 40 houses this week — photos and walkthrough video for each. Update the dropdown as the total climbs.",
+        "qtyGoal": "Content|House media gathered",
         "qtyMax": 40
       }
     ]
@@ -267,6 +269,14 @@ const schedule=[
         "icon": "⭐",
         "task": "Google review outreach — Batch 2",
         "detail": "Second wave — follow up with anyone who said yes but hasn't posted, and try a different angle if Batch 1 was quiet."
+      },
+      {
+        "platform": "Content",
+        "icon": "🎬",
+        "task": "Shoot panning videos",
+        "detail": "Target: 20 panning videos this week. Update the dropdown as you film.",
+        "qtyGoal": "Content|Panning videos",
+        "qtyMax": 20
       },
       {
         "platform": "Planning",
@@ -295,6 +305,14 @@ const schedule=[
         "goalKey": "Google Posts|Google posts published"
       },
       {
+        "platform": "Content",
+        "icon": "🏠",
+        "task": "Gather house media (photos + walkthrough)",
+        "detail": "Target: 40 houses this week — photos and walkthrough video for each. Update the dropdown as the total climbs.",
+        "qtyGoal": "Content|House media gathered",
+        "qtyMax": 40
+      },
+      {
         "platform": "Planning",
         "icon": "📐",
         "task": "Explore CubiCasa",
@@ -316,10 +334,18 @@ const schedule=[
       {
         "platform": "Content",
         "icon": "🏠",
-        "task": "Get houses done",
-        "detail": "Target: 40 houses done this week. Update the dropdown as the total climbs.",
-        "qtyGoal": "Content|Houses done",
+        "task": "Gather house media (photos + walkthrough)",
+        "detail": "Target: 40 houses this week — photos and walkthrough video for each. Update the dropdown as the total climbs.",
+        "qtyGoal": "Content|House media gathered",
         "qtyMax": 40
+      },
+      {
+        "platform": "Content",
+        "icon": "🎬",
+        "task": "Shoot panning videos",
+        "detail": "Target: 20 panning videos this week. Update the dropdown as you film.",
+        "qtyGoal": "Content|Panning videos",
+        "qtyMax": 20
       },
       {
         "platform": "YouTube",
@@ -327,12 +353,6 @@ const schedule=[
         "task": "Upload YouTube video #2 of 2",
         "detail": "Titles with property address + beds/baths. Update the running total on the Goals tab.",
         "goalKey": "YouTube|YouTube videos uploaded"
-      },
-      {
-        "platform": "Monday Board",
-        "icon": "📋",
-        "task": "Monday media push",
-        "detail": "Media sorted and Monday marching toward 100%. Deadline is tomorrow."
       }
     ]
   },
@@ -354,19 +374,17 @@ const schedule=[
         "goalKey": "Google Reviews|All reviews replied to"
       },
       {
-        "platform": "Monday Board",
-        "icon": "📋",
-        "task": "Media sorted & Monday at 100% — DUE TODAY",
-        "detail": "All media sorted and Monday board at 100%.",
-        "goalKey": "Monday Board|Media sorted & Monday 100%"
-      },
-      {
         "platform": "Content",
         "icon": "🏠",
-        "task": "Houses final push",
-        "detail": "Bring the houses-done total to 40."
+        "task": "Content final push",
+        "detail": "Bring house media to 40 and panning videos to 20. Goals tab should be at 100%."
       }
     ]
+  },
+  {
+    "day": "📊 Goals",
+    "isGoals": true,
+    "tasks": []
   }
 ];
 
@@ -378,9 +396,14 @@ const goalCategories=[
     "manual": true,
     "goals": [
       {
-        "label": "Houses done",
+        "label": "House media gathered",
         "target": 40,
         "unit": "houses"
+      },
+      {
+        "label": "Panning videos",
+        "target": 20,
+        "unit": "videos"
       }
     ]
   },
@@ -438,19 +461,6 @@ const goalCategories=[
         "label": "Google posts published",
         "target": 2,
         "unit": "posts"
-      }
-    ]
-  },
-  {
-    "platform": "Monday Board",
-    "icon": "📋",
-    "color": "#6161FF",
-    "manual": true,
-    "goals": [
-      {
-        "label": "Media sorted & Monday 100%",
-        "target": 1,
-        "unit": "done"
       }
     ]
   },

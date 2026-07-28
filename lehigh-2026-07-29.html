@@ -17,12 +17,6 @@
     .qty-row{margin-top:10px;font-size:13px;color:#555;}
     .qty-select{margin-left:6px;padding:5px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;background:white;cursor:pointer;}
     .qty-of{color:#999;font-size:12px;margin-left:4px;}
-
-    .link-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
-    .link-ico{font-size:13px;opacity:.65;}
-    .link-input{flex:1;min-width:0;font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid #d9d9de;border-radius:8px;background:#fafafb;color:#333;}
-    .link-input:focus{outline:none;border-color:#888;background:#fff;}
-    .link-open{font-size:12px;font-weight:700;text-decoration:none;color:#1877F2;white-space:nowrap;}
   </style>
 <script id="amicusGateScript">
 (function(){
@@ -152,12 +146,6 @@
     .header{background:linear-gradient(135deg,#4E2A00 0%,#6D3B00 60%,#8B5E3C 100%);}
     .tabs-bar{background:#3a1f00;}
     .tab.active{color:#4E2A00;}
-
-    .link-row{display:flex;align-items:center;gap:8px;margin-top:10px;}
-    .link-ico{font-size:13px;opacity:.65;}
-    .link-input{flex:1;min-width:0;font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid #d9d9de;border-radius:8px;background:#fafafb;color:#333;}
-    .link-input:focus{outline:none;border-color:#888;background:#fff;}
-    .link-open{font-size:12px;font-weight:700;text-decoration:none;color:#1877F2;white-space:nowrap;}
   </style>
 </head>
 <body>
@@ -185,14 +173,14 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
         "platform": "Content",
         "icon": "🚶",
         "task": "Shoot walkthrough videos",
-        "detail": "Target: 50 walkthroughs this week. Update the dropdown as the total climbs.",
+        "detail": "Running total toward 50 this week — update as you shoot.",
         "qtyGoal": "Content|Walkthrough videos",
         "qtyMax": 50
       },
@@ -200,39 +188,40 @@ const schedule=[
         "platform": "Content",
         "icon": "📸",
         "task": "Capture house photos",
-        "detail": "Target: 50 photo sets this week. Update the dropdown as you shoot.",
+        "detail": "Running total toward 50 sets this week.",
         "qtyGoal": "Content|House photos",
         "qtyMax": 50
       },
       {
         "platform": "Instagram",
         "icon": "📷",
-        "task": "Instagram post 1/3",
-        "detail": "Feed post — listing, neighborhood, or team content. Attach the post link below.",
-        "goalKey": "Instagram|Instagram posts",
-        "linkField": true,
-        "linkPlaceholder": "Paste link to the IG post…"
+        "task": "Instagram post 1 of 3",
+        "detail": "Paste the post link once it's live.",
+        "goalKey": "Instagram|Posts",
+        "link": true
       },
       {
         "platform": "Instagram",
         "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
         "qtyMax": 20
       },
       {
         "platform": "Reddit",
-        "icon": "👤",
+        "icon": "🧵",
         "task": "Buy Reddit accounts ($50–100)",
-        "detail": "Purchase aged accounts with credible post history. Mark done on the Goals tab.",
-        "goalKey": "Reddit|Reddit accounts purchased"
+        "detail": "Pick up aged accounts with credible history. Check off once purchased.",
+        "goalKey": "Reddit|Accounts purchased"
       },
       {
         "platform": "Google Reviews",
         "icon": "⭐",
         "task": "Google review outreach — Batch 1",
-        "detail": "Personal texts/emails to good-standing tenants. Bump 'New Google reviews' on the Goals tab as they post."
+        "detail": "Personal asks to happy tenants. Bump the counter as reviews land (target 3).",
+        "qtyGoal": "Google Reviews|New reviews",
+        "qtyMax": 3
       }
     ]
   },
@@ -243,57 +232,55 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
         "platform": "Content",
         "icon": "🎬",
         "task": "Shoot panning videos",
-        "detail": "Target: 20 panning videos this week. Update the dropdown as you film.",
+        "detail": "Running total toward 20 this week.",
         "qtyGoal": "Content|Panning videos",
         "qtyMax": 20
       },
       {
         "platform": "YouTube",
         "icon": "▶️",
-        "task": "Upload YouTube video 1/3",
-        "detail": "Title with property address + beds/baths. Attach the video link below.",
-        "goalKey": "YouTube|YouTube videos uploaded",
-        "linkField": true,
-        "linkPlaceholder": "Paste YouTube link…"
+        "task": "Upload YouTube video 1 of 3",
+        "detail": "Title with property address + beds/baths. Paste the link.",
+        "goalKey": "YouTube|Videos uploaded",
+        "link": true
       },
       {
         "platform": "TikTok",
         "icon": "🎵",
-        "task": "Post TikTok 1/2",
-        "detail": "Short-form clip — walkthrough highlight or trend. Attach the post link below.",
+        "task": "Post TikTok 1 of 2",
+        "detail": "Paste the video link once it's posted.",
         "goalKey": "TikTok|TikToks posted",
-        "linkField": true,
-        "linkPlaceholder": "Paste TikTok link…"
+        "link": true
       },
       {
         "platform": "Reddit",
-        "icon": "🧵",
-        "task": "Reddit comments",
-        "detail": "Target: 5 natural comments this week. Update the running total as you post.",
-        "qtyGoal": "Reddit|Reddit comments",
+        "icon": "💬",
+        "task": "Leave Reddit comments",
+        "detail": "Running total toward 5 natural, helpful comments this week.",
+        "qtyGoal": "Reddit|Comments",
         "qtyMax": 5
-      },
-      {
-        "platform": "Instagram",
-        "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
-        "qtyMax": 20
       },
       {
         "platform": "Planning",
         "icon": "🏋️",
         "task": "Progress — Taylor Gym rec-jersey sponsorship",
-        "detail": "Follow up and advance: can Amicus sponsor the rec-league jerseys? Get a contact + terms. Mark done on the Goals tab.",
-        "goalKey": "Planning|Taylor Gym sponsorship progress"
+        "detail": "Follow up on sponsoring the rec-league jerseys — get a contact and terms.",
+        "goalKey": "Focus|Taylor Gym sponsorship"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "✉️",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
+        "qtyMax": 20
       }
     ]
   },
@@ -304,14 +291,14 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
         "platform": "Content",
         "icon": "🚶",
         "task": "Shoot walkthrough videos",
-        "detail": "Target: 50 walkthroughs this week. Update the dropdown as the total climbs.",
+        "detail": "Running total toward 50 this week — update as you shoot.",
         "qtyGoal": "Content|Walkthrough videos",
         "qtyMax": 50
       },
@@ -319,50 +306,48 @@ const schedule=[
         "platform": "Content",
         "icon": "📸",
         "task": "Capture house photos",
-        "detail": "Target: 50 photo sets this week. Update the dropdown as you shoot.",
+        "detail": "Running total toward 50 sets this week.",
         "qtyGoal": "Content|House photos",
         "qtyMax": 50
       },
       {
         "platform": "Content",
         "icon": "📐",
-        "task": "Capture floor plans (CubiCasa)",
-        "detail": "Target: 5× CubiCasa floor plans this week (phone walkthrough). Update the dropdown as you go.",
-        "qtyGoal": "Content|Floor plans",
+        "task": "Shoot CubiCasa floor plans",
+        "detail": "Running total toward 5 this week (CubiCasa phone walkthrough).",
+        "qtyGoal": "Content|CubiCasa floor plans",
         "qtyMax": 5
       },
       {
         "platform": "Google Posts",
         "icon": "📍",
-        "task": "Publish Google Business post 1/3",
-        "detail": "Availability update, featured property, or event. Attach the post link below.",
-        "goalKey": "Google Posts|Google posts published",
-        "linkField": true,
-        "linkPlaceholder": "Paste link to the Google post…"
+        "task": "Publish Google Business post 1 of 3",
+        "detail": "Availability, featured property, or event. Paste the link.",
+        "goalKey": "Google Posts|Posts published",
+        "link": true
       },
       {
         "platform": "Instagram",
         "icon": "📷",
-        "task": "Instagram post 2/3",
-        "detail": "Feed post — listing, neighborhood, or team content. Attach the post link below.",
-        "goalKey": "Instagram|Instagram posts",
-        "linkField": true,
-        "linkPlaceholder": "Paste link to the IG post…"
-      },
-      {
-        "platform": "Instagram",
-        "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
-        "qtyMax": 20
+        "task": "Instagram post 2 of 3",
+        "detail": "Paste the post link once it's live.",
+        "goalKey": "Instagram|Posts",
+        "link": true
       },
       {
         "platform": "Planning",
         "icon": "🤝",
         "task": "Progress — Powerhouse table / sponsor",
-        "detail": "Advance the ask: can Amicus table at or sponsor Powerhouse? Note what they'd want. Mark done on the Goals tab.",
-        "goalKey": "Planning|Powerhouse table/sponsor progress"
+        "detail": "See if Amicus can table at or sponsor Powerhouse; note what they'd want in return.",
+        "goalKey": "Focus|Powerhouse table/sponsor"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "✉️",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
+        "qtyMax": 20
       }
     ]
   },
@@ -373,46 +358,47 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
         "platform": "Content",
         "icon": "🎬",
         "task": "Shoot panning videos",
-        "detail": "Target: 20 panning videos this week. Update the dropdown as you film.",
+        "detail": "Running total toward 20 this week.",
         "qtyGoal": "Content|Panning videos",
         "qtyMax": 20
       },
       {
         "platform": "Content",
         "icon": "📐",
-        "task": "Capture floor plans (CubiCasa)",
-        "detail": "Target: 5× CubiCasa floor plans this week (phone walkthrough). Update the dropdown as you go.",
-        "qtyGoal": "Content|Floor plans",
+        "task": "Shoot CubiCasa floor plans",
+        "detail": "Running total toward 5 this week (CubiCasa phone walkthrough).",
+        "qtyGoal": "Content|CubiCasa floor plans",
         "qtyMax": 5
       },
       {
         "platform": "YouTube",
         "icon": "▶️",
-        "task": "Upload YouTube video 2/3",
-        "detail": "Title with property address + beds/baths. Attach the video link below.",
-        "goalKey": "YouTube|YouTube videos uploaded",
-        "linkField": true,
-        "linkPlaceholder": "Paste YouTube link…"
+        "task": "Upload YouTube video 2 of 3",
+        "detail": "Title with property address + beds/baths. Paste the link.",
+        "goalKey": "YouTube|Videos uploaded",
+        "link": true
       },
       {
         "platform": "Google Reviews",
         "icon": "⭐",
         "task": "Google review outreach — Batch 2",
-        "detail": "Personal texts/emails to good-standing tenants. Bump 'New Google reviews' on the Goals tab as they post."
+        "detail": "Personal asks to happy tenants. Bump the counter as reviews land (target 3).",
+        "qtyGoal": "Google Reviews|New reviews",
+        "qtyMax": 3
       },
       {
         "platform": "Instagram",
         "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
         "qtyMax": 20
       }
     ]
@@ -424,14 +410,14 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
         "platform": "Content",
         "icon": "🚶",
         "task": "Shoot walkthrough videos",
-        "detail": "Target: 50 walkthroughs this week. Update the dropdown as the total climbs.",
+        "detail": "Running total toward 50 this week — update as you shoot.",
         "qtyGoal": "Content|Walkthrough videos",
         "qtyMax": 50
       },
@@ -439,50 +425,48 @@ const schedule=[
         "platform": "Content",
         "icon": "📸",
         "task": "Capture house photos",
-        "detail": "Target: 50 photo sets this week. Update the dropdown as you shoot.",
+        "detail": "Running total toward 50 sets this week.",
         "qtyGoal": "Content|House photos",
         "qtyMax": 50
       },
       {
         "platform": "Content",
         "icon": "📐",
-        "task": "Capture floor plans (CubiCasa)",
-        "detail": "Target: 5× CubiCasa floor plans this week (phone walkthrough). Update the dropdown as you go.",
-        "qtyGoal": "Content|Floor plans",
+        "task": "Shoot CubiCasa floor plans",
+        "detail": "Running total toward 5 this week (CubiCasa phone walkthrough).",
+        "qtyGoal": "Content|CubiCasa floor plans",
         "qtyMax": 5
       },
       {
         "platform": "Google Posts",
         "icon": "📍",
-        "task": "Publish Google Business post 2/3",
-        "detail": "Availability update, featured property, or event. Attach the post link below.",
-        "goalKey": "Google Posts|Google posts published",
-        "linkField": true,
-        "linkPlaceholder": "Paste link to the Google post…"
+        "task": "Publish Google Business post 2 of 3",
+        "detail": "Availability, featured property, or event. Paste the link.",
+        "goalKey": "Google Posts|Posts published",
+        "link": true
       },
       {
         "platform": "Instagram",
         "icon": "📷",
-        "task": "Instagram post 3/3",
-        "detail": "Feed post — listing, neighborhood, or team content. Attach the post link below.",
-        "goalKey": "Instagram|Instagram posts",
-        "linkField": true,
-        "linkPlaceholder": "Paste link to the IG post…"
+        "task": "Instagram post 3 of 3",
+        "detail": "Paste the post link once it's live.",
+        "goalKey": "Instagram|Posts",
+        "link": true
       },
       {
         "platform": "Reddit",
-        "icon": "🧵",
-        "task": "Reddit comments",
-        "detail": "Target: 5 natural comments this week. Update the running total as you post.",
-        "qtyGoal": "Reddit|Reddit comments",
+        "icon": "💬",
+        "task": "Leave Reddit comments",
+        "detail": "Running total toward 5 natural, helpful comments this week.",
+        "qtyGoal": "Reddit|Comments",
         "qtyMax": 5
       },
       {
         "platform": "Instagram",
         "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
         "qtyMax": 20
       }
     ]
@@ -494,14 +478,14 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
         "platform": "Content",
         "icon": "🚶",
         "task": "Shoot walkthrough videos",
-        "detail": "Target: 50 walkthroughs this week. Update the dropdown as the total climbs.",
+        "detail": "Running total toward 50 this week — update as you shoot.",
         "qtyGoal": "Content|Walkthrough videos",
         "qtyMax": 50
       },
@@ -509,41 +493,39 @@ const schedule=[
         "platform": "Content",
         "icon": "🎬",
         "task": "Shoot panning videos",
-        "detail": "Target: 20 panning videos this week. Update the dropdown as you film.",
+        "detail": "Running total toward 20 this week.",
         "qtyGoal": "Content|Panning videos",
         "qtyMax": 20
       },
       {
         "platform": "YouTube",
         "icon": "▶️",
-        "task": "Upload YouTube video 3/3",
-        "detail": "Title with property address + beds/baths. Attach the video link below.",
-        "goalKey": "YouTube|YouTube videos uploaded",
-        "linkField": true,
-        "linkPlaceholder": "Paste YouTube link…"
+        "task": "Upload YouTube video 3 of 3",
+        "detail": "Title with property address + beds/baths. Paste the link.",
+        "goalKey": "YouTube|Videos uploaded",
+        "link": true
       },
       {
         "platform": "TikTok",
         "icon": "🎵",
-        "task": "Post TikTok 2/2",
-        "detail": "Short-form clip — walkthrough highlight or trend. Attach the post link below.",
+        "task": "Post TikTok 2 of 2",
+        "detail": "Paste the video link once it's posted.",
         "goalKey": "TikTok|TikToks posted",
-        "linkField": true,
-        "linkPlaceholder": "Paste TikTok link…"
+        "link": true
       },
       {
         "platform": "Operations",
         "icon": "🗂️",
         "task": "Sort OneDrive — 100% uploaded & sorted",
-        "detail": "Every asset filed into the right street/address/unit folders. Mark done on the Goals tab.",
+        "detail": "Every asset filed into the right street / address / unit folder.",
         "goalKey": "Operations|OneDrive sorted 100%"
       },
       {
         "platform": "Instagram",
         "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
         "qtyMax": 20
       }
     ]
@@ -555,44 +537,43 @@ const schedule=[
         "platform": "Facebook",
         "icon": "📘",
         "task": "Keep Amicus at the top of the feed",
-        "detail": "Post today so Amicus listings stay at the top of the local feed. Ticks a day on the Goals tab.",
+        "detail": "Post today so Amicus listings stay at the top of the local feed.",
         "goalKey": "Facebook|Days at top of feed"
       },
       {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Publish Google Business post 3 of 3",
+        "detail": "Availability, featured property, or event. Paste the link.",
+        "goalKey": "Google Posts|Posts published",
+        "link": true
+      },
+      {
         "platform": "Google Reviews",
-        "icon": "⭐",
+        "icon": "↩️",
         "task": "Reply to every Google review — by AM",
-        "detail": "Respond to every review, new and old, before this morning is out. Mark done on the Goals tab once caught up.",
+        "detail": "Respond to all reviews, new and old. Check off once caught up.",
         "goalKey": "Google Reviews|All reviews replied to"
       },
       {
         "platform": "Operations",
         "icon": "📋",
         "task": "Monday board — 100% accurate vs OneDrive",
-        "detail": "Reconcile Monday against OneDrive so every property's media status matches what's filed. Mark done on the Goals tab.",
+        "detail": "Reconcile Monday so each property's media status matches what's filed.",
         "goalKey": "Operations|Monday board accurate"
-      },
-      {
-        "platform": "Google Posts",
-        "icon": "📍",
-        "task": "Publish Google Business post 3/3",
-        "detail": "Availability update, featured property, or event. Attach the post link below.",
-        "goalKey": "Google Posts|Google posts published",
-        "linkField": true,
-        "linkPlaceholder": "Paste link to the Google post…"
       },
       {
         "platform": "Content",
         "icon": "🏁",
         "task": "Media final push",
-        "detail": "Bring every media count to target (50 walk / 50 photo / 20 pan / 5 floor). Goals tab should read 100%."
+        "detail": "Bring every media count to target — Goals tab should read 100%."
       },
       {
         "platform": "Instagram",
         "icon": "✉️",
-        "task": "Instagram DMs",
-        "detail": "Target: 20 DMs this week. Update the running total as you send them.",
-        "qtyGoal": "Instagram|Instagram DMs",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 20 this week (a few a day gets you there).",
+        "qtyGoal": "Instagram|DMs",
         "qtyMax": 20
       }
     ]
@@ -609,45 +590,30 @@ const goalCategories=[
     "platform": "Content",
     "icon": "🏠",
     "color": "#9C27B0",
-    "manual": true,
     "goals": [
       {
         "label": "Walkthrough videos",
         "target": 50,
-        "unit": "videos"
+        "unit": "videos",
+        "mode": "qty"
       },
       {
         "label": "House photos",
         "target": 50,
-        "unit": "sets"
+        "unit": "sets",
+        "mode": "qty"
       },
       {
         "label": "Panning videos",
         "target": 20,
-        "unit": "videos"
+        "unit": "videos",
+        "mode": "qty"
       },
       {
-        "label": "Floor plans",
+        "label": "CubiCasa floor plans",
         "target": 5,
-        "unit": "plans"
-      }
-    ]
-  },
-  {
-    "platform": "Instagram",
-    "icon": "📷",
-    "color": "#E1306C",
-    "manual": true,
-    "goals": [
-      {
-        "label": "Instagram posts",
-        "target": 3,
-        "unit": "posts"
-      },
-      {
-        "label": "Instagram DMs",
-        "target": 20,
-        "unit": "DMs"
+        "unit": "plans",
+        "mode": "qty"
       }
     ]
   },
@@ -655,12 +621,31 @@ const goalCategories=[
     "platform": "Facebook",
     "icon": "📘",
     "color": "#1877F2",
-    "manual": true,
     "goals": [
       {
         "label": "Days at top of feed",
         "target": 7,
-        "unit": "days"
+        "unit": "days",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Instagram",
+    "icon": "📷",
+    "color": "#E1306C",
+    "goals": [
+      {
+        "label": "Posts",
+        "target": 3,
+        "unit": "posts",
+        "mode": "auto"
+      },
+      {
+        "label": "DMs",
+        "target": 20,
+        "unit": "DMs",
+        "mode": "qty"
       }
     ]
   },
@@ -668,12 +653,12 @@ const goalCategories=[
     "platform": "TikTok",
     "icon": "🎵",
     "color": "#EE1D52",
-    "manual": true,
     "goals": [
       {
         "label": "TikToks posted",
         "target": 2,
-        "unit": "posts"
+        "unit": "posts",
+        "mode": "auto"
       }
     ]
   },
@@ -681,12 +666,12 @@ const goalCategories=[
     "platform": "YouTube",
     "icon": "▶️",
     "color": "#FF0000",
-    "manual": true,
     "goals": [
       {
-        "label": "YouTube videos uploaded",
+        "label": "Videos uploaded",
         "target": 3,
-        "unit": "videos"
+        "unit": "videos",
+        "mode": "auto"
       }
     ]
   },
@@ -694,12 +679,12 @@ const goalCategories=[
     "platform": "Google Posts",
     "icon": "📍",
     "color": "#4285F4",
-    "manual": true,
     "goals": [
       {
-        "label": "Google posts published",
+        "label": "Posts published",
         "target": 3,
-        "unit": "posts"
+        "unit": "posts",
+        "mode": "auto"
       }
     ]
   },
@@ -707,17 +692,18 @@ const goalCategories=[
     "platform": "Reddit",
     "icon": "🧵",
     "color": "#FF4500",
-    "manual": true,
     "goals": [
       {
-        "label": "Reddit accounts purchased",
+        "label": "Accounts purchased",
         "target": 1,
-        "unit": "done"
+        "unit": "done",
+        "mode": "auto"
       },
       {
-        "label": "Reddit comments",
+        "label": "Comments",
         "target": 5,
-        "unit": "comments"
+        "unit": "comments",
+        "mode": "qty"
       }
     ]
   },
@@ -725,17 +711,18 @@ const goalCategories=[
     "platform": "Google Reviews",
     "icon": "⭐",
     "color": "#FBBC04",
-    "manual": true,
     "goals": [
       {
-        "label": "New Google reviews",
+        "label": "New reviews",
         "target": 3,
-        "unit": "reviews"
+        "unit": "reviews",
+        "mode": "qty"
       },
       {
         "label": "All reviews replied to",
         "target": 1,
-        "unit": "done"
+        "unit": "done",
+        "mode": "auto"
       }
     ]
   },
@@ -743,35 +730,37 @@ const goalCategories=[
     "platform": "Operations",
     "icon": "🗂️",
     "color": "#607D8B",
-    "manual": true,
     "goals": [
       {
         "label": "OneDrive sorted 100%",
         "target": 1,
-        "unit": "done"
+        "unit": "done",
+        "mode": "auto"
       },
       {
         "label": "Monday board accurate",
         "target": 1,
-        "unit": "done"
+        "unit": "done",
+        "mode": "auto"
       }
     ]
   },
   {
-    "platform": "Planning",
-    "icon": "📣",
-    "color": "#FFB300",
-    "manual": true,
+    "platform": "Focus",
+    "icon": "🎯",
+    "color": "#6D3B00",
     "goals": [
       {
-        "label": "Taylor Gym sponsorship progress",
+        "label": "Taylor Gym sponsorship",
         "target": 1,
-        "unit": "done"
+        "unit": "done",
+        "mode": "auto"
       },
       {
-        "label": "Powerhouse table/sponsor progress",
+        "label": "Powerhouse table/sponsor",
         "target": 1,
-        "unit": "done"
+        "unit": "done",
+        "mode": "auto"
       }
     ]
   }
@@ -783,12 +772,11 @@ let activeDay="Wed 7/29";
 let checked={};
 let manualGoals={};
 let manualBonus={};
-let taskLinks={};
 let taskQty={};
+let taskLinks={};
 let dbReady=false;
 let dbRef=null;
 
-// Safe key for Firebase (no special chars)
 function safeKey(s){ return s.replace(/[^a-zA-Z0-9_]/g,'_'); }
 
 function initFirebase(){
@@ -803,35 +791,23 @@ function initFirebase(){
   });
   const db = firebase.database();
   dbRef = db.ref("portfolios/" + PORTFOLIO_KEY);
-
-  // Listen for real-time changes from any user
-  dbRef.on("value", (snapshot) => {
-    const data = snapshot.val() || {};
+  dbRef.on("value",(snapshot)=>{
+    const data=snapshot.val()||{};
     checked     = data.checked     || {};
     manualGoals = data.manualGoals || {};
     manualBonus = data.manualBonus || {};
-    taskLinks   = data.taskLinks   || {};
     taskQty     = data.taskQty     || {};
-    dbReady = true;
-    render();
+    taskLinks   = data.taskLinks   || {};
+    dbReady=true; render();
   });
 }
-
-function saveState(){
-  if(!dbRef) return;
-  dbRef.set({ checked, manualGoals, manualBonus, taskQty, taskLinks });
-}
+function saveState(){ if(!dbRef) return; dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks}); }
 
 function computeAutoGoals(){
   const counts={};
   schedule.forEach(day=>{
     day.tasks.forEach((t,i)=>{
-      if(t.goalKey && checked[safeKey(`${day.day}-${i}`)]) {
-        counts[t.goalKey]=(counts[t.goalKey]||0)+1;
-      }
-      if(t.qtyGoal){
-        counts[t.qtyGoal]=(counts[t.qtyGoal]||0)+(parseInt(taskQty[safeKey(`${day.day}-${i}`)])||0);
-      }
+      if(t.goalKey && checked[safeKey(`${day.day}-${i}`)]){ counts[t.goalKey]=(counts[t.goalKey]||0)+1; }
     });
   });
   return counts;
@@ -850,36 +826,19 @@ function renderTabs(){
   });
 }
 
-function renderGoalBar(cat,g,rawVal,key){
+function renderGoalBar(cat,g,rawVal,key,isManual){
   const atTarget=rawVal>=g.target;
   const pct=atTarget?100:Math.min(99,Math.round((rawVal/g.target)*100));
-  const bar=atTarget
-    ?`linear-gradient(90deg,${cat.color},${cat.color}cc)`
-    :`linear-gradient(90deg,${cat.color}99,${cat.color})`;
-  const noteHtml=g.note?`<span style="font-size:11px;color:#AAA;margin-left:6px;">(${g.note})</span>`:"";
+  const bar=atTarget?`linear-gradient(90deg,${cat.color},${cat.color}cc)`:`linear-gradient(90deg,${cat.color}99,${cat.color})`;
   let controls="";
-  if(cat.manual){
-    controls=`
-      <button class="gbtn" onclick="adjManual('${safeKey(key)}',-1)">−</button>
-      <span class="gcount" style="${atTarget?`color:${cat.color}`:""}">${rawVal} / ${g.target} ${g.unit}</span>
-      <button class="gbtn" onclick="adjManual('${safeKey(key)}',1)" style="${atTarget?`background:${cat.color};color:white;border-color:${cat.color}`:""}">+</button>
-      ${atTarget?`<span style="font-size:16px">✅</span>`:""}`;
+  if(isManual){
+    controls=`<button class="gbtn" onclick="adjManual('${key}',-1)">−</button><span class="gcount" style="${atTarget?`color:${cat.color}`:''}">${rawVal} / ${g.target} ${g.unit}</span><button class="gbtn" onclick="adjManual('${key}',1)" style="${atTarget?`background:${cat.color};color:white;border-color:${cat.color}`:''}">+</button>${atTarget?'<span style="font-size:16px">✅</span>':''}`;
+  } else if(atTarget){
+    controls=`<button class="gbtn" onclick="adjBonus('${key}',-1)">−</button><span class="gcount" style="color:${cat.color}">${rawVal} / ${g.target} ${g.unit}</span><button class="gbtn" onclick="adjBonus('${key}',1)" style="background:${cat.color};color:white;border-color:${cat.color}">+</button><span style="font-size:16px">✅</span>`;
   } else {
-    if(atTarget){
-      controls=`
-        <button class="gbtn" onclick="adjBonus('${safeKey(key)}',-1)">−</button>
-        <span class="gcount" style="color:${cat.color}">${rawVal} / ${g.target} ${g.unit}</span>
-        <button class="gbtn" onclick="adjBonus('${safeKey(key)}',1)" style="background:${cat.color};color:white;border-color:${cat.color}">+</button>
-        <span style="font-size:16px">✅</span>`;
-    } else {
-      controls=`<span class="gcount">${rawVal} / ${g.target} ${g.unit}</span>`;
-    }
+    controls=`<span class="gcount">${rawVal} / ${g.target} ${g.unit}</span>`;
   }
-  return `<div>
-    <div class="grow-top"><span class="glabel">${g.label}${noteHtml}</span><div class="gcontrols">${controls}</div></div>
-    <div class="gtrack"><div class="gfill" style="width:${pct}%;background:${bar}"></div></div>
-    <div class="gpct${atTarget?" reached":""}" style="${atTarget?`color:${cat.color}`:""}">${atTarget?"Goal reached! 🎉":`${pct}%`}</div>
-  </div>`;
+  return `<div><div class="grow-top"><span class="glabel">${g.label}</span><div class="gcontrols">${controls}</div></div><div class="gtrack"><div class="gfill" style="width:${pct}%;background:${bar}"></div></div><div class="gpct${atTarget?' reached':''}" style="${atTarget?`color:${cat.color}`:''}">${atTarget?'Goal reached! 🎉':`${pct}%`}</div></div>`;
 }
 
 function renderContent(){
@@ -887,11 +846,7 @@ function renderContent(){
   const day=schedule.find(s=>s.day===activeDay);
   if(!day)return;
   let html="";
-
-  if(!dbReady){
-    el.innerHTML=`<div style="text-align:center;padding:60px;color:#999;font-family:sans-serif;">🔄 Connecting to live database...</div>`;
-    return;
-  }
+  if(!dbReady){ el.innerHTML=`<div style="text-align:center;padding:60px;color:#999;font-family:sans-serif;">🔄 Connecting to live database...</div>`; return; }
 
   if(!day.isGoals){
     const total=day.tasks.length;
@@ -903,7 +858,17 @@ function renderContent(){
       const key=safeKey(`${activeDay}-${i}`);
       const isDone=!!checked[key];
       const c=platformColors[t.platform]||"#888";
-      html+=`<div class="task-card${isDone?" done":""}" style="border-left:4px solid ${c}" onclick="toggle('${key}',${i})"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:""}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:""}${t.qtyGoal?`<div class="qty-row" onclick="event.stopPropagation()">How many? <select class="qty-select" onchange="setManual('${safeKey(t.qtyGoal)}',this.value)">${(()=>{const cur=manualGoals[safeKey(t.qtyGoal)]||0;let o='';for(let n=0;n<=t.qtyMax;n++){o+=`<option value="${n}"${n===cur?' selected':''}>${n}</option>`;}return o;})()}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`:``}${t.linkField?`<div class="link-row" onclick="event.stopPropagation()"><span class="link-ico">🔗</span><input class="link-input" type="url" placeholder="${t.linkPlaceholder||'Paste link to post or doc…'}" value="${(taskLinks[key]||'').replace(/"/g,'&quot;')}" onchange="setLink('${key}',this.value)"/>${taskLinks[key]?`<a class="link-open" href="${taskLinks[key]}" target="_blank" rel="noopener" onclick="event.stopPropagation()">open ↗</a>`:''}</div>`:''}</div></div>`;
+      let extra="";
+      if(t.qtyGoal){
+        const gk=safeKey(t.qtyGoal); const cur=manualGoals[gk]||0;
+        let opts=""; for(let n=0;n<=t.qtyMax;n++){opts+=`<option value="${n}"${n===cur?' selected':''}>${n}</option>`;}
+        extra+=`<div class="qty-row" onclick="event.stopPropagation()">Running total: <select class="qty-select" onchange="setManual('${gk}',this.value)">${opts}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`;
+      }
+      if(t.link){
+        const lv=(taskLinks[key]||'').replace(/"/g,'&quot;');
+        extra+=`<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;">🔗 <input type="url" placeholder="Paste link (post or doc)…" value="${lv}" onchange="setLink('${key}',this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;"/>${taskLinks[key]?`<a href="${taskLinks[key]}" target="_blank" rel="noopener" style="font-size:13px;color:${ACCENT};font-weight:700;text-decoration:none;white-space:nowrap;">Open ↗</a>`:''}</div>`;
+      }
+      html+=`<div class="task-card${isDone?' done':''}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:''}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:''}${extra}</div></div>`;
     });
     html+=`</div>`;
     if(["Wed 7/29","Sat 8/1"].includes(activeDay)){html+=`<div class="tip" style="background:#FFFDE7;border:1px solid #FFE082"><div class="tip-title" style="color:#F9A825">⭐ Review Tactics</div><ul><li>Move-out helpers → hand QR code for review</li><li>Waiving something in rentroom → "Leave a 5-star with a paragraph about Amicus"</li><li>Doing a favor → ask for a review</li><li>Give maintenance staff QR codes</li><li>Follow up after turnover → request review if positive</li><li>Respond to <strong>every</strong> Google review</li></ul></div>`;}
@@ -911,14 +876,15 @@ function renderContent(){
   } else {
     const autoCounts=computeAutoGoals();
     html+=`<div class="sync-banner">🔴 Live — updates instantly for all users</div>`;
-    html+=`<p class="auto-note">Use +/− buttons on each goal to track progress · syncs instantly for all users</p><div class="goals">`;
+    html+=`<p class="auto-note">Check off tasks on each day and they roll up here automatically · dropdowns + / − buttons also sync live</p><div class="goals">`;
     goalCategories.forEach(cat=>{
       html+=`<div class="gcard" style="border-left:4px solid ${cat.color}"><div class="gcard-head"><span class="gi">${cat.icon}</span><span class="gn" style="color:${cat.color}">${cat.platform}</span></div><div class="gitems">`;
       cat.goals.forEach(g=>{
-        const key=`${cat.platform}|${g.label}`;
-        const safeK=safeKey(key);
-        let rawVal=cat.manual?(manualGoals[safeK]||0):((autoCounts[key]||0)+(manualBonus[safeK]||0));
-        html+=renderGoalBar(cat,g,rawVal,safeK);
+        const key=`${cat.platform}|${g.label}`; const safeK=safeKey(key);
+        let rawVal,isManual;
+        if(g.mode==="auto"){ rawVal=(autoCounts[key]||0)+(manualBonus[safeK]||0); isManual=false; }
+        else { rawVal=(manualGoals[safeK]||0); isManual=true; }
+        html+=renderGoalBar(cat,g,rawVal,safeK,isManual);
       });
       html+=`</div></div>`;
     });
@@ -927,53 +893,12 @@ function renderContent(){
   el.innerHTML=html;
 }
 
-function qtyOptions(t,key){
-  const cur=parseInt(taskQty[key])||0;
-  let out="";
-  for(let n=0;n<=t.qtyMax;n++){ out+=`<option value="${n}"${n===cur?" selected":""}>${n}</option>`; }
-  return out;
-}
-function setQty(key,val){
-  taskQty[key]=parseInt(val)||0;
-  if(taskQty[key]>0){ checked[key]=true; }
-  saveState();
-}
+function toggle(key){ checked[key]=!checked[key]; if(!checked[key]) delete checked[key]; saveState(); }
+function adjManual(key,d){ manualGoals[key]=Math.max(0,(manualGoals[key]||0)+d); saveState(); }
+function adjBonus(key,d){ manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d); saveState(); }
+function setManual(goalKey,val){ manualGoals[goalKey]=parseInt(val)||0; saveState(); render(); }
+function setLink(key,val){ val=(val||'').trim(); if(val){taskLinks[key]=val;} else {delete taskLinks[key];} saveState(); render(); }
 
-function toggle(key,idx){
-  checked[key]=!checked[key];
-  if(!checked[key]) delete checked[key];
-  if(idx!=null){
-    const day=schedule.find(s=>s.day===activeDay);
-    const t=day&&day.tasks[idx];
-    if(t&&t.goalKey){
-      const gk=safeKey(t.goalKey);
-      if(checked[key]) manualGoals[gk]=(manualGoals[gk]||0)+1;
-      else manualGoals[gk]=Math.max(0,(manualGoals[gk]||0)-1);
-    }
-  }
-  saveState();
-}
-function adjManual(key,d){
-  manualGoals[key]=Math.max(0,(manualGoals[key]||0)+d);
-  saveState();
-}
-function adjBonus(key,d){
-  manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d);
-  saveState();
-}
-function setManual(goalKey,val){
-  manualGoals[goalKey]=parseInt(val)||0;
-  saveState();
-  render();
-}
-
-function setLink(key,val){
-  val=(val||'').trim();
-  if(val){ taskLinks[key]=val; } else { delete taskLinks[key]; }
-  saveState();
-}
-
-// Init on load
 initFirebase();
 
 </script>

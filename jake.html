@@ -18,7 +18,6 @@
 <script id="jakeGateScript">
 (function(){
   var KEY = 'amicus_jake_v1';
-  // SHA-256 of the Jake password. NOTE: this is a soft gate only — see the security banner inside.
   var HASH = 'e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a';
   try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
   document.documentElement.classList.add('jake-locked');
@@ -83,8 +82,6 @@
     h1{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;letter-spacing:1px;margin:14px 0 2px;}
     .sub{font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:22px;}
     .sync{font-size:12px;color:#81C784;margin-bottom:20px;display:flex;align-items:center;gap:7px;}
-    .warn{background:#2a1a00;border:1px solid #7a5a1f;border-radius:12px;padding:14px 16px;margin-bottom:26px;font-size:13px;line-height:1.55;color:#ffcf8f;}
-    .warn b{color:#ffe0ad;}
     .section{margin-bottom:30px;}
     .section h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:4px;}
     .section .shint{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:14px;}
@@ -96,6 +93,19 @@
     .it-body .t{font-size:15px;font-weight:600;}
     .item.done .t{text-decoration:line-through;}
     .it-body .d{font-size:12.5px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.5;}
+    /* grouped item with mini-checks */
+    .item-group{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:9px;}
+    .item-group .t{font-size:15px;font-weight:600;}
+    .item-group .d{font-size:12.5px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.5;}
+    .subs{margin:12px 0 2px;display:flex;flex-direction:column;gap:8px;}
+    .subitem{display:flex;gap:10px;align-items:center;cursor:pointer;font-size:14px;}
+    .subcb{width:18px;height:18px;border-radius:5px;border:2px solid #555;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0;font-weight:700;}
+    .subitem.done .subcb{background:#4CAF50;border-color:#4CAF50;}
+    .subitem.done .sublabel{text-decoration:line-through;opacity:0.5;}
+    .link-row{margin:-2px 0 11px;display:flex;gap:8px;align-items:center;}
+    .link-row input{flex:1;min-width:0;padding:8px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:#0f0f0f;color:#fff;font-size:13px;outline:none;}
+    .link-row input:focus{border-color:rgba(255,255,255,0.45);}
+    .link-row a{font-size:13px;color:#81C784;font-weight:700;text-decoration:none;white-space:nowrap;}
     .note-card{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
     .note-card .nm{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:8px;}
     textarea{width:100%;min-height:80px;background:#0f0f0f;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6;padding:10px 12px;resize:vertical;outline:none;}
@@ -113,12 +123,6 @@
   <div class="sub">Private workspace</div>
   <div class="sync" id="sync">⏳ Connecting…</div>
 
-  <div class="warn">
-    <b>Soft gate only.</b> This tab is hidden behind a password, but the page and its data live in a public site —
-    anyone technical could read them. <b>Never store real passwords or logins here.</b> Keep actual credentials in a
-    password manager (Bitwarden, 1Password). The items below are reminders and progress notes, not a place for secrets.
-  </div>
-
   <div class="section" id="checklistSection">
     <h2>To-do</h2>
     <div class="shint">Tap to check off. Syncs across your devices.</div>
@@ -135,22 +139,29 @@
 <script>
 const PKEY = "jake-private";
 const checklist = [
-  {id:"insta_tulane", t:"Create Tulane Instagram", d:"Stand up the @amicus Tulane account (Tulane still on hold, but get the handle reserved)."},
+  {id:"insta_tulane", t:"Create Tulane Instagram", d:"Stand up the @amicus Tulane account (Tulane still on hold, but reserve the handle)."},
   {id:"insta_charleston", t:"Create Charleston Instagram", d:"Charleston is now active — get its Instagram live."},
-  {id:"google_suites", t:"Get login for all Google Suites", d:"Make sure you have working access to every market's Google Workspace."},
-  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist — but store the actual passwords in your password manager, not here."},
+  {id:"google_suites", t:"Get login for all Google Suites", d:"Confirm working access to every market's Google Workspace.", subs:[
+    {id:"gs_lehigh",label:"Lehigh"},{id:"gs_savannah",label:"Savannah"},{id:"gs_charleston",label:"Charleston"},
+    {id:"gs_binghamton",label:"Binghamton"},{id:"gs_troy",label:"Troy"},{id:"gs_tulane",label:"Tulane"}]},
+  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist (keep actual passwords in your password manager). Paste the tracking doc/sheet link below.", link:true},
   {id:"buy_followers", t:"Buy followers for all Instagrams", d:"Heads-up: this breaks Instagram's ToS and IG purges fake followers / can flag or suspend accounts. Organic local growth is safer — reconsider before spending."},
   {id:"verify_insta", t:"Get verified for all Instagrams", d:"Apply for Meta verification on each market account."},
-  {id:"logins_everything", t:"Consolidate logins for EVERYTHING", d:"Get every account into one password manager vault so nothing is lost."},
-  {id:"checkins", t:"Check in with each market — Thu & Mon AM", d:"Use the notes below to record progress, gaps, and next steps."}
+  {id:"logins_everything", t:"GATHER logins for EVERYTHING", d:"Pull every account login into one place (a password manager vault)."},
+  {id:"checkins", t:"Check in with each market — Thu & Mon AM", d:"Record progress, gaps, and next steps in the market notes below.", subs:[
+    {id:"ci_savannah",label:"Savannah"},{id:"ci_charleston",label:"Charleston"},
+    {id:"ci_binghamton",label:"Binghamton"},{id:"ci_troy",label:"Troy"},
+    {id:"ci_lehigh_thu",label:"Lehigh — Thursday"},{id:"ci_lehigh_tue",label:"Lehigh — Tuesday"}]}
 ];
 const markets = ["Lehigh","Savannah","Charleston","Binghamton","Troy","Tulane"];
 
-let state = {checked:{}, notes:{}};
-let dbRef = null, ready = false, saveTimer = null;
+let state = {checked:{}, notes:{}, links:{}};
+let dbRef = null, saveTimer = null;
+
+function esc(v){return (v||'').replace(/"/g,'&quot;');}
 
 function initFirebase(){
-  const app = firebase.initializeApp({
+  firebase.initializeApp({
     apiKey: "AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
     authDomain: "amicus-marketing.firebaseapp.com",
     databaseURL: "https://amicus-marketing-default-rtdb.firebaseio.com",
@@ -164,36 +175,66 @@ function initFirebase(){
     const d = snap.val() || {};
     state.checked = d.checked || {};
     state.notes   = d.notes   || {};
-    ready = true;
+    state.links   = d.links   || {};
     document.getElementById('sync').innerHTML = "✅ Synced";
     render();
-  }, (err)=>{ document.getElementById('sync').innerHTML = "⚠️ Offline (changes may not save)"; });
+  }, ()=>{ document.getElementById('sync').innerHTML = "⚠️ Offline (changes may not save)"; });
 }
-function save(){ if(dbRef) dbRef.set({checked:state.checked, notes:state.notes}); }
+function save(){ if(dbRef) dbRef.set({checked:state.checked, notes:state.notes, links:state.links}); }
 function queueSave(el){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ save(); if(el){ el.textContent="Saved"; setTimeout(()=>el.textContent="",1400);} }, 500);
 }
 
 function render(){
-  // checklist
   const cl = document.getElementById('checklist');
   cl.innerHTML = "";
   checklist.forEach(item=>{
-    const done = !!state.checked[item.id];
-    const div = document.createElement('div');
-    div.className = "item" + (done?" done":"");
-    div.innerHTML = '<div class="cb"><span class="tick">✓</span></div>'+
-                    '<div class="it-body"><div class="t"></div><div class="d"></div></div>';
-    div.querySelector('.t').textContent = item.t;
-    div.querySelector('.d').textContent = item.d;
-    div.addEventListener('click', ()=>{
-      state.checked[item.id] = !state.checked[item.id];
-      render(); save();
-    });
-    cl.appendChild(div);
+    if(item.subs){
+      const g = document.createElement('div');
+      g.className = "item-group";
+      const subsHtml = item.subs.map(sub=>{
+        const done = !!state.checked[sub.id];
+        return `<div class="subitem${done?' done':''}" data-sid="${sub.id}"><div class="subcb">${done?'✓':''}</div><div class="sublabel">${sub.label}</div></div>`;
+      }).join("");
+      g.innerHTML = `<div class="t">${item.t}</div><div class="d">${item.d}</div><div class="subs">${subsHtml}</div>`;
+      g.querySelectorAll('.subitem').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const sid = el.getAttribute('data-sid');
+          if(state.checked[sid]) delete state.checked[sid]; else state.checked[sid]=true;
+          render(); save();
+        });
+      });
+      cl.appendChild(g);
+    } else {
+      const done = !!state.checked[item.id];
+      const div = document.createElement('div');
+      div.className = "item" + (done?" done":"");
+      div.innerHTML = '<div class="cb"><span class="tick">✓</span></div><div class="it-body"><div class="t"></div><div class="d"></div></div>';
+      div.querySelector('.t').textContent = item.t;
+      div.querySelector('.d').textContent = item.d;
+      div.addEventListener('click', ()=>{
+        if(state.checked[item.id]) delete state.checked[item.id]; else state.checked[item.id]=true;
+        render(); save();
+      });
+      cl.appendChild(div);
+      if(item.link){
+        const lv = state.links[item.id] || "";
+        const lr = document.createElement('div');
+        lr.className = "link-row";
+        lr.innerHTML = `🔗 <input type="url" placeholder="Paste link…" value="${esc(lv)}"/>${lv?`<a href="${esc(lv)}" target="_blank" rel="noopener">Open ↗</a>`:''}`;
+        const inp = lr.querySelector('input');
+        inp.addEventListener('click', e=>e.stopPropagation());
+        inp.addEventListener('change', ()=>{
+          const v = inp.value.trim();
+          if(v) state.links[item.id]=v; else delete state.links[item.id];
+          save(); render();
+        });
+        cl.appendChild(lr);
+      }
+    }
   });
-  // notes (only rebuild if empty, so typing isn't interrupted)
+
   const nc = document.getElementById('notes');
   if(nc.children.length === 0){
     markets.forEach(m=>{
@@ -208,7 +249,6 @@ function render(){
       nc.appendChild(card);
     });
   } else {
-    // update values from remote without clobbering the focused field
     markets.forEach((m,i)=>{
       const ta = nc.children[i].querySelector('textarea');
       if(document.activeElement !== ta && (state.notes[m]||"") !== ta.value){ ta.value = state.notes[m] || ""; }

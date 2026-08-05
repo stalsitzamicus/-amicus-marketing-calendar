@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ===== BROOKS GATE (start) ===== -->
+<style id="brooksGateStyle">
+  html.brooks-locked body > *:not(#brooksLock){display:none !important;}
+  #brooksLock{position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+  #brooksLock .lock-card{width:min(400px,90vw);text-align:center;padding:40px 32px;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:#161616;}
+  #brooksLock .lock-mark{font-family:'Playfair Display',serif;font-weight:900;font-size:30px;color:#fff;letter-spacing:2px;}
+  #brooksLock .lock-sub{color:rgba(255,255,255,0.55);font-size:13px;margin:6px 0 28px;letter-spacing:1px;text-transform:uppercase;}
+  #brooksLock input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0f0f0f;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:2px;}
+  #brooksLock input:focus{border-color:rgba(255,255,255,0.5);}
+  #brooksLock button{width:100%;margin-top:14px;padding:14px 16px;border-radius:10px;border:none;background:#fff;color:#0f0f0f;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  #brooksLock button:hover{background:#e8e8e8;}
+  #brooksLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
+  #brooksLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
+</style>
+<script id="brooksGateScript">
+(function(){
+  var KEY = 'amicus_brooks_v1';
+  var HASH = '7f56fbfae5ccd7d689e29409cf39ba4884511a326a70a77671326ec1ae73fd99';
+  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+  document.documentElement.classList.add('brooks-locked');
+  async function sha256(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+  function buildLock(){
+    var wrap = document.createElement('div');
+    wrap.id = 'brooksLock';
+    wrap.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-mark">BROOKS</div>' +
+        '<div class="lock-sub">Owner Access</div>' +
+        '<input type="password" id="bPw" placeholder="Enter password" autocomplete="current-password" inputmode="numeric"/>' +
+        '<button id="bGo">Unlock</button>' +
+        '<div class="lock-err" id="bErr"></div>' +
+        '<div class="lock-note">This device will stay signed in.</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+    var input = wrap.querySelector('#bPw');
+    var err = wrap.querySelector('#bErr');
+    async function attempt(){
+      var val = input.value.trim();
+      if (!val) return;
+      var h;
+      try { h = await sha256(val); }
+      catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === HASH){
+        try { localStorage.setItem(KEY, HASH); } catch(e) {}
+        document.documentElement.classList.remove('brooks-locked');
+        wrap.remove();
+      } else {
+        err.textContent = 'Incorrect password. Please try again.';
+        input.value = ''; input.focus();
+      }
+    }
+    wrap.querySelector('#bGo').addEventListener('click', attempt);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildLock);
+  else buildLock();
+})();
+</script>
+<!-- ===== BROOKS GATE (end) ===== -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brooks — Owner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#fff;min-height:100vh;}
+    .wrap{max-width:900px;margin:0 auto;padding:28px 22px 90px;}
+    .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    a.back{font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+    a.back:hover{color:#fff;}
+    button.signout{background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    button.signout:hover{color:#fff;border-color:rgba(255,255,255,0.5);}
+    h1{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;letter-spacing:1px;margin:14px 0 2px;}
+    .sub{font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+    .sync{font-size:12px;color:#81C784;margin-bottom:22px;}
+    .section{margin-bottom:34px;}
+    .section h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:14px;}
+    /* overall card */
+    .overall{background:#161616;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:22px 24px;display:flex;align-items:center;gap:26px;margin-bottom:26px;}
+    .overall .oc-num{font-family:'Playfair Display',serif;font-size:40px;font-weight:900;line-height:1;}
+    .overall .oc-lab{font-size:13px;color:rgba(255,255,255,0.55);margin-top:6px;}
+    /* donut grid */
+    .donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;}
+    .donut-card{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 12px;text-align:center;}
+    .donut-card .dn{font-weight:700;font-size:14px;margin-top:10px;}
+    .donut-card .dd{font-size:12px;color:rgba(255,255,255,0.45);margin-top:2px;}
+    /* comparison bars */
+    .bars{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 20px;}
+    .bar-row{display:flex;align-items:center;gap:12px;margin:11px 0;}
+    .bar-row .bl{width:92px;font-size:13px;font-weight:600;flex-shrink:0;}
+    .bar-track{flex:1;height:12px;border-radius:99px;background:rgba(255,255,255,0.09);overflow:hidden;}
+    .bar-fill{height:100%;border-radius:99px;transition:width .5s ease;}
+    .bar-row .bp{width:44px;text-align:right;font-size:13px;font-weight:700;color:rgba(255,255,255,0.75);flex-shrink:0;}
+    /* notes */
+    .note-card{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+    .note-card .nm{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:8px;}
+    textarea{width:100%;min-height:80px;background:#0f0f0f;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6;padding:10px 12px;resize:vertical;outline:none;}
+    textarea:focus{border-color:rgba(255,255,255,0.4);}
+    .saved{font-size:11px;color:#81C784;margin-top:5px;height:14px;letter-spacing:1px;text-transform:uppercase;}
+    .general textarea{min-height:120px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="amicus-marketing-hub.html">← Back to Hub</a>
+    <button class="signout" id="signout">Sign out this device</button>
+  </div>
+  <h1>Brooks</h1>
+  <div class="sub">Owner — portfolio overview</div>
+  <div class="sync" id="sync">⏳ Connecting…</div>
+
+  <div class="section">
+    <h2>Synchronized progress</h2>
+    <div class="overall" id="overall"></div>
+    <div class="donut-grid" id="donuts"></div>
+    <div style="height:16px"></div>
+    <div class="bars" id="bars"></div>
+  </div>
+
+  <div class="section general">
+    <h2>My thinking</h2>
+    <div class="note-card">
+      <div class="nm">Overall thoughts</div>
+      <textarea id="generalNote" placeholder="Where I want us focused, what's working, what's not…"></textarea>
+      <div class="saved" id="generalSaved"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Thoughts by market</h2>
+    <div id="marketNotes"></div>
+  </div>
+</div>
+
+<script>
+const FBCONF={
+  apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
+  authDomain:"amicus-marketing.firebaseapp.com",
+  databaseURL:"https://amicus-marketing-default-rtdb.firebaseio.com",
+  projectId:"amicus-marketing",
+  storageBucket:"amicus-marketing.firebasestorage.app",
+  messagingSenderId:"926415834204",
+  appId:"1:926415834204:web:c6824762be375a180dea99"
+};
+const PORTFOLIOS=[
+  {key:"lehigh-2026-08-05",     name:"Lehigh",     total:43, accent:"#8B5E3C"},
+  {key:"binghamton-2026-08-05", name:"Binghamton", total:52, accent:"#2E7D32"},
+  {key:"savannah-2026-08-05",   name:"Savannah",   total:56, accent:"#C49000"},
+  {key:"charleston-2026-08-05", name:"Charleston", total:54, accent:"#9B1B30"},
+  {key:"troy-2026-08-05",       name:"Troy",       total:52, accent:"#C62828"}
+];
+const NKEY="brooks-notes";
+
+let progress={};                 // key -> {done,total,pct}
+let notes={general:"", markets:{}};
+let db=null, notesRef=null, saveTimer=null;
+
+function donutSVG(pct,color,size){
+  size=size||96;
+  const r=size*0.36, c=2*Math.PI*r, off=c*(1-pct/100), cx=size/2;
+  return `<div style="position:relative;width:${size}px;height:${size}px;margin:0 auto;">
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="transform:rotate(-90deg)">
+      <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="${size*0.10}"/>
+      <circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${color}" stroke-width="${size*0.10}" stroke-linecap="round" stroke-dasharray="${c.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="transition:stroke-dashoffset .5s ease"/>
+    </svg>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${size*0.22}px;">${pct}%</div>
+  </div>`;
+}
+
+function renderCharts(){
+  let totDone=0, totAll=0, pcts=[];
+  PORTFOLIOS.forEach(p=>{
+    const pr=progress[p.key]||{done:0,total:p.total,pct:0};
+    totDone+=pr.done; totAll+=pr.total; pcts.push(pr.pct);
+  });
+  const avg = pcts.length? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length):0;
+
+  document.getElementById('overall').innerHTML =
+    donutSVG(avg,"#FFFFFF",120) +
+    `<div><div class="oc-num">${avg}%</div><div class="oc-lab">Average completion across ${PORTFOLIOS.length} active portfolios<br>${totDone} of ${totAll} tasks done this week</div></div>`;
+
+  document.getElementById('donuts').innerHTML = PORTFOLIOS.map(p=>{
+    const pr=progress[p.key]||{done:0,total:p.total,pct:0};
+    return `<div class="donut-card">${donutSVG(pr.pct,p.accent,96)}<div class="dn">${p.name}</div><div class="dd">${pr.done}/${pr.total} tasks</div></div>`;
+  }).join("");
+
+  document.getElementById('bars').innerHTML = PORTFOLIOS.map(p=>{
+    const pr=progress[p.key]||{done:0,total:p.total,pct:0};
+    return `<div class="bar-row"><div class="bl">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pr.pct}%;background:${p.accent}"></div></div><div class="bp">${pr.pct}%</div></div>`;
+  }).join("");
+}
+
+function renderNotes(){
+  const gn=document.getElementById('generalNote');
+  if(document.activeElement!==gn && (notes.general||"")!==gn.value) gn.value=notes.general||"";
+
+  const mn=document.getElementById('marketNotes');
+  if(mn.children.length===0){
+    PORTFOLIOS.forEach(p=>{
+      const card=document.createElement('div'); card.className="note-card";
+      card.innerHTML=`<div class="nm">${p.name}</div><textarea placeholder="Thoughts on ${p.name}…"></textarea><div class="saved"></div>`;
+      const ta=card.querySelector('textarea'); const sv=card.querySelector('.saved');
+      ta.value=(notes.markets&&notes.markets[p.name])||"";
+      ta.addEventListener('input',()=>{ notes.markets=notes.markets||{}; notes.markets[p.name]=ta.value; queueSave(sv); });
+      mn.appendChild(card);
+    });
+  } else {
+    PORTFOLIOS.forEach((p,i)=>{
+      const ta=mn.children[i].querySelector('textarea');
+      const val=(notes.markets&&notes.markets[p.name])||"";
+      if(document.activeElement!==ta && val!==ta.value) ta.value=val;
+    });
+  }
+}
+
+function saveNotes(el){ if(notesRef) notesRef.set(notes); if(el){el.textContent="Saved";setTimeout(()=>el.textContent="",1400);} }
+function queueSave(el){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveNotes(el),500); }
+
+function init(){
+  const app=firebase.initializeApp(FBCONF);
+  db=firebase.database();
+  let connected=0;
+  PORTFOLIOS.forEach(p=>{
+    db.ref("portfolios/"+p.key).on("value",snap=>{
+      const d=snap.val()||{};
+      const checked=d.checked||{};
+      let done=0; Object.keys(checked).forEach(k=>{ if(checked[k]) done++; });
+      done=Math.min(done,p.total);
+      progress[p.key]={done,total:p.total,pct:Math.round(done/p.total*100)};
+      connected++;
+      document.getElementById('sync').innerHTML="✅ Live — synced with all boards";
+      renderCharts();
+    },()=>{ document.getElementById('sync').innerHTML="⚠️ Offline (some data may be stale)"; });
+  });
+  notesRef=db.ref("portfolios/"+NKEY);
+  notesRef.on("value",snap=>{
+    const d=snap.val()||{};
+    notes.general=d.general||"";
+    notes.markets=d.markets||{};
+    renderNotes();
+  });
+  document.getElementById('generalNote').addEventListener('input',function(){
+    notes.general=this.value; queueSave(document.getElementById('generalSaved'));
+  });
+}
+
+document.getElementById('signout').addEventListener('click',()=>{
+  try{ localStorage.removeItem('amicus_brooks_v1'); }catch(e){}
+  location.reload();
+});
+
+renderCharts(); renderNotes(); init();
+</script>
+</body>
+</html>

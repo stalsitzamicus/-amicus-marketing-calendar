@@ -14,6 +14,13 @@
   #amicusLock button:hover{background:#e8e8e8;}
   #amicusLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
   #amicusLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
+
+  /* Archive group */
+  .archive-wrap{max-width:960px;margin:0 auto;padding:0 32px 60px;}
+  .archive-toggle{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.75);border-radius:14px;padding:16px 20px;font-family:inherit;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .15s,border-color .15s;}
+  .archive-toggle:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.28);}
+  .arch-caret{font-size:14px;}
+  .weeks.archive-grid{display:none;padding-top:20px;}
 </style>
 <script id="amicusGateScript">
 (function(){
@@ -117,49 +124,58 @@
 
 <div class="section-label">Weekly Checklists</div>
 <div class="weeks">
-  <!-- WEEK CARDS: newest first -->
+  <!-- current week -->
   <a class="week-card" href="binghamton-2026-08-05.html">
     <div class="week-kicker">Current Week</div>
     <div class="week-title">Aug 5 &ndash; 11, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-2026-07-29.html">
+</div>
+<div class="archive-wrap">
+  <button class="archive-toggle" onclick="toggleArchive()"><span>📦 Archive · 7 earlier weeks</span><span class="arch-caret">▸</span></button>
+  <div class="weeks archive-grid" id="archiveGrid">
+    <a class="week-card" href="binghamton-2026-07-29.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">July 29 &ndash; Aug 4, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-2026-07-22.html">
+    <a class="week-card" href="binghamton-2026-07-22.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">July 22 &ndash; 28, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-2026-07-15.html">
+    <a class="week-card" href="binghamton-2026-07-15.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">July 15 &ndash; 21, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-2026-07-08.html">
+    <a class="week-card" href="binghamton-2026-07-08.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">July 8 &ndash; 14, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-2026-06-17.html">
+    <a class="week-card" href="binghamton-2026-06-17.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">June 17 &ndash; 23, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-2026-06-10.html">
+    <a class="week-card" href="binghamton-2026-06-10.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">June 10 &ndash; 16, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
-  <a class="week-card" href="binghamton-checklist.html">
+    <a class="week-card" href="binghamton-checklist.html">
     <div class="week-kicker">Previous Week</div>
     <div class="week-title">May 20 &ndash; 26, 2026</div>
     <div class="week-pill">&rarr; Open Checklist</div>
   </a>
+  </div>
 </div>
 
 <div class="footer">Amicus Property Management &middot; Binghamton Portfolio</div>
+
+<script>
+function toggleArchive(){var g=document.getElementById('archiveGrid');if(!g)return;var t=document.querySelector('.archive-toggle');var c=t.querySelector('.arch-caret');var open=g.style.display==='grid';g.style.display=open?'none':'grid';c.textContent=open?'▸':'▾';}
+</script>
 </body>
 </html>

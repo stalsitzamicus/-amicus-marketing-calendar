@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ===== JAKE PRIVATE GATE (start) ===== -->
+<style id="jakeGateStyle">
+  html.jake-locked body > *:not(#jakeLock){display:none !important;}
+  #jakeLock{position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+  #jakeLock .lock-card{width:min(400px,90vw);text-align:center;padding:40px 32px;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:#161616;}
+  #jakeLock .lock-mark{font-family:'Playfair Display',serif;font-weight:900;font-size:32px;color:#fff;letter-spacing:2px;}
+  #jakeLock .lock-sub{color:rgba(255,255,255,0.55);font-size:13px;margin:6px 0 28px;letter-spacing:1px;text-transform:uppercase;}
+  #jakeLock input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0f0f0f;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:1px;}
+  #jakeLock input:focus{border-color:rgba(255,255,255,0.5);}
+  #jakeLock button{width:100%;margin-top:14px;padding:14px 16px;border-radius:10px;border:none;background:#fff;color:#0f0f0f;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  #jakeLock button:hover{background:#e8e8e8;}
+  #jakeLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
+  #jakeLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
+</style>
+<script id="jakeGateScript">
+(function(){
+  var KEY = 'amicus_jake_v1';
+  // SHA-256 of the Jake password. NOTE: this is a soft gate only — see the security banner inside.
+  var HASH = 'e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a';
+  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+  document.documentElement.classList.add('jake-locked');
+  async function sha256(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+  function buildLock(){
+    var wrap = document.createElement('div');
+    wrap.id = 'jakeLock';
+    wrap.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-mark">JAKE</div>' +
+        '<div class="lock-sub">Private — Jake Only</div>' +
+        '<input type="password" id="jakePw" placeholder="Enter password" autocomplete="current-password"/>' +
+        '<button id="jakeGo">Unlock</button>' +
+        '<div class="lock-err" id="jakeErr"></div>' +
+        '<div class="lock-note">This device will stay signed in.</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+    var input = wrap.querySelector('#jakePw');
+    var err = wrap.querySelector('#jakeErr');
+    async function attempt(){
+      var val = input.value.trim();
+      if (!val) return;
+      var h;
+      try { h = await sha256(val); }
+      catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === HASH){
+        try { localStorage.setItem(KEY, HASH); } catch(e) {}
+        document.documentElement.classList.remove('jake-locked');
+        wrap.remove();
+      } else {
+        err.textContent = 'Incorrect password. Please try again.';
+        input.value = ''; input.focus();
+      }
+    }
+    wrap.querySelector('#jakeGo').addEventListener('click', attempt);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildLock);
+  else buildLock();
+})();
+</script>
+<!-- ===== JAKE PRIVATE GATE (end) ===== -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jake — Private</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:#0f0f0f;color:#fff;min-height:100vh;}
+    .wrap{max-width:820px;margin:0 auto;padding:28px 22px 80px;}
+    .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    a.back{font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+    a.back:hover{color:#fff;}
+    button.signout{background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    button.signout:hover{color:#fff;border-color:rgba(255,255,255,0.5);}
+    h1{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;letter-spacing:1px;margin:14px 0 2px;}
+    .sub{font-size:12px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:22px;}
+    .sync{font-size:12px;color:#81C784;margin-bottom:20px;display:flex;align-items:center;gap:7px;}
+    .warn{background:#2a1a00;border:1px solid #7a5a1f;border-radius:12px;padding:14px 16px;margin-bottom:26px;font-size:13px;line-height:1.55;color:#ffcf8f;}
+    .warn b{color:#ffe0ad;}
+    .section{margin-bottom:30px;}
+    .section h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:4px;}
+    .section .shint{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:14px;}
+    .item{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:13px 16px;display:flex;gap:13px;align-items:flex-start;cursor:pointer;margin-bottom:9px;transition:opacity .2s;}
+    .item.done{opacity:0.45;}
+    .cb{width:22px;height:22px;border-radius:6px;border:2px solid #555;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;background:#0f0f0f;color:#fff;font-size:12px;font-weight:700;}
+    .item.done .cb{background:#4CAF50;border-color:#4CAF50;}
+    .cb .tick{display:none;} .item.done .cb .tick{display:block;}
+    .it-body .t{font-size:15px;font-weight:600;}
+    .item.done .t{text-decoration:line-through;}
+    .it-body .d{font-size:12.5px;color:rgba(255,255,255,0.45);margin-top:3px;line-height:1.5;}
+    .note-card{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+    .note-card .nm{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:8px;}
+    textarea{width:100%;min-height:80px;background:#0f0f0f;border:1px solid rgba(255,255,255,0.14);border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.6;padding:10px 12px;resize:vertical;outline:none;}
+    textarea:focus{border-color:rgba(255,255,255,0.4);}
+    .saved{font-size:11px;color:#81C784;margin-top:5px;height:14px;letter-spacing:1px;text-transform:uppercase;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="amicus-marketing-hub.html">← Back to Hub</a>
+    <button class="signout" id="signout">Sign out this device</button>
+  </div>
+  <h1>Jake</h1>
+  <div class="sub">Private workspace</div>
+  <div class="sync" id="sync">⏳ Connecting…</div>
+
+  <div class="warn">
+    <b>Soft gate only.</b> This tab is hidden behind a password, but the page and its data live in a public site —
+    anyone technical could read them. <b>Never store real passwords or logins here.</b> Keep actual credentials in a
+    password manager (Bitwarden, 1Password). The items below are reminders and progress notes, not a place for secrets.
+  </div>
+
+  <div class="section" id="checklistSection">
+    <h2>To-do</h2>
+    <div class="shint">Tap to check off. Syncs across your devices.</div>
+    <div id="checklist"></div>
+  </div>
+
+  <div class="section">
+    <h2>Market check-ins</h2>
+    <div class="shint">Thursday &amp; Monday AM — jot what each market has done, is missing, and needs to do next.</div>
+    <div id="notes"></div>
+  </div>
+</div>
+
+<script>
+const PKEY = "jake-private";
+const checklist = [
+  {id:"insta_tulane", t:"Create Tulane Instagram", d:"Stand up the @amicus Tulane account (Tulane still on hold, but get the handle reserved)."},
+  {id:"insta_charleston", t:"Create Charleston Instagram", d:"Charleston is now active — get its Instagram live."},
+  {id:"google_suites", t:"Get login for all Google Suites", d:"Make sure you have working access to every market's Google Workspace."},
+  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist — but store the actual passwords in your password manager, not here."},
+  {id:"buy_followers", t:"Buy followers for all Instagrams", d:"Heads-up: this breaks Instagram's ToS and IG purges fake followers / can flag or suspend accounts. Organic local growth is safer — reconsider before spending."},
+  {id:"verify_insta", t:"Get verified for all Instagrams", d:"Apply for Meta verification on each market account."},
+  {id:"logins_everything", t:"Consolidate logins for EVERYTHING", d:"Get every account into one password manager vault so nothing is lost."},
+  {id:"checkins", t:"Check in with each market — Thu & Mon AM", d:"Use the notes below to record progress, gaps, and next steps."}
+];
+const markets = ["Lehigh","Savannah","Charleston","Binghamton","Troy","Tulane"];
+
+let state = {checked:{}, notes:{}};
+let dbRef = null, ready = false, saveTimer = null;
+
+function initFirebase(){
+  const app = firebase.initializeApp({
+    apiKey: "AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
+    authDomain: "amicus-marketing.firebaseapp.com",
+    databaseURL: "https://amicus-marketing-default-rtdb.firebaseio.com",
+    projectId: "amicus-marketing",
+    storageBucket: "amicus-marketing.firebasestorage.app",
+    messagingSenderId: "926415834204",
+    appId: "1:926415834204:web:c6824762be375a180dea99"
+  });
+  dbRef = firebase.database().ref("portfolios/" + PKEY);
+  dbRef.on("value", (snap)=>{
+    const d = snap.val() || {};
+    state.checked = d.checked || {};
+    state.notes   = d.notes   || {};
+    ready = true;
+    document.getElementById('sync').innerHTML = "✅ Synced";
+    render();
+  }, (err)=>{ document.getElementById('sync').innerHTML = "⚠️ Offline (changes may not save)"; });
+}
+function save(){ if(dbRef) dbRef.set({checked:state.checked, notes:state.notes}); }
+function queueSave(el){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ save(); if(el){ el.textContent="Saved"; setTimeout(()=>el.textContent="",1400);} }, 500);
+}
+
+function render(){
+  // checklist
+  const cl = document.getElementById('checklist');
+  cl.innerHTML = "";
+  checklist.forEach(item=>{
+    const done = !!state.checked[item.id];
+    const div = document.createElement('div');
+    div.className = "item" + (done?" done":"");
+    div.innerHTML = '<div class="cb"><span class="tick">✓</span></div>'+
+                    '<div class="it-body"><div class="t"></div><div class="d"></div></div>';
+    div.querySelector('.t').textContent = item.t;
+    div.querySelector('.d').textContent = item.d;
+    div.addEventListener('click', ()=>{
+      state.checked[item.id] = !state.checked[item.id];
+      render(); save();
+    });
+    cl.appendChild(div);
+  });
+  // notes (only rebuild if empty, so typing isn't interrupted)
+  const nc = document.getElementById('notes');
+  if(nc.children.length === 0){
+    markets.forEach(m=>{
+      const card = document.createElement('div');
+      card.className = "note-card";
+      card.innerHTML = '<div class="nm"></div><textarea placeholder="Done / missing / next steps…"></textarea><div class="saved"></div>';
+      card.querySelector('.nm').textContent = m;
+      const ta = card.querySelector('textarea');
+      const saved = card.querySelector('.saved');
+      ta.value = state.notes[m] || "";
+      ta.addEventListener('input', ()=>{ state.notes[m] = ta.value; queueSave(saved); });
+      nc.appendChild(card);
+    });
+  } else {
+    // update values from remote without clobbering the focused field
+    markets.forEach((m,i)=>{
+      const ta = nc.children[i].querySelector('textarea');
+      if(document.activeElement !== ta && (state.notes[m]||"") !== ta.value){ ta.value = state.notes[m] || ""; }
+    });
+  }
+}
+
+document.getElementById('signout').addEventListener('click', ()=>{
+  try{ localStorage.removeItem('amicus_jake_v1'); }catch(e){}
+  location.reload();
+});
+
+initFirebase();
+render();
+</script>
+</body>
+</html>

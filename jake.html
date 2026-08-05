@@ -144,18 +144,17 @@ const checklist = [
   {id:"google_suites", t:"Get login for all Google Suites", d:"Confirm working access to every market's Google Workspace.", subs:[
     {id:"gs_lehigh",label:"Lehigh"},{id:"gs_savannah",label:"Savannah"},{id:"gs_charleston",label:"Charleston"},
     {id:"gs_binghamton",label:"Binghamton"},{id:"gs_troy",label:"Troy"},{id:"gs_tulane",label:"Tulane"}]},
-  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist (keep actual passwords in your password manager). Paste the tracking doc/sheet link below.", link:true},
+  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist (keep actual passwords in your password manager). Jot the account handles / notes below.", notes:true},
   {id:"buy_followers", t:"Buy followers for all Instagrams", d:"Heads-up: this breaks Instagram's ToS and IG purges fake followers / can flag or suspend accounts. Organic local growth is safer — reconsider before spending."},
   {id:"verify_insta", t:"Get verified for all Instagrams", d:"Apply for Meta verification on each market account."},
   {id:"logins_everything", t:"GATHER logins for EVERYTHING", d:"Pull every account login into one place (a password manager vault)."},
   {id:"checkins", t:"Check in with each market — Thu & Mon AM", d:"Record progress, gaps, and next steps in the market notes below.", subs:[
     {id:"ci_savannah",label:"Savannah"},{id:"ci_charleston",label:"Charleston"},
-    {id:"ci_binghamton",label:"Binghamton"},{id:"ci_troy",label:"Troy"},
-    {id:"ci_lehigh_thu",label:"Lehigh — Thursday"},{id:"ci_lehigh_tue",label:"Lehigh — Tuesday"}]}
+    {id:"ci_binghamton",label:"Binghamton"},{id:"ci_troy",label:"Troy"}]}
 ];
 const markets = ["Lehigh","Savannah","Charleston","Binghamton","Troy","Tulane"];
 
-let state = {checked:{}, notes:{}, links:{}};
+let state = {checked:{}, notes:{}, links:{}, itemNotes:{}};
 let dbRef = null, saveTimer = null;
 
 function esc(v){return (v||'').replace(/"/g,'&quot;');}
@@ -176,11 +175,12 @@ function initFirebase(){
     state.checked = d.checked || {};
     state.notes   = d.notes   || {};
     state.links   = d.links   || {};
+    state.itemNotes = d.itemNotes || {};
     document.getElementById('sync').innerHTML = "✅ Synced";
     render();
   }, ()=>{ document.getElementById('sync').innerHTML = "⚠️ Offline (changes may not save)"; });
 }
-function save(){ if(dbRef) dbRef.set({checked:state.checked, notes:state.notes, links:state.links}); }
+function save(){ if(dbRef) dbRef.set({checked:state.checked, notes:state.notes, links:state.links, itemNotes:state.itemNotes}); }
 function queueSave(el){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{ save(); if(el){ el.textContent="Saved"; setTimeout(()=>el.textContent="",1400);} }, 500);
@@ -188,6 +188,8 @@ function queueSave(el){
 
 function render(){
   const cl = document.getElementById('checklist');
+  const _ae=document.activeElement; let _fNote=null,_fCaret=0;
+  if(_ae && _ae.tagName==='TEXTAREA' && _ae.getAttribute('data-noteid')){ _fNote=_ae.getAttribute('data-noteid'); _fCaret=_ae.selectionStart; }
   cl.innerHTML = "";
   checklist.forEach(item=>{
     if(item.subs){
@@ -232,8 +234,17 @@ function render(){
         });
         cl.appendChild(lr);
       }
+      if(item.notes){
+        const nb=document.createElement('div'); nb.style.cssText="margin:-2px 0 12px;";
+        const ta=document.createElement('textarea'); ta.setAttribute('data-noteid',item.id); ta.placeholder="Notes…"; ta.value=state.itemNotes[item.id]||"";
+        const sv=document.createElement('div'); sv.className="saved";
+        ta.addEventListener('input',()=>{ state.itemNotes[item.id]=ta.value; queueSave(sv); });
+        nb.appendChild(ta); nb.appendChild(sv); cl.appendChild(nb);
+      }
     }
   });
+
+  if(_fNote){ const _el=cl.querySelector('textarea[data-noteid="'+_fNote+'"]'); if(_el){ _el.focus(); try{_el.setSelectionRange(_fCaret,_fCaret);}catch(e){} } }
 
   const nc = document.getElementById('notes');
   if(nc.children.length === 0){

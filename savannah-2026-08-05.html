@@ -898,6 +898,9 @@ let manualGoals={};
 let manualBonus={};
 let taskQty={};
 let taskLinks={};
+let taskVerify={};
+const JAKE_HASH="e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a";
+let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
 let dbReady=false;
 let dbRef=null;
 
@@ -922,10 +925,11 @@ function initFirebase(){
     manualBonus = data.manualBonus || {};
     taskQty     = data.taskQty     || {};
     taskLinks   = data.taskLinks   || {};
+    taskVerify  = data.taskVerify  || {};
     dbReady=true; render();
   });
 }
-function saveState(){ if(!dbRef) return; dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks}); }
+function saveState(){ if(!dbRef) return; dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify}); }
 
 function computeAutoGoals(){
   const counts={};
@@ -1000,9 +1004,9 @@ function renderContent(){
       }
       if(t.link){
         const lv=(taskLinks[key]||'').replace(/"/g,'&quot;');
-        extra+=`<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;">🔗 <input type="url" placeholder="${(t.linkPlaceholder||'Paste link…')}" value="${lv}" onchange="setLink('${key}',this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;"/>${taskLinks[key]?`<a href="${taskLinks[key]}" target="_blank" rel="noopener" style="font-size:13px;color:${ACCENT};font-weight:700;text-decoration:none;white-space:nowrap;">Open ↗</a>`:''}</div>`;
+        extra+=`<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><b style="font-weight:800">🔗 LINK:</b> <input type="url" placeholder="${(t.linkPlaceholder||'Paste link…')}" value="${lv}" onchange="setLink('${key}',this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:700;"/>${taskLinks[key]?`<a href="${taskLinks[key]}" target="_blank" rel="noopener" style="font-size:13px;color:${ACCENT};font-weight:700;text-decoration:none;white-space:nowrap;">Open ↗</a>`:''}${jakeVerifyCtrl(key)}</div>`;
       }
-      html+=`<div class="task-card${isDone?' done':''}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:''}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:''}${extra}</div></div>`;
+      html+=`<div class="task-card${isDone?' done':''}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:''}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:''}${extra}</div>${taskDonut(t,key,c)}</div>`;
     });
     html+=`</div>`;
     if(["Wed 8/5","Sat 8/8"].includes(activeDay)){html+=`<div class="tip" style="background:#FFFDE7;border:1px solid #FFE082"><div class="tip-title" style="color:#F9A825">⭐ Review Tactics</div><ul><li>Move-out helpers → hand QR code for review</li><li>Waiving something in rentroom → "Leave a 5-star with a paragraph about Amicus"</li><li>Doing a favor → ask for a review</li><li>Give maintenance staff QR codes</li><li>Follow up after turnover → request review if positive</li><li>Respond to <strong>every</strong> Google review</li></ul></div>`;}
@@ -1024,7 +1028,7 @@ function renderContent(){
     });
     html+=`</div>`;
   }
-  el.innerHTML=html;
+  el.innerHTML=html; updateAllDoneGlow(!day.isGoals && day.tasks.length>0 && day.tasks.every((_,i)=>checked[safeKey(`${activeDay}-${i}`)]));
 }
 
 function toggle(key){ checked[key]=!checked[key]; if(!checked[key]) delete checked[key]; saveState(); }
@@ -1032,6 +1036,33 @@ function adjManual(key,d){ manualGoals[key]=Math.max(0,(manualGoals[key]||0)+d);
 function adjBonus(key,d){ manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d); saveState(); }
 function setManual(goalKey,val){ manualGoals[goalKey]=parseInt(val)||0; saveState(); render(); }
 function setLink(key,val){ val=(val||'').trim(); if(val){taskLinks[key]=val;} else {delete taskLinks[key];} saveState(); render(); }
+
+
+function taskPct(t,key){
+  if(t.qtyGoal){ var gk=safeKey(t.qtyGoal); var cur=manualGoals[gk]||0; var mx=t.qtyMax||1; return Math.min(100,Math.round(cur/mx*100)); }
+  var m=(t.task||'').match(/(\d+)\s*of\s*(\d+)/i);
+  if(m){ return Math.min(100,Math.round(parseInt(m[1])/parseInt(m[2])*100)); }
+  return checked[key]?100:0;
+}
+function taskDonut(t,key,c){ var p=taskPct(t,key); return '<div style="margin-left:auto;align-self:center;padding-left:8px;">'+goalDonut(p,c,p>=100)+'</div>'; }
+function jakeVerifyCtrl(key){
+  var q=String.fromCharCode(39);
+  var ver=!!taskVerify[key];
+  var box='<span style="width:18px;height:18px;border-radius:5px;border:2px solid '+(ver?'#2e7d32':(jakeMode?'#bbb':'#ddd'))+';background:'+(ver?'#2e7d32':(jakeMode?'#fff':'#f3f3f3'))+';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">'+(ver?'\u2713':'')+'</span>';
+  if(jakeMode){
+    return '<span onclick="event.stopPropagation();setVerify('+q+key+q+')" title="Jake: mark as seen / done" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:'+(ver?'#2e7d32':'#777')+';white-space:nowrap;">'+box+'Jake \u2713</span>';
+  }
+  return '<span title="Jake verification" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:'+(ver?'#2e7d32':'#aaa')+';white-space:nowrap;">'+box+(ver?'Jake saw it':'Awaiting Jake')+'</span>';
+}
+function setVerify(key){ if(!jakeMode) return; if(taskVerify[key]) delete taskVerify[key]; else taskVerify[key]=true; saveState(); render(); }
+function updateAllDoneGlow(on){
+  var g=document.getElementById('allDoneGlow');
+  if(!g){ g=document.createElement('div'); g.id='allDoneGlow';
+    g.style.cssText='position:fixed;left:0;right:0;bottom:0;height:50vh;pointer-events:none;z-index:5;opacity:0;transition:opacity .6s ease;background:linear-gradient(to top,rgba(76,175,80,0.30),rgba(76,175,80,0.07) 55%,rgba(76,175,80,0));';
+    document.body.appendChild(g);
+  }
+  g.style.opacity=on?'1':'0';
+}
 
 initFirebase();
 

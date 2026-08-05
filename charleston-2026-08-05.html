@@ -1015,22 +1015,26 @@ function setManual(goalKey,val){ manualGoals[goalKey]=parseInt(val)||0; saveStat
 function setLink(key,val){ val=(val||'').trim(); if(val){taskLinks[key]=val;} else {delete taskLinks[key];} saveState(); render(); }
 
 
+function goalTargetFor(gk){
+  for(var i=0;i<goalCategories.length;i++){ var cat=goalCategories[i];
+    for(var j=0;j<cat.goals.length;j++){ if(cat.platform+'|'+cat.goals[j].label===gk) return cat.goals[j].target||1; } }
+  return 1;
+}
 function taskPct(t,key){
   if(t.qtyGoal){ var gk=safeKey(t.qtyGoal); var cur=manualGoals[gk]||0; var mx=t.qtyMax||1; return Math.min(100,Math.round(cur/mx*100)); }
-  if(!checked[key]) return 0;
-  var m=(t.task||'').match(/(\d+)\s*of\s*(\d+)/i);
-  if(m) return Math.min(100,Math.round(parseInt(m[1])/parseInt(m[2])*100));
-  return 100;
+  if(t.goalKey){ var counts=computeAutoGoals(); var done=(counts[t.goalKey]||0); var tgt=goalTargetFor(t.goalKey); return Math.min(100,Math.round(done/tgt*100)); }
+  return checked[key]?100:0;
 }
 function taskDonut(t,key,c){ var p=taskPct(t,key); return '<div style="margin-left:auto;align-self:center;padding-left:8px;">'+goalDonut(p,c,p>=100)+'</div>'; }
 function jakeVerifyCtrl(key){
   var q=String.fromCharCode(39);
   var ver=!!taskVerify[key];
   var box='<span style="width:18px;height:18px;border-radius:5px;border:2px solid '+(ver?'#2e7d32':(jakeMode?'#bbb':'#ddd'))+';background:'+(ver?'#2e7d32':(jakeMode?'#fff':'#f3f3f3'))+';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">'+(ver?'\u2713':'')+'</span>';
+  var label='<b style="font-weight:800;color:'+(ver?'#2e7d32':(jakeMode?'#777':'#aaa'))+';">J</b>';
   if(jakeMode){
-    return '<span onclick="event.stopPropagation();setVerify('+q+key+q+')" title="Jake: mark as seen / done" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:'+(ver?'#2e7d32':'#777')+';white-space:nowrap;">'+box+'Jake \u2713</span>';
+    return '<span onclick="event.stopPropagation();setVerify('+q+key+q+')" title="Jake: mark as seen / done" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">'+box+label+'</span>';
   }
-  return '<span title="Jake verification" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:'+(ver?'#2e7d32':'#aaa')+';white-space:nowrap;">'+box+(ver?'Jake saw it':'Awaiting Jake')+'</span>';
+  return '<span title="Only Jake can check this" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">'+box+label+'</span>';
 }
 function setVerify(key){ if(!jakeMode) return; if(taskVerify[key]) delete taskVerify[key]; else taskVerify[key]=true; saveState(); render(); }
 var allDoneState={};

@@ -891,9 +891,10 @@ function setLink(key,val){ val=(val||'').trim(); if(val){taskLinks[key]=val;} el
 
 function taskPct(t,key){
   if(t.qtyGoal){ var gk=safeKey(t.qtyGoal); var cur=manualGoals[gk]||0; var mx=t.qtyMax||1; return Math.min(100,Math.round(cur/mx*100)); }
+  if(!checked[key]) return 0;
   var m=(t.task||'').match(/(\d+)\s*of\s*(\d+)/i);
-  if(m){ return Math.min(100,Math.round(parseInt(m[1])/parseInt(m[2])*100)); }
-  return checked[key]?100:0;
+  if(m) return Math.min(100,Math.round(parseInt(m[1])/parseInt(m[2])*100));
+  return 100;
 }
 function taskDonut(t,key,c){ var p=taskPct(t,key); return '<div style="margin-left:auto;align-self:center;padding-left:8px;">'+goalDonut(p,c,p>=100)+'</div>'; }
 function jakeVerifyCtrl(key){
@@ -906,13 +907,42 @@ function jakeVerifyCtrl(key){
   return '<span title="Jake verification" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:'+(ver?'#2e7d32':'#aaa')+';white-space:nowrap;">'+box+(ver?'Jake saw it':'Awaiting Jake')+'</span>';
 }
 function setVerify(key){ if(!jakeMode) return; if(taskVerify[key]) delete taskVerify[key]; else taskVerify[key]=true; saveState(); render(); }
+var allDoneState={};
+function dropConfetti(){
+  var host=document.getElementById('confettiHost');
+  if(!host){ host=document.createElement('div'); host.id='confettiHost';
+    host.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden;';
+    document.body.appendChild(host); }
+  var tb=document.querySelector('.tabs-bar');
+  var startY=tb?Math.round(tb.getBoundingClientRect().bottom):60;
+  var colors=['#4CAF50','#81C784','#FFD54F','#FFFFFF','#2E7D32',ACCENT];
+  for(var i=0;i<90;i++){
+    var d=document.createElement('div');
+    var size=6+Math.random()*8;
+    var col=colors[Math.floor(Math.random()*colors.length)];
+    var dur=2200+Math.random()*1600, delay=Math.random()*250, rot=Math.random()*360, xdrift=Math.random()*160-80;
+    d.style.cssText='position:absolute;top:'+startY+'px;left:'+(Math.random()*100)+'vw;width:'+size+'px;height:'+(size*0.5)+'px;background:'+col+';border-radius:1px;';
+    host.appendChild(d);
+    var anim=d.animate([
+      {transform:'translate(0,0) rotate('+rot+'deg)',opacity:1},
+      {transform:'translate('+xdrift+'px,'+(window.innerHeight+40)+'px) rotate('+(rot+720)+'deg)',opacity:1,offset:0.85},
+      {transform:'translate('+xdrift+'px,'+(window.innerHeight+90)+'px) rotate('+(rot+800)+'deg)',opacity:0}
+    ],{duration:dur,delay:delay,easing:'cubic-bezier(.22,.6,.36,1)',fill:'forwards'});
+    anim.onfinish=(function(el){return function(){el.remove();};})(d);
+  }
+  setTimeout(function(){ if(host) host.innerHTML=''; },4400);
+}
 function updateAllDoneGlow(on){
   var g=document.getElementById('allDoneGlow');
   if(!g){ g=document.createElement('div'); g.id='allDoneGlow';
-    g.style.cssText='position:fixed;left:0;right:0;bottom:0;height:50vh;pointer-events:none;z-index:5;opacity:0;transition:opacity .6s ease;background:linear-gradient(to top,rgba(76,175,80,0.30),rgba(76,175,80,0.07) 55%,rgba(76,175,80,0));';
+    g.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9990;opacity:0;transition:opacity 1.1s ease;background:rgba(76,175,80,0.09);';
     document.body.appendChild(g);
   }
-  g.style.opacity=on?'1':'0';
+  var prev=allDoneState[activeDay];
+  var justDone=(prev!==undefined && !prev && on);
+  allDoneState[activeDay]=on;
+  if(justDone){ dropConfetti(); var d=activeDay; setTimeout(function(){ if(activeDay===d) g.style.opacity='1'; },450); }
+  else { g.style.opacity=on?'1':'0'; }
 }
 
 initFirebase();

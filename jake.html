@@ -164,41 +164,6 @@
     <div class="bars" id="jkBars"></div>
   </div>
 
-  <div class="section">
-    <h2>This week — plan by market</h2>
-    <div class="shint">Aug 12 – 18, 2026. Green = market-specific push; the rest is the all-markets baseline.</div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#8B5E3C"></span>Lehigh</div>
-    <ul class="plan-list"><li class="key">Taylor Gym — rec-jersey sponsorship</li><li class="key">Powerhouse — table / sponsor</li><li class="key">5× CubiCasa floor plans</li><li class="key">Welcome-back event</li><li class="key">Media — 50 walk-thru · 50 photos · 20 panning · 10 floor plans</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#2E7D32"></span>Binghamton</div>
-    <ul class="plan-list"><li class="key">Media — 10 walk-thru · 10 photos · 5 panning</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#C49000"></span>Savannah</div>
-    <ul class="plan-list"><li class="key">Back-to-school event plan</li><li class="key">Media — 10 walk-thru · 10 photos · 3 panning · 5 floor plans</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#9B1B30"></span>Charleston</div>
-    <ul class="plan-list"><li class="key">Internship recap — McKinsey</li><li class="key">Back-to-school event plan</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#C62828"></span>Troy</div>
-    <ul class="plan-list"><li class="key">Barbecue event — progress</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  </div>
-
   <div class="section" id="checklistSection">
     <h2>To-do</h2>
     <div class="shint">Tap to check off. Syncs across your devices.</div>
@@ -226,18 +191,25 @@
 
 const PKEY = "jake-private";
 const checklist = [
-  {id:"insta_tulane", t:"Create Tulane Instagram", d:"Stand up the @amicus Tulane account (Tulane still on hold, but reserve the handle)."},
-  {id:"insta_charleston", t:"Create Charleston Instagram", d:"Charleston is now active — get its Instagram live."},
   {id:"google_suites", t:"Get login for all Google Suites", d:"Confirm working access to every market's Google Workspace.", subs:[
     {id:"gs_lehigh",label:"Lehigh"},{id:"gs_savannah",label:"Savannah"},{id:"gs_charleston",label:"Charleston"},
     {id:"gs_binghamton",label:"Binghamton"},{id:"gs_troy",label:"Troy"},{id:"gs_tulane",label:"Tulane"}]},
-  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist (keep actual passwords in your password manager). Jot the account handles / notes below.", notes:true},
-  {id:"buy_followers", t:"Buy followers for all Instagrams", d:"Heads-up: this breaks Instagram's ToS and IG purges fake followers / can flag or suspend accounts. Organic local growth is safer — reconsider before spending."},
+  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist (keep actual passwords in your password manager). Jot the handles / notes below.", notes:true},
+  {id:"buy_followers", t:"Buy followers for all Instagrams", d:"Heads-up: this breaks Instagram's ToS and IG purges fake followers / can flag or suspend accounts. Organic local growth is safer \u2014 reconsider before spending."},
   {id:"verify_insta", t:"Get verified for all Instagrams", d:"Apply for Meta verification on each market account."},
   {id:"logins_everything", t:"GATHER logins for EVERYTHING", d:"Pull every account login into one place (a password manager vault)."},
-  {id:"checkins", t:"Check in with each market — Thu & Mon AM", d:"Record progress, gaps, and next steps in the market notes below.", subs:[
+  {id:"checkins", t:"Check in with each market \u2014 Thu & Mon AM", d:"Record progress, gaps, and next steps in the market notes below.", subs:[
     {id:"ci_savannah",label:"Savannah"},{id:"ci_charleston",label:"Charleston"},
-    {id:"ci_binghamton",label:"Binghamton"},{id:"ci_troy",label:"Troy"}]}
+    {id:"ci_binghamton",label:"Binghamton"},{id:"ci_troy",label:"Troy"}]},
+  {id:"folders_char_sav", t:"Make folders for Charleston & Savannah", d:"Build out the OneDrive folder structure for both markets."},
+  {id:"marketing_budget", t:"Marketing budget", d:"Put the marketing budget together."},
+  {id:"saxbys_release", t:"Saxbys release", d:"Full launch checklist \u2014 work through each piece below.", subs:[
+    {id:"sax_tablecloth",label:"Table cloth ordered"},
+    {id:"sax_paper",label:"Brown & white call / paper"},
+    {id:"sax_windows",label:"Measure windows & get poster"},
+    {id:"sax_video",label:"Funny release video"},
+    {id:"sax_plan",label:"Finalize release plan"},
+    {id:"sax_merch",label:"Merch"}]}
 ];
 const markets = ["Lehigh","Savannah","Charleston","Binghamton","Troy","Tulane"];
 
@@ -368,11 +340,11 @@ render();
 /* ---- Synchronized progress dashboard (owner-style, read-only) ---- */
 const JK_FB={apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",authDomain:"amicus-marketing.firebaseapp.com",databaseURL:"https://amicus-marketing-default-rtdb.firebaseio.com",projectId:"amicus-marketing",storageBucket:"amicus-marketing.firebasestorage.app",messagingSenderId:"926415834204",appId:"1:926415834204:web:c6824762be375a180dea99"};
 const JK_PORT=[
-  {key:"lehigh-2026-08-12",     name:"Lehigh",     total:46, accent:"#8B5E3C"},
-  {key:"binghamton-2026-08-12", name:"Binghamton", total:41, accent:"#2E7D32"},
-  {key:"savannah-2026-08-12",   name:"Savannah",   total:43, accent:"#C49000"},
-  {key:"charleston-2026-08-12", name:"Charleston", total:39, accent:"#9B1B30"},
-  {key:"troy-2026-08-12",       name:"Troy",       total:42, accent:"#C62828"}
+  {key:"lehigh-2026-08-12",     name:"Lehigh",     total:52, accent:"#8B5E3C"},
+  {key:"binghamton-2026-08-12", name:"Binghamton", total:47, accent:"#2E7D32"},
+  {key:"savannah-2026-08-12",   name:"Savannah",   total:49, accent:"#C49000"},
+  {key:"charleston-2026-08-12", name:"Charleston", total:45, accent:"#9B1B30"},
+  {key:"troy-2026-08-12",       name:"Troy",       total:48, accent:"#C62828"}
 ];
 const JK_ARCH=[
   {label:"Aug 5 – 11, 2026", portfolios:[

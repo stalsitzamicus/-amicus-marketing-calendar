@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ===== AMICUS PASSWORD GATE (start) ===== -->
+<style id="amicusGateStyle">
+  html.amicus-locked body > *:not(#amicusLock){display:none !important;}
+  #amicusLock{position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+  #amicusLock .lock-card{width:min(400px,90vw);text-align:center;padding:40px 32px;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:#161616;}
+  #amicusLock .lock-mark{font-family:'Playfair Display',serif;font-weight:900;font-size:32px;color:#fff;letter-spacing:2px;}
+  #amicusLock .lock-sub{color:rgba(255,255,255,0.55);font-size:13px;margin:6px 0 28px;letter-spacing:1px;text-transform:uppercase;}
+  #amicusLock input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0f0f0f;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:1px;}
+  #amicusLock input:focus{border-color:rgba(255,255,255,0.5);}
+  #amicusLock button{width:100%;margin-top:14px;padding:14px 16px;border-radius:10px;border:none;background:#fff;color:#0f0f0f;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  #amicusLock button:hover{background:#e8e8e8;}
+  #amicusLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
+  #amicusLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
+</style>
+<script id="amicusGateScript">
+(function(){
+  var KEY = 'amicus_auth_v1';
+  var HASH = '576998560b830406a1a75b58651422a9d5dd7e09bec82310f52dc3200920a029';
+
+  // Already unlocked on this device? Let the page load normally.
+  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+
+  document.documentElement.classList.add('amicus-locked');
+
+  async function sha256(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+
+  function buildLock(){
+    var wrap = document.createElement('div');
+    wrap.id = 'amicusLock';
+    wrap.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-mark">AMICUS</div>' +
+        '<div class="lock-sub">Team Access Only</div>' +
+        '<input type="password" id="amicusPw" placeholder="Enter team password" autocomplete="current-password"/>' +
+        '<button id="amicusGo">Unlock</button>' +
+        '<div class="lock-err" id="amicusErr"></div>' +
+        '<div class="lock-note">This device will stay signed in.</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    var input = wrap.querySelector('#amicusPw');
+    var err = wrap.querySelector('#amicusErr');
+
+    async function attempt(){
+      var val = input.value.trim();
+      if (!val) return;
+      var h;
+      try { h = await sha256(val); }
+      catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === HASH){
+        try { localStorage.setItem(KEY, HASH); } catch(e) {}
+        document.documentElement.classList.remove('amicus-locked');
+        wrap.remove();
+      } else {
+        err.textContent = 'Incorrect password. Please try again.';
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    wrap.querySelector('#amicusGo').addEventListener('click', attempt);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildLock);
+  } else {
+    buildLock();
+  }
+})();
+</script>
+<!-- ===== AMICUS PASSWORD GATE (end) ===== -->
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Savannah — Amicus Marketing Checklist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <!-- Firebase v9 compat (works in plain HTML) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:#F7F5F2;min-height:100vh;}
+    .header{padding:36px 32px 28px;color:white;}
+    .header .inner{max-width:900px;margin:0 auto;}
+    .header .back{font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;letter-spacing:1px;text-transform:uppercase;display:inline-block;margin-bottom:16px;}
+    .header .back:hover{color:white;}
+    .header .top-row{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
+    .header .logo-wrap{width:58px;height:58px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+    .header .logo-wrap img{width:100%;height:100%;object-fit:contain;padding:4px;}
+    .header h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;}
+    .header .meta{font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+    .tabs-bar{padding:0 32px;overflow-x:auto;}
+    .tabs{max-width:900px;margin:0 auto;display:flex;}
+    .tab{background:transparent;color:rgba(255,255,255,0.5);border:none;padding:13px 16px;font-size:13px;font-weight:400;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+    .tab.active{background:#F7F5F2;font-weight:700;}
+    .content{max-width:900px;margin:0 auto;padding:28px 32px;}
+    .prog-wrap{margin-bottom:24px;}
+    .prog-meta{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:7px;}
+    .prog-track{height:6px;background:#E0E0E0;border-radius:99px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:99px;transition:width 0.4s ease;}
+    .tasks{display:flex;flex-direction:column;gap:11px;}
+    .task-card{background:white;border-radius:12px;padding:15px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:opacity 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .task-card.done{opacity:0.42;box-shadow:none;}
+    .checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #DDD;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:white;transition:all 0.2s;}
+    .checkbox .ck{display:none;color:white;font-size:12px;font-weight:700;}
+    .done .checkbox .ck{display:block;}
+    .task-icon{font-size:21px;flex-shrink:0;margin-top:1px;}
+    .task-body{flex:1;}
+    .plat-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
+    .task-title{font-size:15px;font-weight:600;color:#1a1a1a;}
+    .done .task-title{text-decoration:line-through;}
+    .task-detail{font-size:13px;color:#888;line-height:1.5;margin-top:3px;}
+    .tip{margin-top:24px;border-radius:12px;padding:16px 18px;}
+    .tip-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;}
+    .tip ul{padding-left:16px;font-size:13px;color:#555;line-height:2;}
+    .goals{display:flex;flex-direction:column;gap:14px;}
+    .gcard{background:white;border-radius:14px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .gcard-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+    .gcard-head .gi{font-size:20px;}
+    .gcard-head .gn{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+    .gitems{display:flex;flex-direction:column;gap:16px;}
+    .grow-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;}
+    .glabel{font-size:14px;font-weight:600;color:#1a1a1a;flex:1;}
+    .gcontrols{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+    .gcount{font-size:13px;font-weight:700;color:#333;min-width:90px;text-align:center;}
+    .gbtn{width:27px;height:27px;border-radius:7px;border:1px solid #E0E0E0;background:white;cursor:pointer;font-size:15px;font-weight:700;color:#666;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;line-height:1;flex-shrink:0;}
+    .gtrack{height:8px;background:#F0F0F0;border-radius:99px;overflow:hidden;}
+    .gfill{height:100%;border-radius:99px;transition:width 0.35s ease;}
+    .gpct{text-align:right;font-size:11px;color:#AAA;margin-top:3px;}
+    .gpct.reached{font-weight:700;}
+    .auto-note{font-size:12px;color:#999;text-align:center;margin-bottom:20px;font-style:italic;}
+    .sync-banner{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:10px;padding:10px 16px;margin-bottom:20px;font-size:13px;color:#2E7D32;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px;}
+
+    .header{background:linear-gradient(135deg,#1B5E20 0%,#2E7D32 60%,#388E3C 100%);}
+    .tabs-bar{background:#145214;}
+    .tab.active{color:#1B5E20;}
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="inner">
+    <a class="back" href="savannah.html">← Back to Savannah</a>
+    <div class="top-row">
+      <div class="logo-wrap" style="background:white;border-radius:14px;"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCADwAPADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAPAPi7+3X8GvgX8QJfBnjPxPNpOuxRRTSRDTbiaNFkG5SZEQr0568Vo+Fv22PgT4ykSPTPip4ZZ36JdXwtW/ES7cV+V/wDwWF0R9M/a0S92FU1Lw9Zzh9uNzK0sZGe+Ai/mK+FzKzdTu/3uaAP6kNB8W6J4pt/P0bWLDVoP+eljdRzr+aEitMyADnI+or+WOz1G606dZrW4ltZlOVkhcow/EYr03wr+1b8Y/BbqdH+J3iq0VQAI/wC1ppEAHba7MP0oA/pRDA9CDS1+BfhP/gqP+0X4aVI38aw61Gpzt1XTLeYn2LBVb9a9m8Kf8FqvibYKg8QeCPC+sxgYLWbz2bt7klpAPyoA/Y6ivzO8Mf8ABbXwvOkQ8R/DTWNPc8O+m6hFcqPoHVDXsHhf/grf+z5r7It9quueHC2P+Qno8jKD9YTJQB9o0V4d4W/bc+BPjIxDTPir4YZ5ThIru9FrIT/uShT+les6J4u0TxKm/SNYsNUTrusbqOYY/wCAE0AbFFJmgEHoaAFooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD8t/8Agtn8NpJdL+Hfj6CJjHBLcaHdyAcLvHnQf+gTf5NfmF8ONZ0nw7480DU9e0qHXNEtL2GW+02cEpc24ceZGcEHld3QjnFf0R/tbfBBP2hfgD4v8FqqHULy087TmfjZeRHfCc9gWAU+zGv5xr7TrnRb+4tb2CS2ureVoZreVSrxupwysD0IIII9RQB+2ut/8Erv2ffiXo9nrvhSzvtDs9Qt0urR9P1KSW3likQOjjeWOCGB6mvAvHn/AAR2i0tJpNH8QavIucrIscV0o9imEf8AWvSP+CRv7V8PjPwBJ8Itfuv+J94eRpdHaVvmubDOTGvq0JPT+4y4+6a/RgDeA35cU0B+FHiL/gmr4n06ZotO8W6XOUBzHqFpLbS59MDf/OvPtb/YS+LWkIXg0ew1UA4C2GoRsxHrtfbX9A2teF9K8RQmLUrC3vF7GWMFh9D1Feb+Iv2ddIvA8mk3k+myHpHJ++j+nPzAfQ0aMR/P54i/Z0+JvhuZxfeBddQDkvBZtOg+rR7h+tcHe6RfaaxW7tJ7VgcETxMhB9ORX76a/wDBbxRoId1sxqNuOfMsW3HH+7w35VwGpaTFd5ttTso5ypwYL2APt/4CwOPyqrINT8QQrkdcj65FWbDUr3S7gS2lzPaSAj54JGjI/FSK/X7XPgN8OfEsjyal4G0K4lcEGUWSI5+jKBj8K861z9hX4Q6xnydEvtJYnJaw1GQfpJvH5ChrsFz4W8J/tW/GPwKkaaH8UPFVjDGfltxqs0kI/wC2bsy/pXsPhf8A4Ko/tEeGlCXHi+z15B/DqulQOcfVFQ16XrX/AATe8J3IlOk+LNXsM/cS6ginCn3I2k153r//AATc8UwqDo/i7Rr/AAPu3cMtt/IPU2YXPWvCv/BbD4g2BhHiHwD4c1iNQA5sZ57OR/fJMij8q9l8Lf8ABbTwFf7P+Ei+HviHR3JAJ0+6gvEHud3ln8hX5/63+wl8XdHEjRaLaatGnRtPv4nLfRWKt+lef69+z58R/DLKuo+Cddg3DIK2LyD80DUWC5+0nhX/AIKrfs8eJJAk/iq+0F2XONW0qdAvsWjDivaPBv7WHwa8erGND+J/ha9lfhYDqkUUx/7ZuVb9K/m9uNOudMneG6hltpUOGjmjKMp9wRxUeCx7Mc+zUhn9StlqdpqUIltLmG6iPR4HEg/MZqwXA71/LxofjTX/AAk+/Rdb1LSHz1sLySA5/wCAEV694R/b0+P3gkxf2b8U/EEiRjCxajMt8gHptnVxQB/RVkUBgenNfiD4R/4LE/HPQvKXV4PDXiWNfvtd6cYJW/4FC6qP++a9u8F/8FuYchPFHwtkU8Zm0bVd3Gef3cqc/wDfVAH6o0V8XeCP+Ct/wA8WtDHf6hrnhSVyFI1jTGKKfd4GkAHucV9L/Dr45/D/AOLcHm+DfGOi+JMAsY9PvUklUf7Ued4/EUAd1RTFkDHHen0AFFFFABRRRQAUUUUAIQMHPSvx0/4Ky/sjSeCvGrfGDw3ZlvD2vzLHrUUKcWV8cATHHRJvX/noDk/OK/YysPxv4N0j4g+E9U8N6/p8WqaNqkDW13aTDKyxsMEe3qCOQQCORQB/M38PfHOt/DDxlo/irw1fSaZrek3CXVrcxHlXHYjupGQynggkHg1+/f7Hn7YXhv8Aax8ApqNi0Wm+K7BETWtBzl7aQ/8ALRMnLQuQdrduh5Ffjt+23+xf4g/ZM8eMu2fVPA2pSsdG1kr1HJ+zzEcLMo+gcDcO4XyD4S/FrxR8DfHWm+LvB+pyaTrdicq6jckqH70cidHRhwVP14IFAH9NtIRmvlT9jf8Ab78F/tS2EOl3EkXhnx/DF/pOg3Evy3BA+aS1Y/6xe5X769wR8x+qRIpxhgc0AO2isvWvDGk+IYfL1LT7e9XGP30YYj6HqK1AciloA8h179nfR73dJpd5Pp0p5Ecn72L6c4YfnXmuv/BXxRoRd1sxqUA/5aWLbz+Kn5v519UUhppisfEE9vJbTNFNG8MqnmORSrD8CAaZnp7etfZuteGNK8RRGPUtOt71TwDMgLD6HqK848Q/s66RfFpNKu59Nk7Ry/vo/wBTkfmau4WPnnrSqxTO0lc9dpxXdeIPgr4o0Hc62S6lAvR7Jtx/FSA3864eeCS1laKeN4ZV4McilWH4HmndElLUdKsdXgMN/ZW19Cesd1Asqn8GBFcNrf7PHwy8RSGS+8CaFJIRjfFaCA/+Q9or0M8DJBx9KKAPnnXf2D/hJrEbrb6fqWkOxLb7LUWO3PosgYD8q871z/gmxoE5dtG8ZalaAj5I76zjnAPuylOPoK+yqOpHcnp70WHc/LH46fsieLPgfpK6zcTWut6DuWOTULHcvku33RJG3KgngNyCePTPhKsVOR1r9Kv26/i5pPhP4V3nhATRXOv6+qKtqAGMFuHDNM3pnaFXPOSSOBX5uwDc57HBNZsog3tkH0q1p2rXul38F7ZXU1neQuHjubdzHIjDoQy4IPuDX0p8Bf2D/Hfx48LReJYLvT/Dmg3BYWt1qm8vc7WKlo40UnbkEbjgcHFXfiP/AME6Pi74GtJb2ws7HxfZRAlv7EmJmAH/AExkCsf+A5NeDLPcrhiHhZYiKmtGm+va+1/I6Vha7jzqDsdR+zx/wVK+LvwburSx8SXp+InhpCqyWusN/psacf6q6xuJAHAfePpmv1s/Zx/au8B/tQeFm1bwdqRN3bBft+kXahLuyY9A6A8qecOuVPrniv50L/TLvSr2ayvLaayuoH2SwXEZSSJh1DKcEH611fwj+LHif4HeO9M8XeE9SfTdZsZNyMMmOZD9+KVf442Awyn8MEA17q1Sa6nNtof00q25QfX0p1eS/syfH7Rf2lvg/onjbRgITcL5N9YhstZXaY82FvXBIIPdWU969aoAKKKKACiiigAooooA5X4mfDHw58X/AAbqXhXxZpkGr6FqEflz2sy9f7rq3VHU8qwwQcEV+JP7aH/BO/xd+zJqF3r+hLceKPhyzFk1SJMz6eOyXSAcY6CUfKe+08V+8FV7qwt72CaG4hjnilQpJHIoZXUjBUg8EHuD1oA/lxttRuNIvLe8tJ5Le6gdZYp7eQo8bDlWVgQQQRwRzx1r9Cf2XP8Agrv4m8Ew22h/FuxuPGOjx4jTXrQqNShXjBkU4WfA75V/dq93/as/4JKeGPiNLe+I/hNcweD9dkJll0G4BXTbhsZ/dkAm3Y+gBT2Wvyw+LXwJ8dfAbXjpHjrwxqHh26LERtcx5guAM/NFMuUkH+6TQB/Q58G/2ivh38fNFTUfA3imx11dgaW1jfZdW/A4lgbDp17jHvXo6uGOK/ls0bxDqnhrV7fUdJ1G70rUbdsw3ljO0M0Z9VdSCPzr69+EX/BVn45/DFYbbVdSsfHmmJhfK8Qw5uNvtPGVfOO77/pQB+7FFfm98P8A/gtX4F1OONPGXgXXNBm2nfNpU0V9Fuz2DGNsV7n4Y/4Kh/s4+JYo9/jxtGncf6nVNLuoiv1YRsn/AI9QB9XUV4Xaftx/AO8XMfxc8KKMZ/e6ikZ/JsflTbv9ub4B2QYyfFvwowVdx8nUFkP4bc5PtQB7oVyc/lWZrXhfSvEUJj1Kwt7xexljBYfQ9R+FfNuvf8FOf2b9BDqfiKl/MvSOw0u7m3fRhFt/WvKvFn/BZj4O6TGw0PQfFOvzg8ZtYrWNvfc8hP8A47QKx9P+If2dtIu90mlXk+nSdRHJ+9j+nPzAfjXmmvfBTxTojMY7NdUi6h7Fgx/FDgj8Aa+NfHv/AAWy8VXYli8G/DnSdK+b5LnW7yW8O3/rnGIwD/wI/SvmH4k/8FEvj/8AE2KWC98fXmj2bgg2vh+NNPXBOfvRgOf++s1SYWP0L8e/EPw18L4Hl8Wa1aaAUGfIvpNkx9hF98n6CvkX4x/8FDIxFcaZ8OdOYuwKf21qceMdsxQHv7yf9818RajrF9rF/NfX93PfXszF5bm5kaWR2PUlmJJPvmqpdiQe9DfYLGpr/ibUfFGsXmqazd3Go6ndOXmuriQtI7epP9Kb4d0ubX9bsdMth/pF5PHbRf7zuFH6msskkknrXof7O8Mdz8dvh/FN/qn12zDfTzlrmxFT2VKdTsm/uRcFeSR+4/hDwtZ+CfCejeHbCIQ2WkWcVlEg4AEahf5gnPvWyUBO4cH2pCcqxPXdinjgV/GdScqk3OTu27s/SYxUUoo8Y/aG/Za8HftAaFdf2npkVv4lWFxY61aqI7hJMHYrn/lohOAVbPB4wa/FPULWXTr65tJl2TQSNFIh/hdSQR+Yr+hF224+tfhn+1BpEWh/tEfEWzgUJCmuXTqq9F3SFsfhuxX7Z4eZhXq+2wVSTcYpOKfTWzt+B8xm9GMeWcVa59Hf8EqP2km+EPxyTwVqtz5Xhfxo0dpiRsJBfj/j3kGem/JiPruT0FfuAkgfHYntX8sVvezWd1FNBK8EsTh45YzhkYEEMD2IIHPtX9GH7Gfx0j/aJ/Z88K+L2lV9VMJstWQHlL2LCy5x03fLIPZxX7Qz5s9wooopAFFFFABRRRQAUUUUAFYXjDwRoHj/AEafR/EuiWGv6TOuJLPUrZJ4m/4CwIB9+tbtFAHwB8af+CPHwy8bvcXvgTVb74f6g+WFqB9usc+gR2Dp+DkD07V8SfFX/glV8c/hvFdXOn6fpfjHS7dTI11o98qMqAZLNFNsPABzjPSv3ZPQ1+ef/BW79qSb4ZfDiz+GGg3hh1/xVEZNSeFsPBpwJVlz1BmYMv8Auq470AfjROCshGf160xSc8Hmldg2MDFdB4J8Eat498U6T4f0O1e91bUp1t7aBR95mPUnsAMknsATUylGEXOTslqNJvRGFIZFGGJHPSo97EY3HH1r0/8AaE+G1l8JPiRqHgy0ujfS6NDb297efwy3RjVpio7IGYgD0AJ5Nearbg5+bgdfpUUqsK9ONWn8MkmvRg4uDcXuiRUyq5YMSOm4Zp1zY3FrbrI8EsUTn5WdCoP0JHNftF+yn8HfD3hL4BeA0m8P6VJqs2lxXV1cy2UbyvJLmQ5cjPG/A9hXz/8A8FXtLig+Hvw/niVYUTU7qMRxoFX5oVYnA4B4r4DB8ZUsbmiy2nRdm5Lmv2v0t5dz1qmXSp0PbSkfmjmvZ/2XfgR/w0V8TI/CZ1c6HEtnLeSXYt/OYKm0EBdy8ksOc14xX2D/AMEw5lX9pCXdwz6FdKoPchoz/IGvq85xNXCZbiMRRdpRi2n5/M4cNCNStGEtmz64+Hv/AATd+EnhRo21aHUfFd2fl87Up9sSkjGRFHtHGcgEnp3r8pPE+iS+H/Euq6VMhSWxu5rZ1P8ACyOykfpX9AeDsGT1r8a/27vADeBP2nPF6rGYrTVpE1e3I6Msy7nP/fwSV+ZcD53isdjK9LGVXNuKavsrOzsvn+B7eaYWnRhGVKNj50kOXNdB8Odc/wCEY8e+HdYztFhqNvck57JKpP6A1z8oxIwp9sAXKnuMV+yVIKcXB7PQ+cTs7n9DaSpMgliOY5QHT3U8g/kalAxXjP7I/wAS0+Kn7PXgzWTL517DaDTr0Z+YTwfu2J9yArf8Cr2TO1M9celfxtjMNPCYiph57xbX3M/RqU1UpxmuqGzSRQxtJM4jhjBd3boqgZJ/AV+C3xh8Ur46+LHjDxBGR5Wp6rdXUf8AuNKxX/x3Ffqn+3v8eovhB8HbvRrG4VfFHiaOSwtI1b54YCNs8+PQKSgP95vY1+SeheGdT8Waxa6To1hcalqd04jgs7SMySOfQAf/AKhX7Z4e4CWHw9bMKuinor9lu/S/5HzOb1lOcaUdWjDMbZ3YIHXNfpL/AMEX/jFcaP8AE3xZ8N55S2na1Zf2taoSSEuYCFfH+9G/Pr5Yr4d+MHwzk+EHiOHwpqEyTeILO1jk1VIXDR288g3iAEcMURlDH+8zD+GvrT/gjn4Hm1z9p3UvEG3dbaBoc7tJ0xJO6xIPxXzfyr9chUhVgqlN3i9j59pp2Z+11FFFWIKKKKACiiigAooooAKKKKAKOt6vaeH9Hv8AU9RuFtLCygkubi4fgRRIpZ2P0AJ/Cv5uf2mvjTf/ALQnxp8U+Or9pNmo3bCzgc8W9onywRgdsIBn1JY96/Yb/gqz8ZT8L/2WdS0i0uPJ1bxdcpo0QGdwgwZLhvpsUJ/20FfhRH8zc0AMxX6Sf8Eu/gfFBpWpfE7U7bdd3TtpekeYuQkQ4nlX3Y/Jn0VvWvzqtYZLudYolLSSMERR3YnAr94/gt4Eg+F/wv8ACPhaBPL/ALMsIIH4xmXbmRj9XZjX5nx7mUsHlyw1N2lVdv8At1av79F6HtZXQVWrzy2X5n4zftO6vJrf7QXxGupXZ2k126XLdflcqP0UflXmVtGZXVD/ABnbn68V3Px/Gfjj8Qj/ANTBff8Ao964i0bbMjk4VXBNfoGDSjhKaX8q/JHlTd6jb7n9APhO2Wx8K6NAmAkNhbxLj0WJR/Svkb/gqVoj3/wF0G/ABFlrsYJ7gSRSKD9Plr698MyLP4c0mRfuvZwMPoY1NeKft2eFG8WfsteNo403TWEMWpR8dPJkVmP/AHxv/Ov5cyPEfV87o1JP7dn83b9T7fEQ5sJJLsfiy67ce4zX0v8A8E+PEC6D+1N4QVsbNQjurDk45khbb/48BXzlIADx0xXVfCfxg3gD4l+E/Em4qNL1O3uX29diuC4/753fnX9P5lh/reCrUF9qMl+B8VRlyVIy7NH7253kEV8Kf8FSvhUdV8HeGviBZw5m0mY6bfFR/wAsJTujY/7sgI/7aV9zR3UMtutykqGGUeYkm7gqehB9xXmHxn1Lwx438BeIPCN+/wDaMGrWklrILfkRMRlX3dMqwVuPT8K/lvIMXVy7MqWIin7r19Ho/wAPxPucTR+sUXBH4ZzD962B3pYSQW45xW34n8O3vhXX9T0fUI/LvbGdoZBjGSp6j2PUexrIDbhjp3r+tINSSlFnwDVnys+2f+CaXx6i8EeO734f6xcCLSvEjLLYySHCxXyjAU/9dF4/3lX1NfqD95SO/av57bO8ezuI7iGV4J4nEkcsbFWRgcggjkEHoa/Un9kL9vHRPiLpNj4W8falDo3jCFVhi1K6YR22p44DFjwkvTIPBPI5OB+K8b8N1alT+1MJG9176W+n2v8AP7+59JleMUY+xqP0PbviX+yn8M/jF4mHiDxd4fm1XVhEkHmm/mQCNPuqFVgABz27n1q5p/gX4b/s0+C9c17RfDemeHtO0yykubm4gh/fSKi5w0hJdsnAxnqR3r1CMM8QdP3m8AqyDIYHoQR1/Cvgf/gpX+0Tp9t4ct/hfoWopc6heSLca2baTcIYlOY4GI/iZsMV7BRnrXwOTwzDOsRSy11ZOldXV3ZRW+my8vM9XEOhh4Sq2V/1Pz48ceL7/wAeeNNa8RaixkvtUvJLyYtyQzsTjPtnH4V+xX/BHf4SHwd+z9qvjS6j2Xvi3UWeHK4ItLfMScnnmQzH0I21+O3gTwNqvxK8d6H4X0WI3Gp6zfQ2Nsvq8jBQT6AZJJ9ATX9Lfwx8Aad8Lfh/4d8JaSgXTtEsIbCEhQpYRqF3EDuxBY+5Nf1NGMYRUYqyWiPhm23dnUUUUVQgooooAKKKKACiiigAooprnHfBNAH40f8ABZv4lN4g+O3hvwZFMTa+HdJ+0SoGyBcXLbjkdiI0i/BhX56Q4BORnivcf22fHf8Awsj9qv4oa2s3nQtrU1nBJ2MVviCP/wAdjrw6Efe+lAHpH7PHh9PFXx18BaVKu6G51y1Ei4zlBIrN+imv3Yckybj1zmvxU/Ymt47j9qb4cRyyCJf7SLbj6iGQgfiQB+NftUGLDIGTX4J4jVG8bQpvZQv97t+h9Zky/dzfmfh5+1jo50H9o74k2jLt263cOAO4c7wfybP415RG26J+OowK+mv+CjvhwaD+07rdwgxHqtnaXw5B+Yx7H6f7UbV8uqxXp/Kv2XKK31jLsPUXWEfyR83iI8tacfM/en4D+IP+Ep+CngPVg283eiWbkj1EKg/yrpPFWgW/i/wvq+h3QVrbUrSaykDdMSIUz+GQfwr4+/Yr+ON637N3h7SoIIZLjSJZ7FppSScCQuo28dFkUde3SvTtV8Z61rAxPfyiNjzHEdifkK/m3G5TXoZjVSduWbs/ndH3WHftqEX3R+P3iDSJ/DevajpN2hjurG4ltJUPVXRip/VazVOSPSvdP2wPBP8Awi3xgu76OMJZ63Et9GQOA/3ZB/30M/8AAq8NIAIxx0PNf09g8RHF4eFdfaSf4anwdWDpVHB7o/T34B/FPUfib8GfDU13fy3D2VsunTRbuFeEBBkd8qEPOeue9b3jDxpovgPQ59X1y/hsLCP5d8h5duyoOrN7CvhP4AftEt8F9E8RWkthJqcd5snsrcPtRLgcMWPUKVxnAydorzz4jfE3xB8T9cOqeIL9rqU5EMC8QwLn7qL0A/U96/Pf9VZVcdUb92le+m7vrZem1z6BZpGnh4qOstjZ+PXxP0/4r+PrnXNP0k6bCYlg3M+ZJ9uQJJB0DYwMDsBnJrzqNQ7YCls8DHeouZp1XI+ZgOSAK/ZL/gnd/wAE9PCvgHStJ+J3jC60zxf4rnVbjToLKZLrT9L44IZcrLOM/e6Ifu8/NX6PRpRoU40YbJWR85ObqScpbs/ODxT+xL8bfBfgHT/GWp/D/V00K8h+0b7eITTW6HoZ4VJkiyOfmXoecV4nu8vIIJwMH6+lf1NCNQcgc+teA/G39hn4MfHp57nxH4OtbXV5cltZ0f8A0K7zzyzJw55/jVq1IPwD0/4reLtJ09rCy8U63aWBGDbQ6hKiY9MBsCueef7Q7SMzFycksckk9Sf8TX6ifED/AIIlSG+kk8D/ABHjFoxJS28Q2JLxjsPNhOG+uwfSp/hZ/wAEUmtNZt7j4gfECK506JleTT/DtqyPNg8r50v3R2yEJ+lRGEYNuKSuU5N7s5H/AII+fs5t4k8fap8XNYtc6ZoIbT9HLqNst5Iv72QZ6+XGccd5fVa/X8cCud+H/wAP/D/ww8H6X4Z8MaZBo+h6dCIbaztxhUUdSe5YkkliSSSSTk10dWSFFFFABRRRQAUUUUAFFFFABWd4h1SPRND1DUZWVI7O2luGZugCIWJP5Vo15b+1Nrh8N/s1/FPUlbZJb+GNSZD/ALf2Zwv6kUAfzc67q82va5f6nOcz3txJcyH/AGnYsf1NVUz36UJHn5s9q63V/C32H4d6Dr+MNfX93bn3WMRbf1L1MpKLSfUaTeqNz9nTWX0H45+Cb5JTA0WpxqsgPKlsoCPxav1Budd1K8jMdxf3Uq/3XmYj+dfkV4f1RtE17T9QTCtaXMVwD7q4b+lfrDa3UWoW0V1Ed0E6LKh9VYZH6EV+Y8ZUL1aNZro1+v6n1GSyXLOPoz5K/b28MvIvhXxEilmHm2ErHn/pon/s9fH7Z3YIwa/Sn9pnwafG3wa1+1ijMl1ZoNQgAGSWi+YgfVS4/GvzaZAWU7q+j4YxCrZeoPeDa/VHnZrS5MQ5d9T60/YM8WiO88SeGJXA81E1C3UnqV+RwPwKn8K+wuufevzG+Bnjn/hXnxR0DWZH8u1WYQXXOB5MnyOT9Ac/hX6A/E/4xeGvhLo4vNZvN9xKubawtyDPcf7o7D/aPA+vFfKcSZdVlj4yoxb9olt3Wj/RnrZZiYxw7U3blOA/bE8AL4s+FT6xCi/bdBf7UGPBMLfLIuf++WH+6a/PmY/vWxkD0r1T4yftAeI/i7fFL2T7DoqPug0u2ciMc8Fz/wAtG9zwO2K8uaLzHJBxnkDFfdZLgq+AwcaNd3e6t0v0PBx1aGIrOdNEG4+poyfWu38P/A/4g+LNPtr/AEPwP4k1iwuQTBd2Oj3M0MoBwdrqhU8g9DVzU/2ePifo1rLdX/w78WWVrEhkeafQ7lURQMksdmAPc17x5554Oor0X4SfHvx78DNZXUvA3izUPDs24F4raUmCbHaSE5Rx/vKa86IwSM596dGm9sZx9aAP2j/YS/4KYN+0N4nsvh5470u30vxjcRu1hqWngi11AopZ0MZ5ik2AsMEq2D904B/QFBhB9K/Fr/gkn+zdrfjD402/xQu7eW08LeFjKILphhby9eNoxEnqEWRmYjodo71+0qcKKAFpaKKACiiigAooooAKKKKACiiigAooooAK+ev+CgV41l+xt8VpE25bR2j+Y44aWNT+jGvoWvmf/gpJ/wAmT/FH/ryt/wD0sgoA/n627N454r3zxF4cFz+xv4W1RF3Pa67cs5/urIzp+WUX868Ai5Y/Wvtjwh4a/wCEq/Yhnso1DzLa3N0gHXfFOZBj3+XH414Wb4j6sqE/+nkb+jTR6GDp+0dSP91/ofFRfaNpHUV+lH7Nni7/AITL4LeHLt333NtD9hnyeQ8R25P1Xafxr815eRkcgivq39hfx2lrqmteEbmTal0gv7QE8b0GJFH1Ug/8BNcPE2E+sYBzjvBp/LZm+VVvZYhJ7S0PsiSNHQpIoeNlIZSMgg9f0zX5ffGbwLJ8OPiPrmgsjLBDOZLZj/FA/wA0Z/I4+oNfpT4u8Y6N4G0abVtev4tOsoeC8vUn+6q9Wb2ANfnv+0P8YLT4x+MYtRstLGn21pD9milkOZp13ZDSdh1OAOR618zwjHERrTfL+7a1fmtvU9LN3TcIpv3keUNuDHParuqa1e63cm51C7nvbgqqebO5dtqjCjJ7ADArOdX8wkAnmvoj9lj9iT4h/tWauH0O0/snwtFLsvPE2oIfssZHVIx1mkx/CvAyNxWv1Hqm90fL+p4p4V8Kav4612y0TQdKvNb1i9kEVtY2MLSzSsfRRyfr0Hev1X/Y9/4JMab4Waw8V/GhYNZ1YYkh8Jwt5lnbnqDcuP8AWsP7i/IO5evrn9mb9j34f/ss6B9l8L6d9r1udAt/4hvwr3l16jdjCJnoi4Hrk81694m8VaP4K8OX2ta/qVtpGk2ELT3V5eSiOKJB1LMf89qYi9bWdvpdlDb2sKW1tAixRQQrsSNQMKqqOAAOwFfn/wDt4f8ABS3TPhTbaj4D+F97b6z42dXt7zWImElrpJPBCnlZJxzx91D1yflr52/bY/4Kjav8Tvt3gr4TzXWg+EiDDda9lor3UlxysfeGJv8AvthjO0ZB+EfBvgjXviL4nsfD3hnSLvXNbvn8u3sbCLzJHPc4HQDqWJwACScUgOeuJGuLqSSRy7u5ZnPUknkmvuz9in/gmR4g+OD2Pi/4gR3nhbwExEsNqcx32qr1HlgjMUR/56EZI+6P4h9V/sYf8Er9E+FrWPjD4rxWnibxahWa20UYlsNPYcgvnieUep+QHoG4NfoPHGIwAAABQBjeDPBuieAvC+neHfD2mW2j6Jp0IgtLG0TbHEg7AepySSckkkkkk1uABQAOgpaKACiiigAooooAKKKKACiiigAooooAKKKKACvmr/go/C8/7FXxRVF3EWELHHoLuAn9Aa+la8A/b4086n+x58V4QGO3Q5Zvl6/u2R/y+XmgD+d4LsbHXNfod+yIkd5+z/pMEm142uLyOROuQZmyD+DV+eW7dLn1NfoD+xdcLJ8E4VBGY9QuVOPXIb+tfG8VJvAJrpJfqe1lL/2i3dM+IPiJ4Zk8FeN9b0GYFWsLyWEE903HafxUg/jUHgfxte/D/wAVaXr2m/8AH7YTiVQx+Vx0ZT7MCQa739qDxbo3jL4w6ve6JGPs0aJbSXCn5biWMbWkHtwAPXbnvXkB+aT6mvp8O5V8LB1o6yirp+a1PLqWp1HyPZ6HY/EP4r698UNabUdeu3nYEiG3jO2GBf7qL2+vU9zXP6bY3Wvahb2On2c97e3EixQWttGZJJXJwFVF5LE9gK9T/Z1/ZU8e/tO+KhpXg3SGeyhcC+1i7yllZKe8kmPvY6IuWOOB3r9p/wBkb9gv4ffsradFfWluPEXjZ49lx4kvoh5gz1W3TkQp24JYjqx6DenThSioQVkuhnKUpPmk7s+O/wBj/wD4JMS35svFfxuie2gJSW38HW8mJXU4IN5Ipyo/6ZIc/wB5hyK/U3w/4e0/wtpFnpWk2VtpmmWcQht7KzhWKGFB0VEXhR7CtDy1446dKdWhJyfxR+KHhv4OeCNU8W+LNSi0rQ9Oj8yeeQ8k9FRF6s7HAVRySRX4R/tj/tweLv2sfFMsDvLovgS0mLaZ4fjfrjpNcY4klI5/urnC9yfs3/gsFa/EHx94s+GPgPwvoeraxpdzFcXot9MtJJhcXhcRqG2jGUTJGcY8wmqX7JH/AASQhsZbLxP8bXju5htkh8IWcoManJP+lSr97/rmhx6selAHxj+yr+xD8Qv2qdWSbSLb+xPCETlLrxLqEZFumD8yRDgzP7KcD+JhX7U/s1fsj/D79mDwyLDwnpvmarPGF1DXb1Ve9vT1O58fImekaYUcdTkn17SNC07w/pVrpml2UGnadaRiK3tLSMRRQoOiqq4Cgegq8qhRgUAAGABS0UUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABXl/wC1Fo/9v/s3fFTTwu5rjwtqaIP9r7NJtP54/KvUKx/GGmrrPhTWdPkXfHd2U8DL6ho2Uj9aAP5eA27GOwAr2zwh8cpPAnwA1Twxp05TWtT1KYecp5gtmij3sP8AaY5A9MsfSvErmN7K6kgkUrJExRh6EHB/lQJRIcAEe9YVsPTxMVGqrpNP5o1hUlSd4+hIcvyBnjHFfef7Cv8AwTPu/j5pGnePfiBdTaP4EnJaz062O271QK2N2/8A5ZQkgjdyzAHbgENXhP7E/wCzFe/tTfGnT/DzCWLwxY4vtdvUGPKtQceWD2kkPyL6ZY/wmv6DtF0Oy8O6RZaZpdtFY6dZQpb21rCu1IY0UKiKB0AAAx7V0N3MjN8B+APD/wAMvDVj4d8LaNa6DodknlwWNlGEjT1J7sx6ljkk5JJNdEGB6EV538dPjv4U/Z6+HV/4y8YXb2umWxEccMK757qZs7IYlyNztg9wAASSACa/NbxN/wAFr/E8uqyt4a+GukwabvAQarfyzTsvqfLCqCfbOPekB+tu4HvS1+a/wT/4LL+GvEWtWmlfEXwbceGEuZfKGraTO15bxkkY3xFRIB7ruPPSv0Yv9fsNJ0a41a+u4bLTbeE3M11cOI444gu4uzHgADnJoAvnHc0gKngflX5p/HP/AILNaD4d1+fSvhn4SPiiGByh1rVp3t7eYjPMUSAuy9MMxUn0FcN4L/4LX69Bq8K+MPhvp0umMcSPol7JHOg9Qsu5Wx6Ern1FAH6z0hYDqa4L4KfHHwh+0F4Fs/FngvUxqOl3GUdHGye2lH3opk6o4z06EYIJBBrQ+K/xE0z4TfDrxH4w1lxHpmi2Et7MT/GEXIjH+0zbVA7lhQB1oYHvS1+S+g/8Ftdak1zT4tW+Gmm2umNcRreTW+pyvJHEWG9kUpgsFyQD1xiv1e0zU7bWLC2vrOZLmzuYlngnjOVkjYBlYHuCCDQBZLBepoyB3r5z/bg/atuP2Rfhvo3iq28Ox+JX1DVV0020l0bcIDFJJv3BTn/V4x718Ur/AMFvdVbGPhPaH/uNP/8AGqAP1izS1+cnwj/4LN+BvEur29h478Iaj4OilOw6paXAv7aM56uoVZFHuof6V+hHhvxJpfjDQrHWtE1C21XSb6JZ7a9tJRJFMh6MrDgigDTooooAKKKKACiiigAooooAKKKKACmv2+uKdSEZBFAH8yfx58PSeE/jZ4+0WWPynsNevrfZ6BbhwP0xXI6Jpl1rWq2un2NtLeX11KsEFvAu55ZGIVUUdySQAPevov8A4KLeFW8I/tn/ABOtdu2O6vo9SQ9N32iCOU4/4E7D8DX01/wSP/ZMPibxDJ8Z/Edlu03SJXtvD0Ey8TXY4kucHqIgSqn++SeClAH3b+w5+y5Z/su/BSx0aZY5PFmp7b7XruP+K4K8Qqf7kQOwep3N/FX0QBgY7U2Ndop/SgD81/8AgtXo+tXfw0+Hd/bJI2g2mqXC3xjQlY5niUQsx6DIWRRnufevhz9kT4yfBH4YNrVn8YfhYPHMd/JGbfVUCzSWSBSGQQsyggk53Ag9uwr9kf2y/jx8Nvgf8H7uf4k6dH4j0rV2+wxeG/LSWTUiSN6qr8YQfOWONuBg7itfCP8Awx/+yB+0NpUutfDb4vL4AuplLjSdSv4iLZjyQ1tclJQB0+WQjjhjQB2/7NPwm/Y4+KXx70Dxn8N9emstXsCbqHwHq7NGrXQOY5Y1myW8vltiO652njbg7n/BZT4xaj4O+EfhbwJplzJbJ4qu5Zb9o8gy21vsPlE+jSSISO+wds1+VPxF8Lt8Hfinq2j6L4osvED6Fe4tfEWgzHyZXTDLLC4PBB44JwwOCetfod/wU78J+IfiP+yx8C/ilexyTXNnp8C6wyAYR7y3hcSsOwMiY9AXA7igDyH/AIJrfsQ6B+05eeIfFfjvz7jwlok6WcenWspiN9dMu9g7r8wRFKnCkFi45wCD9h/H3/gkh8L/AB9Z2k/w+Zvh1q8dxGJSjSXVpNDkB8xO2VcDlSpAJ4YYOR8v/wDBLL9sjwj8CF8SeBPHuoJoejazdJqNhq86t5EVwIwkkcpAOxWVYyGxgEEHqCPtb9oD/gpr8H/gtpcLaFrVn8R9anlRV07w9eK6JHkb5JJwGRcLnC5JJwOBkgA9q/Z1/Zx8G/sy+BY/DXhCyaNZCJL3ULlt9zfTAY8yVumewUAKo4A7n4w/4LKfHr+wfAXhz4V6dc7L3XpP7U1RVOMWkTYiRvZ5QW/7Y+4r7S+B/wC0l4C/aF8Ct4p8H63Hc2VuP9Otrj93c6e2CSs8Z5QgAnPKkKSCa/Bj9rn44S/tDftB+L/GaysdNnuza6WjniOziykP0JVd593NAHJaz8GvEeh/Cbw58SLqyI8N69qF1p1pNg5MsAUtnthssFIPJjcfw1+zH/BKf47/APC2f2brfw5f3Jm17wXKNKmDtuZ7Ugtav9Nm6P8A7Ze4r8qPGX7Yfivxr+zxo/wZvdF8Nw+EtH8g2Ultast1FJGSfN3lyN7bpNxxz5jetd3/AMEzfjyPgl+09o1tfz+R4d8VD+xL3LfIjuQbaQ9htl2rnssjGgD7l/4LUf8AJunhD/saI/8A0kuK+Yf+CW/7Knwz/aT0/wCIT/EHQZNafSpLJbRo72a38sSLLv8A9Wy5ztXr0xX01/wWiwf2cfCOP+hpjz9fslxXgf8AwST+PXw9+CmmfElfHXi7TPC7ahJYm1GoSlDMEWXft4Ocbh+dAGL/AMFF/wDgn54d/Zv8Oad4/wDh/d3kXhu5vV0+90i+m85rSV1YxvFIfmaM7CpDZIOPmIOB61/wRb+M+q6haeNvhlfXD3Gn2EUet6YrHItw8nl3CD0Us0TADgEue9cR/wAFNf26/A/xt8F6b8N/h3enxDYrqEeo6lrCwvFBmNWEcMW8At8zks2McDGcnHUf8EVPhPqkN14++I1zBJDpcsEWh2TsCFuHEgmmK56hdsQz6sR2NAH6r0UlLQAUUUUAFFFFABRRRQAUUUUAFFFFAH5Rf8FBv2Xda+O37fHgXQdFjMUXifRIJL29Vcraw28siTzt7rGUAHdio71+nXw+8BaN8MfBmi+FvD1qtjomkWiWdrbqOQijGSe7Hkk9ySe9aZ0DTjrq6ybGA6stsbRb0xjzRCXDmMN1ClgCR6gelaFABSEZGKWigD5l/bD/AGFPCf7XFpp95qGp3ugeKdMha3sdVtsyxiMkt5ckDEKy7jnI2t7kAAfnZ4u/4I3fGjSL5k0XWPCviGy3YjmF5LbS7fVkkjIX6Bmr9rCM0bRjGOKAPyk/Z7/4I36rZ+JrHVvi54i0yTSreRZToOhNJK10QQRHLM6qEQ45CAkgnBHWv098T+BtD8Z+EL/wtrWmWuoeH762NncafLH+6eEjGzA6ADGMYIIBBBArdEagAY4FOoA/JH45/wDBGTxHaa5dX3wp8S6df6O7FotJ8QSNDcwA9EWZUZZAPVghx1z1ri/h7/wRt+Let61EnirXvDnhnSlYebNbTve3GO+yNVVSf95x+NftAVDdQD9aAoHQAUAfLGsfscy/C79kvxD8Kfgg1hpOva3ALW713XJ3jkuPMIWeaWSONmLmPciAABd3GMc/NP7I/wDwSn8V/CT42aR4u+JGoeFNd0LS4pZYdP0+Sa4825KbI/MSWBF2KGZup5C8V+nxGaNo9KAOS/4VL4J25/4RDQM+v9lW/wD8RX5efF7/AIJAfEbWviv4m1rwNr/hPTPDd3qMt5pkF9d3MNxbI7bwmI7dlXYxIXBPCrX64AADAHHpSbB6UAfGn7YH7KnxO/ai/Zr8A+Dn1Pw5a+N9Ku7e81i8uLmcWU8iW0kUjRMsJc7mcNgoMZPPFfE0f/BF342Blz4o8CBeORf3hOP/AAFr9pdo9BQABQB+WPwj/wCCKjW2rW918SvHcN3ZRkM+meHIGUygHO03EoBUHpwmfev0w8CeA9A+GfhPTfDPhjS7fRtD06IQ2tlbLhY1HueSScksSSSSSSTW9iloAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigD/9k=" alt="Savannah logo"/></div>
+      <div><h1>Savannah</h1><div class="meta">Savannah College of Art &amp; Design · Aug 12 – Aug 18, 2026</div></div>
+    </div>
+  </div>
+</div>
+<div class="tabs-bar"><div class="tabs" id="tabs"></div></div>
+<div class="content" id="content"></div>
+
+<script>
+const ACCENT="#C49000";
+const PORTFOLIO_KEY="savannah-2026-08-12";
+
+const schedule=[
+  {
+    "day": "Wed 8/12",
+    "tasks": [
+      {
+        "platform": "Instagram",
+        "icon": "📷",
+        "task": "Instagram post 1 of 3",
+        "detail": "Paste link.",
+        "goalKey": "Instagram|Posts",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "✉️",
+        "task": "Instagram DMs — outreach",
+        "detail": "Running total toward 40 this week. Screenshot proof → admin link below.",
+        "qtyGoal": "Instagram|DMs",
+        "qtyMax": 40,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "💬",
+        "task": "Respond to all reviews — start today",
+        "detail": "Work through every unanswered review; all must be replied to by Tue AM.",
+        "goalKey": "Google Reviews|Reviews responded"
+      },
+      {
+        "platform": "Operations",
+        "icon": "📷",
+        "task": "Move-in photos — start lining up students",
+        "detail": "Identify move-ins to feature; upload as you go using the OneDrive link below (target 5).",
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Media",
+        "icon": "🎥",
+        "task": "Media — walkthrough videos",
+        "detail": "Running total this week. Upload to the OneDrive link below.",
+        "qtyGoal": "Media|Walkthrough videos",
+        "qtyMax": 10,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Media",
+        "icon": "🏠",
+        "task": "Media — house photos",
+        "detail": "Running total this week. Upload to the OneDrive link below.",
+        "qtyGoal": "Media|House photos",
+        "qtyMax": 10,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      }
+    ]
+  },
+  {
+    "day": "Thu 8/13",
+    "tasks": [
+      {
+        "platform": "TikTok",
+        "icon": "🎵",
+        "task": "Post TikTok 1 of 3",
+        "detail": "Paste link.",
+        "goalKey": "TikTok|TikToks posted",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Upload YouTube video 1 of 3",
+        "detail": "Paste link.",
+        "goalKey": "YouTube|Videos uploaded",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Reddit",
+        "icon": "💬",
+        "task": "Leave Reddit comments",
+        "detail": "Running total toward 5 natural, helpful comments. Screenshot proof → admin link below.",
+        "qtyGoal": "Reddit|Comments",
+        "qtyMax": 5,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "✉️",
+        "task": "Instagram DMs — outreach",
+        "detail": "Keep the running total moving toward 40. Screenshot proof → admin link below.",
+        "qtyGoal": "Instagram|DMs",
+        "qtyMax": 40,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"
+      },
+      {
+        "platform": "Media",
+        "icon": "📹",
+        "task": "Media — panning videos",
+        "detail": "Running total this week. Upload to the OneDrive link below.",
+        "qtyGoal": "Media|Panning videos",
+        "qtyMax": 3,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Media",
+        "icon": "📐",
+        "task": "Media — floor plans",
+        "detail": "Running total this week. Upload to the OneDrive link below.",
+        "qtyGoal": "Media|Floor plans",
+        "qtyMax": 5,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Focus",
+        "icon": "🎉",
+        "task": "Back-to-school event plan",
+        "detail": "Build the back-to-school event plan: date, venue, budget, promo. Upload the plan below.",
+        "goalKey": "Focus|Back to school event plan",
+        "link": true,
+        "linkPlaceholder": "Upload the plan / doc link…"
+      }
+    ]
+  },
+  {
+    "day": "Fri 8/14",
+    "tasks": [
+      {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Publish Google Business post 1 of 3",
+        "detail": "Availability, featured property, or event. Paste link.",
+        "goalKey": "Google Posts|Posts published",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "📷",
+        "task": "Instagram post 2 of 3",
+        "detail": "Paste link.",
+        "goalKey": "Instagram|Posts",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Planning",
+        "icon": "🗂️",
+        "task": "First-semester marketing plan — WITH BUDGET",
+        "detail": "Build the full first-semester marketing plan including budget. Upload the doc below and send to Jake.",
+        "goalKey": "Planning|First-semester marketing plan",
+        "link": true,
+        "linkPlaceholder": "Upload the marketing-plan doc link…"
+      }
+    ]
+  },
+  {
+    "day": "Sat 8/15",
+    "tasks": [
+      {
+        "platform": "TikTok",
+        "icon": "🎵",
+        "task": "Post TikTok 2 of 3",
+        "detail": "Paste link.",
+        "goalKey": "TikTok|TikToks posted",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Upload YouTube video 2 of 3",
+        "detail": "Paste link.",
+        "goalKey": "YouTube|Videos uploaded",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "⭐",
+        "task": "Google review outreach",
+        "detail": "Personal asks to happy tenants. Bump the counter as reviews land (target 3).",
+        "qtyGoal": "Google Reviews|New reviews",
+        "qtyMax": 3
+      }
+    ]
+  },
+  {
+    "day": "Sun 8/16",
+    "tasks": [
+      {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Publish Google Business post 2 of 3",
+        "detail": "Paste link.",
+        "goalKey": "Google Posts|Posts published",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "📷",
+        "task": "Instagram post 3 of 3",
+        "detail": "Paste link.",
+        "goalKey": "Instagram|Posts",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Reddit",
+        "icon": "💬",
+        "task": "Leave Reddit comments",
+        "detail": "Finish the run toward 5 comments. Screenshot proof → admin link below.",
+        "qtyGoal": "Reddit|Comments",
+        "qtyMax": 5,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"
+      },
+      {
+        "platform": "Planning",
+        "icon": "🏈",
+        "task": "Final NIL list — athletes, budget, contacts",
+        "detail": "Lock the final NIL list: athletes, budget, and contacts. Goal: 100% underway by end of August (8/31). Upload below.",
+        "goalKey": "Planning|Final NIL list",
+        "link": true,
+        "linkPlaceholder": "Upload the NIL list link…"
+      }
+    ]
+  },
+  {
+    "day": "Mon 8/17",
+    "tasks": [
+      {
+        "platform": "TikTok",
+        "icon": "🎵",
+        "task": "Post TikTok 3 of 3",
+        "detail": "Paste link.",
+        "goalKey": "TikTok|TikToks posted",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Upload YouTube video 3 of 3",
+        "detail": "Paste link.",
+        "goalKey": "YouTube|Videos uploaded",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Publish Google Business post 3 of 3",
+        "detail": "Paste link.",
+        "goalKey": "Google Posts|Posts published",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Operations",
+        "icon": "📷",
+        "task": "Upload move-in photos of students",
+        "detail": "Get to 5 move-ins. Upload to the OneDrive link below.",
+        "qtyGoal": "Operations|Move-in photos",
+        "qtyMax": 5,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "✉️",
+        "task": "Instagram DMs — outreach",
+        "detail": "Finish the run toward 40 DMs. Screenshot proof → admin link below.",
+        "qtyGoal": "Instagram|DMs",
+        "qtyMax": 40,
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"
+      },
+      {
+        "platform": "Operations",
+        "icon": "🗂️",
+        "task": "SORT ONEDRIVE — 100% uploaded & sorted",
+        "detail": "Every piece of media uploaded AND sorted into the right folders. Must be 100%.",
+        "goalKey": "Operations|OneDrive sorted",
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Monday Board",
+        "icon": "📋",
+        "task": "MARK DOWN MONDAY — 100% accurate to OneDrive",
+        "detail": "Update the Monday.com board so it is 100% accurate against what's in OneDrive.",
+        "goalKey": "Monday Board|Monday accurate"
+      }
+    ]
+  },
+  {
+    "day": "Tue 8/18",
+    "tasks": [
+      {
+        "platform": "Google Reviews",
+        "icon": "✅",
+        "task": "All reviews responded — by AM",
+        "detail": "Deadline: every review answered by this morning.",
+        "goalKey": "Google Reviews|Reviews responded done"
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "⭐",
+        "task": "Google reviews — final push",
+        "detail": "Close out toward 3 new reviews.",
+        "qtyGoal": "Google Reviews|New reviews",
+        "qtyMax": 3
+      },
+      {
+        "platform": "Operations",
+        "icon": "📤",
+        "task": "Final wrap — confirm & link every deliverable",
+        "detail": "Tick each item below once it's sent to Jake with its link pasted."
+      },
+      {
+        "platform": "TikTok",
+        "icon": "🎵",
+        "task": "Sent + linked: TikToks (3)",
+        "detail": "Paste the 3 TikTok links.",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "YouTube",
+        "icon": "▶️",
+        "task": "Sent + linked: YouTube (3)",
+        "detail": "Paste the 3 YouTube links.",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Google Posts",
+        "icon": "📍",
+        "task": "Sent + linked: Google posts (3)",
+        "detail": "Paste the 3 Google post links.",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Reddit",
+        "icon": "💬",
+        "task": "Sent + linked: Reddit comments (5)",
+        "detail": "Paste the screenshot-proof link.",
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"
+      },
+      {
+        "platform": "Google Reviews",
+        "icon": "⭐",
+        "task": "Sent + linked: Google reviews (3)",
+        "detail": "Paste the review links.",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Instagram",
+        "icon": "📷",
+        "task": "Sent + linked: Instagram posts (3)",
+        "detail": "Paste the 3 Instagram links.",
+        "link": true,
+        "linkPlaceholder": "Paste link…"
+      },
+      {
+        "platform": "Operations",
+        "icon": "📷",
+        "task": "Sent + linked: Move-in photos",
+        "detail": "Paste the OneDrive move-in photos link.",
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      },
+      {
+        "platform": "Planning",
+        "icon": "🗂️",
+        "task": "Sent + linked: First-semester marketing plan + budget",
+        "detail": "Paste the marketing-plan doc link.",
+        "link": true,
+        "linkPlaceholder": "Upload the marketing-plan doc link…"
+      },
+      {
+        "platform": "Planning",
+        "icon": "🏈",
+        "task": "Sent + linked: Final NIL list",
+        "detail": "Paste the NIL list link.",
+        "link": true,
+        "linkPlaceholder": "Upload the NIL list link…"
+      },
+      {
+        "platform": "Media",
+        "icon": "🎬",
+        "task": "Sent + linked: Media (walk-thru / photos / panning / floor plans)",
+        "detail": "Paste the OneDrive media folder link.",
+        "link": true,
+        "linkPlaceholder": "Admin: paste OneDrive folder link…"
+      }
+    ]
+  },
+  {
+    "day": "📊 Goals",
+    "isGoals": true,
+    "tasks": []
+  }
+];
+
+const goalCategories=[
+  {
+    "platform": "Media",
+    "icon": "🎬",
+    "color": "#3F51B5",
+    "goals": [
+      {
+        "label": "Walkthrough videos",
+        "target": 10,
+        "unit": "media",
+        "mode": "qty"
+      },
+      {
+        "label": "House photos",
+        "target": 10,
+        "unit": "media",
+        "mode": "qty"
+      },
+      {
+        "label": "Panning videos",
+        "target": 3,
+        "unit": "media",
+        "mode": "qty"
+      },
+      {
+        "label": "Floor plans",
+        "target": 5,
+        "unit": "media",
+        "mode": "qty"
+      }
+    ]
+  },
+  {
+    "platform": "Instagram",
+    "icon": "📷",
+    "color": "#E1306C",
+    "goals": [
+      {
+        "label": "Posts",
+        "target": 3,
+        "unit": "posts",
+        "mode": "auto"
+      },
+      {
+        "label": "DMs",
+        "target": 40,
+        "unit": "DMs",
+        "mode": "qty"
+      }
+    ]
+  },
+  {
+    "platform": "TikTok",
+    "icon": "🎵",
+    "color": "#EE1D52",
+    "goals": [
+      {
+        "label": "TikToks posted",
+        "target": 3,
+        "unit": "posts",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "YouTube",
+    "icon": "▶️",
+    "color": "#FF0000",
+    "goals": [
+      {
+        "label": "Videos uploaded",
+        "target": 3,
+        "unit": "videos",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Google Posts",
+    "icon": "📍",
+    "color": "#4285F4",
+    "goals": [
+      {
+        "label": "Posts published",
+        "target": 3,
+        "unit": "posts",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Reddit",
+    "icon": "🧵",
+    "color": "#FF4500",
+    "goals": [
+      {
+        "label": "Comments",
+        "target": 5,
+        "unit": "comments",
+        "mode": "qty"
+      }
+    ]
+  },
+  {
+    "platform": "Google Reviews",
+    "icon": "⭐",
+    "color": "#FBBC04",
+    "goals": [
+      {
+        "label": "New reviews",
+        "target": 3,
+        "unit": "reviews",
+        "mode": "qty"
+      },
+      {
+        "label": "Reviews responded",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      },
+      {
+        "label": "Reviews responded done",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Operations",
+    "icon": "⚙️",
+    "color": "#607D8B",
+    "goals": [
+      {
+        "label": "Move-in photos",
+        "target": 5,
+        "unit": "photos",
+        "mode": "qty"
+      },
+      {
+        "label": "OneDrive sorted",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Monday Board",
+    "icon": "📋",
+    "color": "#6161FF",
+    "goals": [
+      {
+        "label": "Monday accurate",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Planning",
+    "icon": "🗂️",
+    "color": "#FFB300",
+    "goals": [
+      {
+        "label": "First-semester marketing plan",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      },
+      {
+        "label": "Final NIL list",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      }
+    ]
+  },
+  {
+    "platform": "Focus",
+    "icon": "🎯",
+    "color": "#00897B",
+    "goals": [
+      {
+        "label": "Back to school event plan",
+        "target": 1,
+        "unit": "done",
+        "mode": "auto"
+      }
+    ]
+  }
+];
+
+const platformColors={"Instagram":"#E1306C","Facebook":"#1877F2","Reddit":"#FF4500","Google Reviews":"#FBBC04","Google Uploads":"#34A853","Google Posts":"#4285F4","Website":"#00BCD4","Setup":"#00BCD4","Content":"#9C27B0","Planning":"#FFB300","YouTube":"#FF0000","Monday Board":"#6161FF","TikTok":"#EE1D52","Operations":"#607D8B","Media":"#3F51B5","Focus":"#00897B"};
+
+let activeDay="Wed 8/12";
+let checked={};
+let manualGoals={};
+let manualBonus={};
+let taskQty={};
+let taskLinks={};
+let taskVerify={};
+const JAKE_HASH="e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a";
+let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
+let dbReady=false;
+let dbRef=null;
+
+function safeKey(s){ return s.replace(/[^a-zA-Z0-9_]/g,'_'); }
+
+function initFirebase(){
+  const app = firebase.initializeApp({
+    apiKey: "AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
+    authDomain: "amicus-marketing.firebaseapp.com",
+    databaseURL: "https://amicus-marketing-default-rtdb.firebaseio.com",
+    projectId: "amicus-marketing",
+    storageBucket: "amicus-marketing.firebasestorage.app",
+    messagingSenderId: "926415834204",
+    appId: "1:926415834204:web:c6824762be375a180dea99"
+  });
+  const db = firebase.database();
+  dbRef = db.ref("portfolios/" + PORTFOLIO_KEY);
+  dbRef.on("value",(snapshot)=>{
+    const data=snapshot.val()||{};
+    checked     = data.checked     || {};
+    manualGoals = data.manualGoals || {};
+    manualBonus = data.manualBonus || {};
+    taskQty     = data.taskQty     || {};
+    taskLinks   = data.taskLinks   || {};
+    taskVerify  = data.taskVerify  || {};
+    dbReady=true; render();
+  });
+}
+function saveState(){ if(!dbRef) return; dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify}); }
+
+function computeAutoGoals(){
+  const counts={};
+  schedule.forEach(day=>{
+    day.tasks.forEach((t,i)=>{
+      if(t.goalKey && checked[safeKey(`${day.day}-${i}`)]){ counts[t.goalKey]=(counts[t.goalKey]||0)+1; }
+    });
+  });
+  return counts;
+}
+
+function render(){renderTabs();renderContent();}
+
+function renderTabs(){
+  const el=document.getElementById("tabs");el.innerHTML="";
+  schedule.forEach(s=>{
+    const b=document.createElement("button");
+    b.className="tab"+(s.day===activeDay?" active":"");
+    b.textContent=s.day;
+    b.onclick=()=>{activeDay=s.day;render();};
+    el.appendChild(b);
+  });
+}
+
+function goalDonut(pct,color,atTarget){
+  var r=15, c=2*Math.PI*r, off=c*(1-pct/100);
+  return '<div style="position:relative;width:46px;height:46px;flex-shrink:0;">'+
+    '<svg width="46" height="46" viewBox="0 0 46 46" style="transform:rotate(-90deg);">'+
+      '<circle cx="23" cy="23" r="'+r+'" fill="none" stroke="#ECECEC" stroke-width="5"/>'+
+      '<circle cx="23" cy="23" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'" style="transition:stroke-dashoffset .45s ease"/>'+
+    '</svg>'+
+    '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+(atTarget?color:'#666')+';">'+(atTarget?'\u2713':pct+'%')+'</div>'+
+  '</div>';
+}
+function renderGoalBar(cat,g,rawVal,key,isManual){
+  const atTarget=rawVal>=g.target;
+  const pct=atTarget?100:Math.min(99,Math.round((rawVal/g.target)*100));
+  const bar=atTarget?`linear-gradient(90deg,${cat.color},${cat.color}cc)`:`linear-gradient(90deg,${cat.color}99,${cat.color})`;
+  let controls="";
+  if(isManual){
+    controls=`<button class="gbtn" onclick="adjManual('${key}',-1)">−</button><span class="gcount" style="${atTarget?`color:${cat.color}`:''}">${rawVal} / ${g.target} ${g.unit}</span><button class="gbtn" onclick="adjManual('${key}',1)" style="${atTarget?`background:${cat.color};color:white;border-color:${cat.color}`:''}">+</button>${atTarget?'<span style="font-size:16px">✅</span>':''}`;
+  } else if(atTarget){
+    controls=`<button class="gbtn" onclick="adjBonus('${key}',-1)">−</button><span class="gcount" style="color:${cat.color}">${rawVal} / ${g.target} ${g.unit}</span><button class="gbtn" onclick="adjBonus('${key}',1)" style="background:${cat.color};color:white;border-color:${cat.color}">+</button><span style="font-size:16px">✅</span>`;
+  } else {
+    controls=`<span class="gcount">${rawVal} / ${g.target} ${g.unit}</span>`;
+  }
+  return `<div class="growwrap" style="display:flex;align-items:center;gap:14px;"><div style="flex:1;min-width:0;"><div class="grow-top"><span class="glabel">${g.label}</span><div class="gcontrols">${controls}</div></div><div class="gtrack"><div class="gfill" style="width:${pct}%;background:${bar}"></div></div><div class="gpct${atTarget?' reached':''}" style="${atTarget?`color:${cat.color}`:''}">${atTarget?'Goal reached! 🎉':`${pct}%`}</div></div>${goalDonut(pct,cat.color,atTarget)}</div>`;
+}
+
+function renderContent(){
+  const el=document.getElementById("content");
+  const day=schedule.find(s=>s.day===activeDay);
+  if(!day)return;
+  let html="";
+  if(!dbReady){ el.innerHTML=`<div style="text-align:center;padding:60px;color:#999;font-family:sans-serif;">🔄 Connecting to live database...</div>`; return; }
+
+  if(!day.isGoals){
+    const total=day.tasks.length;
+    const done=day.tasks.filter((_,i)=>checked[safeKey(`${activeDay}-${i}`)]).length;
+    const pct=total?Math.round((done/total)*100):0;
+    html+=`<div class="sync-banner">🔴 Live — changes sync instantly for all users</div>`;
+    html+=`<div class="prog-wrap"><div class="prog-meta"><span>${done} of ${total} tasks complete</span><span style="color:${ACCENT};font-weight:700">${pct}%</span></div><div class="prog-track"><div class="prog-fill" style="width:${pct}%;background:${ACCENT}"></div></div></div><div class="tasks">`;
+    day.tasks.forEach((t,i)=>{
+      const key=safeKey(`${activeDay}-${i}`);
+      const isDone=!!checked[key];
+      const c=platformColors[t.platform]||"#888";
+      let extra="";
+      if(t.qtyGoal){
+        const gk=safeKey(t.qtyGoal); const cur=manualGoals[gk]||0;
+        let opts=""; for(let n=0;n<=t.qtyMax;n++){opts+=`<option value="${n}"${n===cur?' selected':''}>${n}</option>`;}
+        extra+=`<div class="qty-row" onclick="event.stopPropagation()">Running total: <select class="qty-select" onchange="setManual('${gk}',this.value)">${opts}</select><span class="qty-of"> of ${t.qtyMax}</span></div>`;
+      }
+      if(t.link){
+        const lv=(taskLinks[key]||'').replace(/"/g,'&quot;');
+        extra+=`<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><b style="font-weight:800">🔗 LINK:</b> <input type="url" placeholder="${(t.linkPlaceholder||'Paste link…')}" value="${lv}" onchange="setLink('${key}',this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:700;"/>${taskLinks[key]?`<a href="${taskLinks[key]}" target="_blank" rel="noopener" style="font-size:13px;color:${ACCENT};font-weight:700;text-decoration:none;white-space:nowrap;">Open ↗</a>`:''}${jakeVerifyCtrl(key)}</div>`;
+      }
+      html+=`<div class="task-card${isDone?' done':''}" style="border-left:4px solid ${c}" onclick="toggle('${key}')"><div class="checkbox" style="${isDone?`background:${ACCENT};border-color:${ACCENT}`:''}"><span class="ck">✓</span></div><div class="task-icon">${t.icon}</div><div class="task-body"><div class="plat-label" style="color:${c}">${t.platform}</div><div class="task-title">${t.task}</div>${t.detail?`<div class="task-detail">${t.detail}</div>`:''}${extra}</div>${taskDonut(t,key,c)}</div>`;
+    });
+    html+=`</div>`;
+    if(["Wed 8/12","Sat 8/15"].includes(activeDay)){html+=`<div class="tip" style="background:#FFFDE7;border:1px solid #FFE082"><div class="tip-title" style="color:#F9A825">⭐ Review Tactics</div><ul><li>Move-out helpers → hand QR code for review</li><li>Waiving something in rentroom → "Leave a 5-star with a paragraph about Amicus"</li><li>Doing a favor → ask for a review</li><li>Give maintenance staff QR codes</li><li>Follow up after turnover → request review if positive</li><li>Respond to <strong>every</strong> Google review</li></ul></div>`;}
+    if(["Thu 8/13","Sun 8/16"].includes(activeDay)){html+=`<div class="tip" style="background:#FFF3E0;border:1px solid #FFCC80"><div class="tip-title" style="color:#E65100">🧵 Reddit Format</div><ul><li>Use 2–4 accounts with credible post history</li><li>Keep conversation natural</li></ul></div>`;}
+  } else {
+    const autoCounts=computeAutoGoals();
+    html+=`<div class="sync-banner">🔴 Live — updates instantly for all users</div>`;
+    html+=`<p class="auto-note">Check off tasks on each day and they roll up here automatically · dropdowns + / − buttons also sync live</p><div class="goals">`;
+    goalCategories.forEach(cat=>{
+      html+=`<div class="gcard" style="border-left:4px solid ${cat.color}"><div class="gcard-head"><span class="gi">${cat.icon}</span><span class="gn" style="color:${cat.color}">${cat.platform}</span></div><div class="gitems">`;
+      cat.goals.forEach(g=>{
+        const key=`${cat.platform}|${g.label}`; const safeK=safeKey(key);
+        let rawVal,isManual;
+        if(g.mode==="auto"){ rawVal=(autoCounts[key]||0)+(manualBonus[safeK]||0); isManual=false; }
+        else { rawVal=(manualGoals[safeK]||0); isManual=true; }
+        html+=renderGoalBar(cat,g,rawVal,safeK,isManual);
+      });
+      html+=`</div></div>`;
+    });
+    html+=`</div>`;
+  }
+  el.innerHTML=html; updateAllDoneGlow(!day.isGoals && day.tasks.length>0 && day.tasks.every((_,i)=>checked[safeKey(`${activeDay}-${i}`)]));
+}
+
+function toggle(key){ checked[key]=!checked[key]; if(!checked[key]) delete checked[key]; saveState(); }
+function adjManual(key,d){ manualGoals[key]=Math.max(0,(manualGoals[key]||0)+d); saveState(); }
+function adjBonus(key,d){ manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d); saveState(); }
+function setManual(goalKey,val){ manualGoals[goalKey]=parseInt(val)||0; saveState(); render(); }
+function setLink(key,val){ val=(val||'').trim(); if(val){taskLinks[key]=val;} else {delete taskLinks[key];} saveState(); render(); }
+
+
+function goalTargetFor(gk){
+  for(var i=0;i<goalCategories.length;i++){ var cat=goalCategories[i];
+    for(var j=0;j<cat.goals.length;j++){ if(cat.platform+'|'+cat.goals[j].label===gk) return cat.goals[j].target||1; } }
+  return 1;
+}
+function taskPct(t,key){
+  if(t.qtyGoal){ var gk=safeKey(t.qtyGoal); var cur=manualGoals[gk]||0; var mx=t.qtyMax||1; return Math.min(100,Math.round(cur/mx*100)); }
+  if(t.goalKey){ var counts=computeAutoGoals(); var done=(counts[t.goalKey]||0); var tgt=goalTargetFor(t.goalKey); return Math.min(100,Math.round(done/tgt*100)); }
+  return checked[key]?100:0;
+}
+function taskDonut(t,key,c){ var p=taskPct(t,key); return '<div style="margin-left:auto;align-self:center;padding-left:8px;">'+goalDonut(p,c,p>=100)+'</div>'; }
+function jakeVerifyCtrl(key){
+  var q=String.fromCharCode(39);
+  var ver=!!taskVerify[key];
+  var box='<span style="width:18px;height:18px;border-radius:5px;border:2px solid '+(ver?'#2e7d32':(jakeMode?'#bbb':'#ddd'))+';background:'+(ver?'#2e7d32':(jakeMode?'#fff':'#f3f3f3'))+';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">'+(ver?'\u2713':'')+'</span>';
+  var label='<b style="font-weight:800;color:'+(ver?'#2e7d32':(jakeMode?'#777':'#aaa'))+';">J</b>';
+  if(jakeMode){
+    return '<span onclick="event.stopPropagation();setVerify('+q+key+q+')" title="Jake: mark as seen / done" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">'+box+label+'</span>';
+  }
+  return '<span title="Only Jake can check this" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">'+box+label+'</span>';
+}
+function setVerify(key){ if(!jakeMode) return; if(taskVerify[key]) delete taskVerify[key]; else taskVerify[key]=true; saveState(); render(); }
+var allDoneState={};
+function dropConfetti(){
+  var host=document.getElementById('confettiHost');
+  if(!host){ host=document.createElement('div'); host.id='confettiHost';
+    host.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden;';
+    document.body.appendChild(host); }
+  var tb=document.querySelector('.tabs-bar');
+  var startY=tb?Math.round(tb.getBoundingClientRect().bottom):60;
+  var colors=['#4CAF50','#81C784','#FFD54F','#FFFFFF','#2E7D32',ACCENT];
+  for(var i=0;i<90;i++){
+    var d=document.createElement('div');
+    var size=6+Math.random()*8;
+    var col=colors[Math.floor(Math.random()*colors.length)];
+    var dur=2200+Math.random()*1600, delay=Math.random()*250, rot=Math.random()*360, xdrift=Math.random()*160-80;
+    d.style.cssText='position:absolute;top:'+startY+'px;left:'+(Math.random()*100)+'vw;width:'+size+'px;height:'+(size*0.5)+'px;background:'+col+';border-radius:1px;';
+    host.appendChild(d);
+    var anim=d.animate([
+      {transform:'translate(0,0) rotate('+rot+'deg)',opacity:1},
+      {transform:'translate('+xdrift+'px,'+(window.innerHeight+40)+'px) rotate('+(rot+720)+'deg)',opacity:1,offset:0.85},
+      {transform:'translate('+xdrift+'px,'+(window.innerHeight+90)+'px) rotate('+(rot+800)+'deg)',opacity:0}
+    ],{duration:dur,delay:delay,easing:'cubic-bezier(.22,.6,.36,1)',fill:'forwards'});
+    anim.onfinish=(function(el){return function(){el.remove();};})(d);
+  }
+  setTimeout(function(){ if(host) host.innerHTML=''; },4400);
+}
+function updateAllDoneGlow(on){
+  var g=document.getElementById('allDoneGlow');
+  if(!g){ g=document.createElement('div'); g.id='allDoneGlow';
+    g.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9990;opacity:0;transition:opacity 1.1s ease;background:rgba(76,175,80,0.09);';
+    document.body.appendChild(g);
+  }
+  var prev=allDoneState[activeDay];
+  var justDone=(prev!==undefined && !prev && on);
+  allDoneState[activeDay]=on;
+  if(justDone){ dropConfetti(); var d=activeDay; setTimeout(function(){ if(activeDay===d) g.style.opacity='1'; },450); }
+  else { g.style.opacity=on?'1':'0'; }
+}
+
+initFirebase();
+
+</script>
+</body>
+</html>

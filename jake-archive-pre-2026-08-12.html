@@ -14,40 +14,7 @@
   #jakeLock button:hover{background:#e8e8e8;}
   #jakeLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
   #jakeLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
-
-    /* ---- synchronized progress (owner-style) ---- */
-    .overall{background:#161616;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px 22px;display:flex;align-items:center;gap:24px;margin-bottom:22px;flex-wrap:wrap;}
-    .overall .oc-num{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;line-height:1;}
-    .overall .oc-lab{font-size:13px;color:rgba(255,255,255,0.55);margin-top:6px;}
-    .donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;}
-    .donut-card{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 10px;text-align:center;}
-    .donut-card .dn{font-weight:700;font-size:14px;margin-top:9px;}
-    .donut-card .dd{font-size:12px;color:rgba(255,255,255,0.45);margin-top:2px;}
-    .bars{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 18px;margin-top:16px;}
-    .bar-row{display:flex;align-items:center;gap:12px;margin:11px 0;}
-    .bar-row .bl{width:92px;font-size:13px;font-weight:600;flex-shrink:0;}
-    .bar-track{flex:1;height:12px;border-radius:99px;background:rgba(255,255,255,0.09);overflow:hidden;}
-    .bar-fill{height:100%;border-radius:99px;transition:width .5s ease;}
-    .bar-row .bp{width:44px;text-align:right;font-size:13px;font-weight:700;color:rgba(255,255,255,0.75);flex-shrink:0;}
-    /* ---- weekly plan cards ---- */
-    .plan-card{background:#161616;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 18px;margin-bottom:12px;}
-    .plan-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:9px;}
-    .plan-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
-    .plan-list{list-style:none;margin:0;padding:0;}
-    .plan-list li{font-size:13.5px;color:rgba(255,255,255,0.72);padding:5px 0 5px 18px;position:relative;line-height:1.5;}
-    .plan-list li:before{content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.3);}
-    .plan-list li.key{color:#fff;font-weight:600;}
-    .plan-list li.key:before{background:#81C784;}
-    .plan-sep{height:1px;background:rgba(255,255,255,0.07);margin:9px 0;}
-    /* ---- archive ---- */
-    .arch-toggle{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.75);border-radius:14px;padding:15px 20px;font-family:inherit;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
-    .arch-toggle:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.28);}
-    .arch-week{margin:20px 0 8px;}
-    .arch-week .awlabel{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;margin-bottom:12px;color:rgba(255,255,255,0.85);}
-    .arch-link{display:inline-block;margin-top:14px;font-size:13px;color:#81C784;text-decoration:none;font-weight:600;}
-    .arch-link:hover{text-decoration:underline;}
-
-  </style>
+</style>
 <script id="jakeGateScript">
 (function(){
   var KEY = 'amicus_jake_v1';
@@ -153,51 +120,8 @@
     <button class="signout" id="signout">Sign out this device</button>
   </div>
   <h1>Jake</h1>
-  <div class="sub">Private workspace · Aug 12 – 18, 2026</div>
+  <div class="sub">Private workspace</div>
   <div class="sync" id="sync">⏳ Connecting…</div>
-
-  <div class="section">
-    <h2>Synchronized progress</h2>
-    <div class="shint">Live roll-up across all 5 active portfolios — same feed as the owner tab.</div>
-    <div class="overall" id="jkOverall"></div>
-    <div class="donut-grid" id="jkDonuts"></div>
-    <div class="bars" id="jkBars"></div>
-  </div>
-
-  <div class="section">
-    <h2>This week — plan by market</h2>
-    <div class="shint">Aug 12 – 18, 2026. Green = market-specific push; the rest is the all-markets baseline.</div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#8B5E3C"></span>Lehigh</div>
-    <ul class="plan-list"><li class="key">Taylor Gym — rec-jersey sponsorship</li><li class="key">Powerhouse — table / sponsor</li><li class="key">5× CubiCasa floor plans</li><li class="key">Welcome-back event</li><li class="key">Media — 50 walk-thru · 50 photos · 20 panning · 10 floor plans</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#2E7D32"></span>Binghamton</div>
-    <ul class="plan-list"><li class="key">Media — 10 walk-thru · 10 photos · 5 panning</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#C49000"></span>Savannah</div>
-    <ul class="plan-list"><li class="key">Back-to-school event plan</li><li class="key">Media — 10 walk-thru · 10 photos · 3 panning · 5 floor plans</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#9B1B30"></span>Charleston</div>
-    <ul class="plan-list"><li class="key">Internship recap — McKinsey</li><li class="key">Back-to-school event plan</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  <div class="plan-card">
-    <div class="plan-name"><span class="plan-dot" style="background:#C62828"></span>Troy</div>
-    <ul class="plan-list"><li class="key">Barbecue event — progress</li></ul>
-    <div class="plan-sep"></div>
-    <ul class="plan-list"><li>3× Instagram posts · 40 Instagram DMs</li><li>3× TikToks · 3× YouTube · 3× Google posts</li><li>5 Reddit comments · 3 Google reviews</li><li>Respond to ALL reviews by Tue AM</li><li>Move-in photos → get to 5</li><li>SORT ONEDRIVE — 100% uploaded &amp; sorted</li><li>MARK DOWN MONDAY — 100% accurate to OneDrive</li><li>First-semester marketing plan — WITH BUDGET</li><li>Final NIL list — athletes, budget, contacts (100% underway by 8/31)</li></ul>
-  </div>
-  </div>
 
   <div class="section" id="checklistSection">
     <h2>To-do</h2>
@@ -210,20 +134,9 @@
     <div class="shint">Thursday &amp; Monday AM — jot what each market has done, is missing, and needs to do next.</div>
     <div id="notes"></div>
   </div>
-
-  <div class="section">
-    <button class="arch-toggle" id="archToggle" onclick="toggleJakeArch()">
-      <span>📦 Archive &middot; past weeks &amp; original workspace</span><span class="arch-caret">▸</span>
-    </button>
-    <div id="jakeArchiveBody" style="display:none;">
-      <div id="jakeArchiveDash"></div>
-      <a class="arch-link" href="jake-archive-pre-2026-08-12.html">→ Open original Jake workspace snapshot (pre Aug 12)</a>
-    </div>
-  </div>
 </div>
 
 <script>
-
 const PKEY = "jake-private";
 const checklist = [
   {id:"insta_tulane", t:"Create Tulane Instagram", d:"Stand up the @amicus Tulane account (Tulane still on hold, but reserve the handle)."},
@@ -361,59 +274,6 @@ document.getElementById('signout').addEventListener('click', ()=>{
 
 initFirebase();
 render();
-
-</script>
-
-<script>
-/* ---- Synchronized progress dashboard (owner-style, read-only) ---- */
-const JK_FB={apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",authDomain:"amicus-marketing.firebaseapp.com",databaseURL:"https://amicus-marketing-default-rtdb.firebaseio.com",projectId:"amicus-marketing",storageBucket:"amicus-marketing.firebasestorage.app",messagingSenderId:"926415834204",appId:"1:926415834204:web:c6824762be375a180dea99"};
-const JK_PORT=[
-  {key:"lehigh-2026-08-12",     name:"Lehigh",     total:46, accent:"#8B5E3C"},
-  {key:"binghamton-2026-08-12", name:"Binghamton", total:41, accent:"#2E7D32"},
-  {key:"savannah-2026-08-12",   name:"Savannah",   total:43, accent:"#C49000"},
-  {key:"charleston-2026-08-12", name:"Charleston", total:39, accent:"#9B1B30"},
-  {key:"troy-2026-08-12",       name:"Troy",       total:42, accent:"#C62828"}
-];
-const JK_ARCH=[
-  {label:"Aug 5 – 11, 2026", portfolios:[
-    {key:"lehigh-2026-08-05",     name:"Lehigh",     total:43, accent:"#8B5E3C"},
-    {key:"binghamton-2026-08-05", name:"Binghamton", total:52, accent:"#2E7D32"},
-    {key:"savannah-2026-08-05",   name:"Savannah",   total:56, accent:"#C49000"},
-    {key:"charleston-2026-08-05", name:"Charleston", total:54, accent:"#9B1B30"},
-    {key:"troy-2026-08-05",       name:"Troy",       total:52, accent:"#C62828"}
-  ]}
-];
-let jkProg={}, jkArchProg={};
-function jkDonut(pct,color,size){ size=size||90; var r=size*0.36,c=2*Math.PI*r,off=c*(1-pct/100),cx=size/2;
-  return '<div style="position:relative;width:'+size+'px;height:'+size+'px;margin:0 auto;"><svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" style="transform:rotate(-90deg)"><circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="'+(size*0.10)+'"/><circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="'+(size*0.10)+'" stroke-linecap="round" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'" style="transition:stroke-dashoffset .5s ease"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:'+(size*0.22)+'px;">'+pct+'%</div></div>';
-}
-function jkRenderCharts(){
-  var totDone=0,totAll=0,pcts=[];
-  JK_PORT.forEach(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};totDone+=pr.done;totAll+=pr.total;pcts.push(pr.pct);});
-  var avg=pcts.length?Math.round(pcts.reduce(function(a,b){return a+b;},0)/pcts.length):0;
-  document.getElementById('jkOverall').innerHTML=jkDonut(avg,"#FFFFFF",110)+'<div><div class="oc-num">'+avg+'%</div><div class="oc-lab">Average completion across '+JK_PORT.length+' active portfolios<br>'+totDone+' of '+totAll+' tasks done this week</div></div>';
-  document.getElementById('jkDonuts').innerHTML=JK_PORT.map(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="donut-card">'+jkDonut(pr.pct,p.accent,84)+'<div class="dn">'+p.name+'</div><div class="dd">'+pr.done+'/'+pr.total+' tasks</div></div>';}).join("");
-  document.getElementById('jkBars').innerHTML=JK_PORT.map(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="bar-row"><div class="bl">'+p.name+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pr.pct+'%;background:'+p.accent+'"></div></div><div class="bp">'+pr.pct+'%</div></div>';}).join("");
-}
-function jkRenderArch(){
-  var host=document.getElementById('jakeArchiveDash'); if(!host) return;
-  host.innerHTML=JK_ARCH.map(function(w){
-    var totDone=0,totAll=0,pcts=[];
-    w.portfolios.forEach(function(p){var pr=jkArchProg[p.key]||{done:0,total:p.total,pct:0};totDone+=pr.done;totAll+=pr.total;pcts.push(pr.pct);});
-    var avg=pcts.length?Math.round(pcts.reduce(function(a,b){return a+b;},0)/pcts.length):0;
-    var donuts=w.portfolios.map(function(p){var pr=jkArchProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="donut-card">'+jkDonut(pr.pct,p.accent,74)+'<div class="dn">'+p.name+'</div><div class="dd">'+pr.done+'/'+pr.total+' tasks</div></div>';}).join("");
-    var bars=w.portfolios.map(function(p){var pr=jkArchProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="bar-row"><div class="bl">'+p.name+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pr.pct+'%;background:'+p.accent+'"></div></div><div class="bp">'+pr.pct+'%</div></div>';}).join("");
-    return '<div class="arch-week"><div class="awlabel">'+w.label+' &middot; '+avg+'% avg &middot; '+totDone+'/'+totAll+' tasks</div><div class="donut-grid">'+donuts+'</div><div class="bars">'+bars+'</div></div>';
-  }).join("");
-}
-function toggleJakeArch(){var b=document.getElementById('jakeArchiveBody');var c=document.querySelector('#archToggle .arch-caret');var open=b.style.display!=='none';b.style.display=open?'none':'block';c.textContent=open?'▸':'▾';}
-(function(){
-  try{ if(!firebase.apps.length) firebase.initializeApp(JK_FB); }catch(e){}
-  var db=firebase.database();
-  JK_PORT.forEach(function(p){ db.ref("portfolios/"+p.key).on("value",function(snap){var d=snap.val()||{};var ck=d.checked||{};var done=0;Object.keys(ck).forEach(function(k){if(ck[k])done++;});done=Math.min(done,p.total);jkProg[p.key]={done:done,total:p.total,pct:Math.round(done/p.total*100)};jkRenderCharts();},function(){}); });
-  JK_ARCH.forEach(function(w){ w.portfolios.forEach(function(p){ db.ref("portfolios/"+p.key).on("value",function(snap){var d=snap.val()||{};var ck=d.checked||{};var done=0;Object.keys(ck).forEach(function(k){if(ck[k])done++;});done=Math.min(done,p.total);jkArchProg[p.key]={done:done,total:p.total,pct:Math.round(done/p.total*100)};jkRenderArch();},function(){}); }); });
-  jkRenderCharts(); jkRenderArch();
-})();
 </script>
 </body>
 </html>

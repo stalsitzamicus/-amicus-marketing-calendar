@@ -107,6 +107,10 @@
     textarea:focus{border-color:rgba(255,255,255,0.4);}
     .saved{font-size:11px;color:#81C784;margin-top:5px;height:14px;letter-spacing:1px;text-transform:uppercase;}
     .general textarea{min-height:120px;}
+    .arch-toggle{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.75);border-radius:14px;padding:15px 20px;font-family:inherit;font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+    .arch-toggle:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.28);}
+    .arch-week{margin-bottom:30px;}
+    .arch-week .awlabel{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;margin-bottom:14px;color:rgba(255,255,255,0.85);}
   </style>
 </head>
 <body>
@@ -116,7 +120,7 @@
     <button class="signout" id="signout">Sign out this device</button>
   </div>
   <h1>Brooks</h1>
-  <div class="sub">Owner — portfolio overview</div>
+  <div class="sub">Owner — portfolio overview · Aug 12 – 18, 2026</div>
   <div class="sync" id="sync">⏳ Connecting…</div>
 
   <div class="section">
@@ -140,6 +144,13 @@
     <h2>Thoughts by market</h2>
     <div id="marketNotes"></div>
   </div>
+
+  <div class="section" id="archiveSection">
+    <button class="arch-toggle" id="archToggle" onclick="toggleArch()">
+      <span>📦 Archive &middot; past weeks</span><span class="arch-caret">&#9656;</span>
+    </button>
+    <div id="archiveBody" style="display:none;padding-top:22px;"></div>
+  </div>
 </div>
 
 <script>
@@ -152,16 +163,28 @@ const FBCONF={
   messagingSenderId:"926415834204",
   appId:"1:926415834204:web:c6824762be375a180dea99"
 };
+const WEEK_LABEL="Aug 12 – 18, 2026";
 const PORTFOLIOS=[
-  {key:"lehigh-2026-08-05",     name:"Lehigh",     total:43, accent:"#8B5E3C"},
-  {key:"binghamton-2026-08-05", name:"Binghamton", total:52, accent:"#2E7D32"},
-  {key:"savannah-2026-08-05",   name:"Savannah",   total:56, accent:"#C49000"},
-  {key:"charleston-2026-08-05", name:"Charleston", total:54, accent:"#9B1B30"},
-  {key:"troy-2026-08-05",       name:"Troy",       total:52, accent:"#C62828"}
+  {key:"lehigh-2026-08-12",     name:"Lehigh",     total:46, accent:"#8B5E3C"},
+  {key:"binghamton-2026-08-12", name:"Binghamton", total:41, accent:"#2E7D32"},
+  {key:"savannah-2026-08-12",   name:"Savannah",   total:43, accent:"#C49000"},
+  {key:"charleston-2026-08-12", name:"Charleston", total:39, accent:"#9B1B30"},
+  {key:"troy-2026-08-12",       name:"Troy",       total:42, accent:"#C62828"}
 ];
 const NKEY="brooks-notes";
+// Past weeks kept for safe keeping — read-only, live from their own boards.
+const ARCHIVE_WEEKS=[
+  {label:"Aug 5 – 11, 2026", portfolios:[
+    {key:"lehigh-2026-08-05",     name:"Lehigh",     total:43, accent:"#8B5E3C"},
+    {key:"binghamton-2026-08-05", name:"Binghamton", total:52, accent:"#2E7D32"},
+    {key:"savannah-2026-08-05",   name:"Savannah",   total:56, accent:"#C49000"},
+    {key:"charleston-2026-08-05", name:"Charleston", total:54, accent:"#9B1B30"},
+    {key:"troy-2026-08-05",       name:"Troy",       total:52, accent:"#C62828"}
+  ]}
+];
 
 let progress={};                 // key -> {done,total,pct}
+let archProgress={};             // archived key -> {done,total,pct}
 let notes={general:"", markets:{}};
 let db=null, notesRef=null, saveTimer=null;
 
@@ -197,6 +220,21 @@ function renderCharts(){
   document.getElementById('bars').innerHTML = PORTFOLIOS.map(p=>{
     const pr=progress[p.key]||{done:0,total:p.total,pct:0};
     return `<div class="bar-row"><div class="bl">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pr.pct}%;background:${p.accent}"></div></div><div class="bp">${pr.pct}%</div></div>`;
+  }).join("");
+}
+
+function renderArchive(){
+  const body=document.getElementById('archiveBody'); if(!body) return;
+  body.innerHTML = ARCHIVE_WEEKS.map(w=>{
+    let totDone=0,totAll=0,pcts=[];
+    w.portfolios.forEach(p=>{ const pr=archProgress[p.key]||{done:0,total:p.total,pct:0}; totDone+=pr.done; totAll+=pr.total; pcts.push(pr.pct); });
+    const avg = pcts.length? Math.round(pcts.reduce((a,b)=>a+b,0)/pcts.length):0;
+    const donuts = w.portfolios.map(p=>{ const pr=archProgress[p.key]||{done:0,total:p.total,pct:0};
+      return `<div class="donut-card">${donutSVG(pr.pct,p.accent,80)}<div class="dn">${p.name}</div><div class="dd">${pr.done}/${pr.total} tasks</div></div>`; }).join("");
+    const bars = w.portfolios.map(p=>{ const pr=archProgress[p.key]||{done:0,total:p.total,pct:0};
+      return `<div class="bar-row"><div class="bl">${p.name}</div><div class="bar-track"><div class="bar-fill" style="width:${pr.pct}%;background:${p.accent}"></div></div><div class="bp">${pr.pct}%</div></div>`; }).join("");
+    return `<div class="arch-week"><div class="awlabel">${w.label} &middot; ${avg}% avg &middot; ${totDone}/${totAll} tasks</div>
+      <div class="donut-grid">${donuts}</div><div style="height:14px"></div><div class="bars">${bars}</div></div>`;
   }).join("");
 }
 
@@ -242,6 +280,15 @@ function init(){
       renderCharts();
     },()=>{ document.getElementById('sync').innerHTML="⚠️ Offline (some data may be stale)"; });
   });
+  ARCHIVE_WEEKS.forEach(w=>{ w.portfolios.forEach(p=>{
+    db.ref("portfolios/"+p.key).on("value",snap=>{
+      const d=snap.val()||{}; const checked=d.checked||{};
+      let done=0; Object.keys(checked).forEach(k=>{ if(checked[k]) done++; });
+      done=Math.min(done,p.total);
+      archProgress[p.key]={done,total:p.total,pct:Math.round(done/p.total*100)};
+      renderArchive();
+    },()=>{});
+  }); });
   notesRef=db.ref("portfolios/"+NKEY);
   notesRef.on("value",snap=>{
     const d=snap.val()||{};
@@ -259,7 +306,8 @@ document.getElementById('signout').addEventListener('click',()=>{
   location.reload();
 });
 
-renderCharts(); renderNotes(); init();
+function toggleArch(){var b=document.getElementById('archiveBody');var c=document.querySelector('.arch-caret');var open=b.style.display!=='none';b.style.display=open?'none':'block';c.innerHTML=open?'&#9656;':'&#9662;';}
+renderCharts(); renderNotes(); renderArchive(); init();
 </script>
 </body>
 </html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Courtney — Media Command</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+<!-- ===== COURTNEY PAGE GATE (Slip2028) ===== -->
+<style id="cGateStyle">
+  html.c-locked body > *:not(#cLock){display:none !important;}
+  #cLock{position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+  #cLock .lc{width:min(400px,90vw);text-align:center;padding:40px 32px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:#161616;}
+  #cLock .lm{font-family:'Playfair Display',serif;font-weight:900;font-size:30px;color:#fff;letter-spacing:2px;}
+  #cLock .ls{color:rgba(255,255,255,.55);font-size:13px;margin:6px 0 28px;letter-spacing:1px;text-transform:uppercase;}
+  #cLock input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:#0f0f0f;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:1px;}
+  #cLock input:focus{border-color:rgba(255,255,255,.5);}
+  #cLock button{width:100%;margin-top:14px;padding:14px 16px;border-radius:10px;border:none;background:#fff;color:#0f0f0f;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  #cLock .le{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
+</style>
+<script>
+(function(){
+  var KEY='amicus_courtney_v1';
+  var HASH='9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422ac7afe'; // Slip2028
+  try{ if(localStorage.getItem(KEY)===HASH) return; }catch(e){}
+  document.documentElement.classList.add('c-locked');
+  async function sha256(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  function build(){
+    var w=document.createElement('div');w.id='cLock';
+    w.innerHTML='<div class="lc"><div class="lm">COURTNEY</div><div class="ls">Media Command · Private</div><input type="password" id="cPw" placeholder="Enter your password" autocomplete="current-password"/><button id="cGo">Unlock</button><div class="le" id="cErr"></div></div>';
+    document.body.appendChild(w);
+    var inp=w.querySelector('#cPw'),err=w.querySelector('#cErr');
+    async function go(){var v=inp.value.trim();if(!v)return;var h;try{h=await sha256(v);}catch(e){err.textContent='Unlock unavailable in this browser.';return;}
+      if(h===HASH){try{localStorage.setItem(KEY,HASH);}catch(e){}document.documentElement.classList.remove('c-locked');w.remove();if(window.__cStart)window.__cStart();}
+      else{err.textContent='Incorrect password.';inp.value='';inp.focus();}}
+    w.querySelector('#cGo').addEventListener('click',go);inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});
+    setTimeout(()=>inp.focus(),50);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();
+})();
+</script>
+<!-- ===== END GATE ===== -->
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#0f1113;color:#e8eaed;min-height:100vh;}
+  .top{padding:34px 24px 22px;background:linear-gradient(160deg,#14181b,#0f1113);border-bottom:1px solid #20262b;}
+  .top .inner{max-width:1000px;margin:0 auto;}
+  .top a.back{font-size:12px;color:#6b7a3d;text-decoration:none;letter-spacing:1px;text-transform:uppercase;}
+  .top h1{font-family:'Playfair Display',serif;font-weight:900;font-size:30px;margin-top:10px;color:#fff;}
+  .top .sub{color:#8b969e;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+  .demo-flag{display:inline-block;margin-top:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#b7c0c7;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:99px;}
+  .wrap{max-width:1000px;margin:0 auto;padding:22px 24px 80px;}
+  .bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;}
+  .type-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;}
+  .type-video{background:#F5C518;color:#3a2f00;}
+  .type-photo{background:#34C759;color:#08340f;}
+  .type-flyer{background:#FF4D6D;color:#3a000c;}
+  .prog{flex:1;min-width:220px;}
+  .prog-meta{display:flex;justify-content:space-between;font-size:12px;color:#8b969e;margin-bottom:6px;}
+  .prog-track{height:6px;background:#20262b;border-radius:99px;overflow:hidden;}
+  .prog-fill{height:100%;background:#4CAF50;border-radius:99px;transition:width .4s;}
+  .over-pill{background:#3a1416;color:#ff8a8a;border:1px solid #6d2327;font-size:12px;font-weight:700;padding:6px 12px;border-radius:99px;}
+  .group{margin-bottom:18px;}
+  .gh{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#8b969e;margin:0 2px 10px;cursor:pointer;user-select:none;}
+  .gh .car{font-size:11px;color:#6b7a3d;transition:transform .2s;}
+  .gh.today{color:#9ccc65;}
+  .gh.over{color:#ff8a8a;}
+  .gh .cnt{margin-left:auto;font-weight:700;color:#727c83;}
+  .card{background:#161a1d;border:1px solid #20262b;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+  .card.posted{opacity:.5;}
+  .card.overdue{border-color:#6d2327;background:#1b1516;}
+  .mk{font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+  .cbody{flex:1;min-width:0;}
+  .ctitle{font-size:15px;font-weight:700;color:#fff;}
+  .card.posted .ctitle{text-decoration:line-through;}
+  .cnotes{font-size:12px;color:#8b969e;margin-top:2px;}
+  .badges{display:inline-flex;gap:5px;margin-left:6px;vertical-align:middle;flex-wrap:wrap;}
+  .m-badge{font-size:9px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:99px;}
+  .badge-over{background:#C62828;color:#fff;}
+  .badge-ready{background:#173a1c;color:#8fd79b;border:1px solid #2e7d32;}
+  .badge-wait{background:#3a2a12;color:#e8b878;border:1px solid #8a5a1a;}
+  .toggles{display:flex;gap:6px;flex-shrink:0;align-items:center;}
+  .tg{display:inline-flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+  .tg .box{width:26px;height:26px;border-radius:7px;border:2px solid #333c42;background:#11151800;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;}
+  .tg.on .box{background:#2E7D32;border-color:#2E7D32;}
+  .tg .lb{font-size:9px;color:#727c83;letter-spacing:.3px;text-transform:uppercase;}
+  .tg.on .lb{color:#9ccc65;}
+  .empty{color:#4b545a;font-size:13px;padding:2px 2px 6px;}
+  .loading{text-align:center;padding:80px 0;color:#6b7a3d;}
+</style>
+</head>
+<body>
+<div class="top"><div class="inner">
+  <a class="back" href="amicus-marketing-hub.html">← Back to Hub</a>
+  <h1>Courtney — Media Command</h1>
+  <div class="sub">2-week posting plan · all markets · due &amp; posted</div>
+  <span class="demo-flag">Live · all markets</span>
+</div></div>
+<div class="wrap"><div id="app"><div class="loading">🔄 Connecting…</div></div></div>
+
+<script>
+const DEMO_TODAY=new Date().toISOString().slice(0,10);
+const WINDOW_DAYS=14; // 2 weeks out
+
+// Markets Courtney posts for. Media lives at a stable path media/{base}, shared across weeks.
+const MARKETS=[
+  {base:"lehigh", name:"Lehigh", color:"#7a4a12"},
+  {base:"binghamton", name:"Binghamton", color:"#2E7D32"},
+  {base:"troy", name:"Troy", color:"#B71C1C"},
+  {base:"savannah", name:"Savannah", color:"#a97e12"},
+  {base:"charleston", name:"Charleston", color:"#7a1f3d"}
+];
+
+let mediaByMarket={}; // key -> {id:item}
+let collapse={}; try{ collapse=JSON.parse(localStorage.getItem('amicus_c_collapse')||'{}'); }catch(e){ collapse={}; }
+let refs={}, started=false;
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function addDays(iso,n){var d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function fmt(iso){var d=new Date(iso+'T12:00:00');var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];return wd+' '+(d.getMonth()+1)+'/'+d.getDate();}
+
+function initFirebase(){
+  firebase.initializeApp({
+    apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
+    authDomain:"amicus-marketing.firebaseapp.com",
+    databaseURL:"https://amicus-marketing-default-rtdb.firebaseio.com",
+    projectId:"amicus-marketing",
+    storageBucket:"amicus-marketing.firebasestorage.app",
+    messagingSenderId:"926415834204",
+    appId:"1:926415834204:web:c6824762be375a180dea99"
+  });
+  const db=firebase.database();
+  MARKETS.forEach(m=>{
+    refs[m.base]=db.ref("media/"+m.base);
+    refs[m.base].on("value",snap=>{ mediaByMarket[m.base]=snap.val()||{}; render(); });
+  });
+}
+window.__cStart=function(){ if(started)return; started=true; initFirebase(); };
+// if already unlocked (no gate shown), start now
+try{ if(localStorage.getItem('amicus_courtney_v1')==='9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422ac7afe') window.__cStart(); }catch(e){}
+
+function allItems(){
+  const out=[];
+  MARKETS.forEach(m=>{ const bag=mediaByMarket[m.base]||{}; Object.values(bag).forEach(it=>{ if(it&&!it.archived) out.push(Object.assign({},it,{_mk:m.base,_mkName:m.name,_mkColor:m.color})); }); });
+  return out;
+}
+function isOverdue(it){ return !it.posted && it.date < DEMO_TODAY; }
+
+function toggleCollapse(k){ collapse[k]=!collapse[k]; try{localStorage.setItem('amicus_c_collapse',JSON.stringify(collapse));}catch(e){} render(); }
+function cToggle(mk,id,field){ const bag=mediaByMarket[mk]||{}; const it=bag[id]; if(!it)return; const val=!it[field]; refs[mk].child(id).update({[field]:val}); }
+
+function typePill(t){ return '<span class="type-pill type-'+t+'">'+t.charAt(0).toUpperCase()+t.slice(1)+'</span>'; }
+function tg(mk,it,field,label){ const on=!!it[field]; return '<span class="tg'+(on?' on':'')+'" onclick="cToggle(\''+mk+'\',\''+it.id+'\',\''+field+'\')"><span class="box">'+(on?'✓':'')+'</span><span class="lb">'+label+'</span></span>'; }
+
+function itemCard(it){
+  const over=isOverdue(it);
+  let badges='<span class="badges">';
+  if(over) badges+='<span class="m-badge badge-over">OVERDUE</span>';
+  if(it.needsGather) badges+= it.gathered?'<span class="m-badge badge-ready">✓ GATHERED</span>':'<span class="m-badge badge-wait">⏳ NEEDS GATHER</span>';
+  badges+='</span>';
+  return '<div class="card'+(it.posted?' posted':'')+(over?' overdue':'')+'">'+
+    '<span class="mk" style="background:'+it._mkColor+'22;color:'+it._mkColor+';border:1px solid '+it._mkColor+'55">'+esc(it._mkName)+'</span>'+
+    typePill(it.type)+
+    '<div class="cbody"><div class="ctitle">'+esc(it.title)+badges+'</div>'+(it.notes?'<div class="cnotes">'+esc(it.notes)+'</div>':'')+'</div>'+
+    '<div class="toggles">'+tg(it._mk,it,'editDone','Edit')+tg(it._mk,it,'needsGather','Gather')+tg(it._mk,it,'posted','Posted')+'</div>'+
+  '</div>';
+}
+
+function render(){
+  const app=document.getElementById('app'); if(!app)return;
+  const items=allItems();
+  const windowStart=DEMO_TODAY, windowEnd=addDays(DEMO_TODAY,WINDOW_DAYS-1);
+  const inWindow=items.filter(it=>it.date>=windowStart && it.date<=windowEnd);
+  const posted=inWindow.filter(it=>it.posted).length;
+  const pct=inWindow.length?Math.round(posted/inWindow.length*100):0;
+  const over=items.filter(isOverdue).sort((a,b)=>a.date<b.date?-1:1);
+
+  let h='';
+  // top bar
+  h+='<div class="bar"><div class="legend"><span class="type-pill type-video">Video</span><span class="type-pill type-photo">Photo</span><span class="type-pill type-flyer">Flyer</span></div>';
+  h+='<div class="prog"><div class="prog-meta"><span>'+posted+' of '+inWindow.length+' posted · next 2 weeks</span><span style="color:#9ccc65;font-weight:700">'+pct+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+pct+'%"></div></div></div>';
+  if(over.length) h+='<span class="over-pill">⚠ '+over.length+' overdue</span>';
+  h+='</div>';
+
+  // overdue (collapsible, default open)
+  if(over.length){
+    const open=collapse['over']!==true;
+    h+='<div class="group"><div class="gh over" onclick="toggleCollapse(\'over\')"><span class="car" style="transform:rotate('+(open?90:0)+'deg)">▶</span>⚠ Overdue — post ASAP<span class="cnt">'+over.length+'</span></div>';
+    if(open){ over.forEach(it=>h+=itemCard(it)); }
+    h+='</div>';
+  }
+
+  // day-by-day, 2 weeks
+  for(let i=0;i<WINDOW_DAYS;i++){
+    const iso=addDays(DEMO_TODAY,i);
+    const dayItems=items.filter(it=>it.date===iso && !isOverdue(it));
+    const isToday=iso===DEMO_TODAY;
+    const key='day-'+iso;
+    const open=collapse[key]!==true; // default open
+    h+='<div class="group"><div class="gh'+(isToday?' today':'')+'" onclick="toggleCollapse(\''+key+'\')"><span class="car" style="transform:rotate('+(open?90:0)+'deg)">▶</span>'+fmt(iso)+(isToday?' · TODAY':'')+'<span class="cnt">'+dayItems.length+'</span></div>';
+    if(open){
+      if(dayItems.length){ dayItems.sort((a,b)=>a._mkName<b._mkName?-1:1).forEach(it=>h+=itemCard(it)); }
+      else{ h+='<div class="empty">— nothing scheduled —</div>'; }
+    }
+    h+='</div>';
+  }
+  app.innerHTML=h;
+}
+</script>
+</body>
+</html>

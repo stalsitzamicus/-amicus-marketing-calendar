@@ -47,7 +47,45 @@
     .arch-link{display:inline-block;margin-top:14px;font-size:13px;color:#81C784;text-decoration:none;font-weight:600;}
     .arch-link:hover{text-decoration:underline;}
 
-  </style>
+  
+  /* --- media command (Courtney feed) --- */
+  .jm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+  .legend{display:flex;gap:8px;flex-wrap:wrap;}
+  .type-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;}
+  .type-video{background:#F5C518;color:#3a2f00;}
+  .type-photo{background:#34C759;color:#08340f;}
+  .type-flyer{background:#FF4D6D;color:#3a000c;}
+  .jm-prog{flex:1;min-width:220px;}
+  .jm-prog-meta{display:flex;justify-content:space-between;font-size:12px;color:#8b969e;margin-bottom:6px;}
+  .jm-track{height:6px;background:#20262b;border-radius:99px;overflow:hidden;}
+  .jm-fill{height:100%;background:#4CAF50;border-radius:99px;transition:width .4s;}
+  .over-pill{background:#3a1416;color:#ff8a8a;border:1px solid #6d2327;font-size:12px;font-weight:700;padding:6px 12px;border-radius:99px;}
+  .jm-group{margin-bottom:18px;}
+  .jm-gh{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#8b969e;margin:0 2px 10px;cursor:pointer;user-select:none;}
+  .jm-gh .car{font-size:11px;color:#6b7a3d;transition:transform .2s;}
+  .jm-gh.today{color:#9ccc65;}
+  .jm-gh.over{color:#ff8a8a;}
+  .jm-gh .cnt{margin-left:auto;font-weight:700;color:#727c83;}
+  .jm-empty{color:#4b545a;font-size:13px;padding:2px 2px 10px;}
+  .mtable-wrap{overflow-x:auto;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,0.25);}
+  table.mtable{border-collapse:collapse;width:100%;min-width:1040px;font-size:13px;}
+  table.mtable th{background:#22303C;color:#cfd8dc;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 10px;text-align:left;white-space:nowrap;}
+  table.mtable td{border-top:1px solid #eee;padding:8px 10px;vertical-align:middle;color:#333;}
+  table.mtable tr.mrow.overdue td{background:#FFF6F6;}
+  table.mtable tr.mrow.posted td{background:#F6FBF6;}
+  .mk-chip{font-size:10px;font-weight:800;letter-spacing:.4px;padding:3px 9px;border-radius:6px;white-space:nowrap;}
+  .m-input{width:100%;border:1px solid transparent;background:transparent;padding:5px 6px;border-radius:6px;font-size:13px;font-family:inherit;color:#1a1a1a;}
+  .m-input:hover{border-color:#e2e2e2;}
+  .m-input:focus{border-color:#90caf9;outline:none;background:#fff;}
+  .m-status{width:24px;height:24px;border-radius:6px;border:2px solid #ddd;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;user-select:none;}
+  .m-status.on{background:#2E7D32;border-color:#2E7D32;}
+  .m-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;}
+  .badge-over{background:#C62828;color:#fff;}
+  .badge-ready{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;}
+  .badge-wait{background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;}
+  .type-select{border:1px solid #ddd;border-radius:6px;padding:4px 6px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;}
+  .m-del{background:none;border:none;color:#c62828;cursor:pointer;font-size:15px;line-height:1;}
+</style>
 <script id="jakeGateScript">
 (function(){
   var KEY = 'amicus_jake_v1';
@@ -153,7 +191,7 @@
     <button class="signout" id="signout">Sign out this device</button>
   </div>
   <h1>Jake</h1>
-  <div class="sub">Private workspace · Aug 12 – 18, 2026</div>
+  <div class="sub">Private workspace · Aug 26 – Sep 1, 2026</div>
   <div class="sync" id="sync">⏳ Connecting…</div>
 
   <div class="section">
@@ -184,6 +222,15 @@
       <div id="jakeArchiveDash"></div>
       <a class="arch-link" href="jake-archive-pre-2026-08-12.html">→ Open original Jake workspace snapshot (pre Aug 12)</a>
     </div>
+  </div>
+</div>
+
+
+<div class="wrap" style="padding-top:0;">
+  <div class="section">
+    <h2>Media Command</h2>
+    <div style="color:#8b969e;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:-4px 0 16px;">2-week posting plan · all markets · same feed as Courtney's tab</div>
+    <div id="jmApp"><div style="color:#6b7a3d;padding:30px 0;text-align:center;">🔄 Loading media…</div></div>
   </div>
 </div>
 
@@ -340,13 +387,20 @@ render();
 /* ---- Synchronized progress dashboard (owner-style, read-only) ---- */
 const JK_FB={apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",authDomain:"amicus-marketing.firebaseapp.com",databaseURL:"https://amicus-marketing-default-rtdb.firebaseio.com",projectId:"amicus-marketing",storageBucket:"amicus-marketing.firebasestorage.app",messagingSenderId:"926415834204",appId:"1:926415834204:web:c6824762be375a180dea99"};
 const JK_PORT=[
-  {key:"lehigh-2026-08-12",     name:"Lehigh",     total:42, accent:"#8B5E3C"},
-  {key:"binghamton-2026-08-12", name:"Binghamton", total:37, accent:"#2E7D32"},
-  {key:"savannah-2026-08-12",   name:"Savannah",   total:39, accent:"#C49000"},
-  {key:"charleston-2026-08-12", name:"Charleston", total:36, accent:"#9B1B30"},
-  {key:"troy-2026-08-12",       name:"Troy",       total:38, accent:"#C62828"}
+  {key:"lehigh-2026-08-26",     name:"Lehigh",     total:31, accent:"#8B5E3C"},
+  {key:"binghamton-2026-08-26", name:"Binghamton", total:26, accent:"#2E7D32"},
+  {key:"savannah-2026-08-26",   name:"Savannah",   total:25, accent:"#C49000"},
+  {key:"charleston-2026-08-26", name:"Charleston", total:24, accent:"#9B1B30"},
+  {key:"troy-2026-08-26",       name:"Troy",       total:26, accent:"#C62828"}
 ];
 const JK_ARCH=[
+  {label:"Aug 12 – 18, 2026", portfolios:[
+    {key:"lehigh-2026-08-12",     name:"Lehigh",     total:42, accent:"#8B5E3C"},
+    {key:"binghamton-2026-08-12", name:"Binghamton", total:37, accent:"#2E7D32"},
+    {key:"savannah-2026-08-12",   name:"Savannah",   total:39, accent:"#C49000"},
+    {key:"charleston-2026-08-12", name:"Charleston", total:36, accent:"#9B1B30"},
+    {key:"troy-2026-08-12",       name:"Troy",       total:38, accent:"#C62828"}
+  ]},
   {label:"Aug 5 – 11, 2026", portfolios:[
     {key:"lehigh-2026-08-05",     name:"Lehigh",     total:43, accent:"#8B5E3C"},
     {key:"binghamton-2026-08-05", name:"Binghamton", total:52, accent:"#2E7D32"},
@@ -387,5 +441,63 @@ function toggleJakeArch(){var b=document.getElementById('jakeArchiveBody');var c
   jkRenderCharts(); jkRenderArch();
 })();
 </script>
+
+<script>
+/* ---- Media Command (Courtney feed, editable) ---- */
+(function(){
+  var MARKETS=[{base:"lehigh",name:"Lehigh",color:"#8B5E3C"},{base:"binghamton",name:"Binghamton",color:"#2E7D32"},{base:"troy",name:"Troy",color:"#C62828"},{base:"savannah",name:"Savannah",color:"#C49000"},{base:"charleston",name:"Charleston",color:"#9B1B30"}];
+  var SEEDS={"lehigh": {"lehigh_ig1": {"id": "lehigh_ig1", "title": "Leasing IG post — house photos", "type": "photo", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: house photos."}, "lehigh_ig2": {"id": "lehigh_ig2", "title": "Leasing IG post — panning video", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: panning video."}, "lehigh_tt1": {"id": "lehigh_tt1", "title": "TikTok — campus / leasing", "type": "video", "date": "2026-08-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "lehigh_tt2": {"id": "lehigh_tt2", "title": "TikTok — property feature", "type": "video", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "lehigh_yt1": {"id": "lehigh_yt1", "title": "YouTube — property walkthrough", "type": "video", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "lehigh_yt2": {"id": "lehigh_yt2", "title": "YouTube — neighborhood guide", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "lehigh_yt3": {"id": "lehigh_yt3", "title": "YouTube — leasing FAQ", "type": "video", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "lehigh_farmers": {"id": "lehigh_farmers", "title": "Farmers market promo post", "type": "photo", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Post Wed about Thursday's farmers market."}, "lehigh_gym": {"id": "lehigh_gym", "title": "Main Street Gym partnership post", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "STUB — more info to come. Placeholder for Friday announcement."}, "lehigh_cart_launch": {"id": "lehigh_cart_launch", "title": "Coffee cart launch post (AM)", "type": "photo", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Post Mon AM. Needs coffee-cart photos from ops."}, "lehigh_cart_story1": {"id": "lehigh_cart_story1", "title": "Coffee cart story", "type": "photo", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Daily coffee-cart story."}, "lehigh_cart_story2": {"id": "lehigh_cart_story2", "title": "Coffee cart story", "type": "photo", "date": "2026-09-01", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Daily coffee-cart story. (Wed/Sat coffee-cart posts continue next week.)"}, "lehigh_class": {"id": "lehigh_class", "title": "First day of class post", "type": "photo", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Monday — first day of class."}}, "binghamton": {"binghamton_ig1": {"id": "binghamton_ig1", "title": "Leasing IG post — house photos", "type": "photo", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: house photos."}, "binghamton_ig2": {"id": "binghamton_ig2", "title": "Leasing IG post — panning video", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: panning video."}, "binghamton_tt1": {"id": "binghamton_tt1", "title": "TikTok — campus / leasing", "type": "video", "date": "2026-08-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "binghamton_tt2": {"id": "binghamton_tt2", "title": "TikTok — property feature", "type": "video", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "binghamton_yt1": {"id": "binghamton_yt1", "title": "YouTube — property walkthrough", "type": "video", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "binghamton_yt2": {"id": "binghamton_yt2", "title": "YouTube — neighborhood guide", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "binghamton_yt3": {"id": "binghamton_yt3", "title": "YouTube — leasing FAQ", "type": "video", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "bing_event": {"id": "bing_event", "title": "Welcome Back event post", "type": "photo", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Needs event photos from ops."}}, "troy": {"troy_ig1": {"id": "troy_ig1", "title": "Leasing IG post — house photos", "type": "photo", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: house photos."}, "troy_ig2": {"id": "troy_ig2", "title": "Leasing IG post — panning video", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: panning video."}, "troy_tt1": {"id": "troy_tt1", "title": "TikTok — campus / leasing", "type": "video", "date": "2026-08-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "troy_tt2": {"id": "troy_tt2", "title": "TikTok — property feature", "type": "video", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "troy_yt1": {"id": "troy_yt1", "title": "YouTube — property walkthrough", "type": "video", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "troy_yt2": {"id": "troy_yt2", "title": "YouTube — neighborhood guide", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "troy_yt3": {"id": "troy_yt3", "title": "YouTube — leasing FAQ", "type": "video", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "troy_bbq": {"id": "troy_bbq", "title": "BBQ promo post", "type": "photo", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Post Saturday about the BBQ."}}, "savannah": {"savannah_ig1": {"id": "savannah_ig1", "title": "Leasing IG post — house photos", "type": "photo", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: house photos."}, "savannah_ig2": {"id": "savannah_ig2", "title": "Leasing IG post — panning video", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: panning video."}, "savannah_tt1": {"id": "savannah_tt1", "title": "TikTok — campus / leasing", "type": "video", "date": "2026-08-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "savannah_tt2": {"id": "savannah_tt2", "title": "TikTok — property feature", "type": "video", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "savannah_yt1": {"id": "savannah_yt1", "title": "YouTube — property walkthrough", "type": "video", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "savannah_yt2": {"id": "savannah_yt2", "title": "YouTube — neighborhood guide", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "savannah_yt3": {"id": "savannah_yt3", "title": "YouTube — leasing FAQ", "type": "video", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}}, "charleston": {"charleston_ig1": {"id": "charleston_ig1", "title": "Leasing IG post — house photos", "type": "photo", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: house photos."}, "charleston_ig2": {"id": "charleston_ig2", "title": "Leasing IG post — panning video", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars: panning video."}, "charleston_tt1": {"id": "charleston_tt1", "title": "TikTok — campus / leasing", "type": "video", "date": "2026-08-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "charleston_tt2": {"id": "charleston_tt2", "title": "TikTok — property feature", "type": "video", "date": "2026-08-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "charleston_yt1": {"id": "charleston_yt1", "title": "YouTube — property walkthrough", "type": "video", "date": "2026-08-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "charleston_yt2": {"id": "charleston_yt2", "title": "YouTube — neighborhood guide", "type": "video", "date": "2026-08-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}, "charleston_yt3": {"id": "charleston_yt3", "title": "YouTube — leasing FAQ", "type": "video", "date": "2026-08-31", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": ""}}};
+  var TODAY=new Date().toISOString().slice(0,10), WIN=14;
+  var byMk={}, refs={}, collapse={};
+  try{collapse=JSON.parse(localStorage.getItem('amicus_jm_collapse')||'{}');}catch(e){}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function addDays(iso,n){var d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+  function fmt(iso){var d=new Date(iso+'T12:00:00');return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate();}
+  function isOver(it){return !it.posted && it.date<TODAY;}
+  function o1(k,v){var o={};o[k]=v;return o;}
+  function items(){var out=[];MARKETS.forEach(function(m){var bag=byMk[m.base]||{};Object.keys(bag).forEach(function(id){var it=bag[id];if(it&&!it.archived)out.push(Object.assign({},it,{_mk:m.base,_mkName:m.name,_mkColor:m.color}));});});return out;}
+  window.jmSet=function(b,id,f,v){if(refs[b])refs[b].child(id).update(o1(f,(v||'').trim()));};
+  window.jmToggle=function(b,id,f){var it=(byMk[b]||{})[id];if(!it||!refs[b])return;refs[b].child(id).update(o1(f,!it[f]));};
+  window.jmType=function(b,id,v){if(refs[b])refs[b].child(id).update({type:v});};
+  window.jmDelete=function(b,id){if(!refs[b])return;if(!confirm('Archive this item?'))return;refs[b].child(id).update({archived:true});};
+  window.jmCollapse=function(k){collapse[k]=!collapse[k];try{localStorage.setItem('amicus_jm_collapse',JSON.stringify(collapse));}catch(e){}render();};
+  function statusCell(it,f){var on=!!it[f];return '<span class="m-status'+(on?' on':'')+'" onclick="jmToggle(\''+it._mk+'\',\''+it.id+'\',\''+f+'\')">'+(on?'\u2713':'')+'</span>';}
+  function gatherCell(it){var on=!!it.gathered;var box='<span class="m-status'+(on?' on':'')+'" onclick="jmToggle(\''+it._mk+'\',\''+it.id+'\',\'gathered\')">'+(on?'\u2713':'')+'</span>';var badge=on?'<span class="m-badge badge-ready">\u2713 GATHERED</span>':'<span class="m-badge badge-wait">\u23f3 WAITING</span>';return '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;">'+box+badge+'</span>';}
+  function table(list){
+    var h='<table class="mtable"><thead><tr><th>Market</th><th>Idea</th><th>Type</th><th>Media link</th><th>Gather?</th><th>Edit</th><th>Story / PIN</th><th>Posted / Sched.</th><th>OneDrive?</th><th>OneDrive link</th><th>Notes</th><th>Monday?</th><th></th></tr></thead><tbody>';
+    list.forEach(function(it){
+      var over=isOver(it);var cls='mrow'+(over?' overdue':'')+(it.posted?' posted':'');
+      var mk='<span class="mk-chip" style="background:'+it._mkColor+'22;color:'+it._mkColor+';border:1px solid '+it._mkColor+'55">'+esc(it._mkName)+'</span>';
+      var badge=over?'<span class="m-badge badge-over">OVERDUE</span>':'';
+      var title='<input class="m-input" style="font-weight:700;min-width:150px" value="'+esc(it.title)+'" onchange="jmSet(\''+it._mk+'\',\''+it.id+'\',\'title\',this.value)">';
+      var type='<select class="type-select type-'+it.type+'" onchange="jmType(\''+it._mk+'\',\''+it.id+'\',this.value)"><option value="video"'+(it.type==='video'?' selected':'')+'>Video</option><option value="photo"'+(it.type==='photo'?' selected':'')+'>Photo</option><option value="flyer"'+(it.type==='flyer'?' selected':'')+'>Flyer</option></select>';
+      var mlink='<input class="m-input" placeholder="https://\u2026" value="'+esc(it.mediaLink)+'" onchange="jmSet(\''+it._mk+'\',\''+it.id+'\',\'mediaLink\',this.value)">';
+      var dlink='<input class="m-input" placeholder="OneDrive\u2026" value="'+esc(it.oneDrive)+'" onchange="jmSet(\''+it._mk+'\',\''+it.id+'\',\'oneDrive\',this.value)">';
+      var notes='<input class="m-input" value="'+esc(it.notes)+'" onchange="jmSet(\''+it._mk+'\',\''+it.id+'\',\'notes\',this.value)">';
+      h+='<tr class="'+cls+'"><td>'+mk+'</td><td style="min-width:180px">'+title+badge+'</td><td>'+type+'</td><td style="min-width:110px">'+mlink+'</td><td style="min-width:120px">'+gatherCell(it)+'</td><td>'+statusCell(it,'editDone')+'</td><td>'+statusCell(it,'storyPin')+'</td><td>'+statusCell(it,'posted')+'</td><td>'+statusCell(it,'oneDriveDone')+'</td><td style="min-width:110px">'+dlink+'</td><td style="min-width:150px">'+notes+'</td><td>'+statusCell(it,'monday')+'</td><td><button class="m-del" onclick="jmDelete(\''+it._mk+'\',\''+it.id+'\')">\ud83d\uddd1</button></td></tr>';
+    });
+    return h+'</tbody></table>';
+  }
+  function render(){
+    var app=document.getElementById('jmApp');if(!app)return;
+    var all=items();var wEnd=addDays(TODAY,WIN-1);
+    var inWin=all.filter(function(it){return it.date>=TODAY&&it.date<=wEnd;});
+    var posted=inWin.filter(function(it){return it.posted;}).length;
+    var pct=inWin.length?Math.round(posted/inWin.length*100):0;
+    var over=all.filter(isOver).sort(function(a,b){return a.date<b.date?-1:1;});
+    var h='<div class="jm-bar"><div class="legend"><span class="type-pill type-video">Video</span><span class="type-pill type-photo">Photo</span><span class="type-pill type-flyer">Flyer</span></div><div class="jm-prog"><div class="jm-prog-meta"><span>'+posted+' of '+inWin.length+' posted \u00b7 next 2 weeks</span><span style="color:#9ccc65;font-weight:700">'+pct+'%</span></div><div class="jm-track"><div class="jm-fill" style="width:'+pct+'%"></div></div></div>'+(over.length?'<span class="over-pill">\u26a0 '+over.length+' overdue</span>':'')+'</div>';
+    if(over.length){var op=collapse['over']!==true;h+='<div class="jm-group"><div class="jm-gh over" onclick="jmCollapse(\'over\')"><span class="car" style="transform:rotate('+(op?90:0)+'deg)">\u25b6</span>\u26a0 Overdue \u2014 post ASAP<span class="cnt">'+over.length+'</span></div>'+(op?'<div class="mtable-wrap">'+table(over)+'</div>':'')+'</div>';}
+    for(var i=0;i<WIN;i++){var iso=addDays(TODAY,i);var di=all.filter(function(it){return it.date===iso&&!isOver(it);}).sort(function(a,b){return a._mkName<b._mkName?-1:1;});var today=iso===TODAY;var key='day-'+iso;var op=collapse[key]!==true;h+='<div class="jm-group"><div class="jm-gh'+(today?' today':'')+'" onclick="jmCollapse(\''+key+'\')"><span class="car" style="transform:rotate('+(op?90:0)+'deg)">\u25b6</span>'+fmt(iso)+(today?' \u00b7 TODAY':'')+'<span class="cnt">'+di.length+'</span></div>'+(op?(di.length?'<div class="mtable-wrap">'+table(di)+'</div>':'<div class="jm-empty">\u2014 nothing scheduled \u2014</div>'):'')+'</div>';}
+    app.innerHTML=h;
+  }
+  function start(){
+    try{ if(!firebase.apps.length && typeof JK_FB!=='undefined') firebase.initializeApp(JK_FB); }catch(e){}
+    var db=firebase.database();
+    MARKETS.forEach(function(m){refs[m.base]=db.ref('media/'+m.base);refs[m.base].on('value',function(snap){var v=snap.val();if((!v||!Object.keys(v).length)&&SEEDS[m.base]){refs[m.base].set(SEEDS[m.base]);byMk[m.base]=SEEDS[m.base];}else byMk[m.base]=v||{};render();},function(){});});
+  }
+  start();
+})();
+</script>
+
 </body>
 </html>

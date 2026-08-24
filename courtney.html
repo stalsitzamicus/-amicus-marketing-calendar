@@ -157,8 +157,9 @@ function cDelete(base,id){ if(!refs[base])return; if(!confirm('Archive this item
 
 function statusCell(it,field){ const on=!!it[field]; return '<span class="m-status'+(on?' on':'')+'" onclick="cToggle(\''+it._mk+'\',\''+it.id+'\',\''+field+'\')">'+(on?'✓':'')+'</span>'; }
 function gatherCell(it){
-  const box='<span class="m-status'+(it.needsGather?' on':'')+'" title="Flag this to be gathered by the market" onclick="cToggle(\''+it._mk+'\',\''+it.id+'\',\'needsGather\')">'+(it.needsGather?'✓':'')+'</span>';
-  let badge=''; if(it.needsGather){ badge = it.gathered ? '<span class="m-badge badge-ready">✓ GATHERED</span>' : '<span class="m-badge badge-wait">⏳ WAITING</span>'; }
+  const on=!!it.gathered;
+  const box='<span class="m-status'+(on?' on':'')+'" title="Check when the media has been gathered" onclick="cToggle(\''+it._mk+'\',\''+it.id+'\',\'gathered\')">'+(on?'✓':'')+'</span>';
+  const badge = on ? '<span class="m-badge badge-ready">✓ GATHERED</span>' : '<span class="m-badge badge-wait">⏳ WAITING</span>';
   return '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;">'+box+badge+'</span>';
 }
 

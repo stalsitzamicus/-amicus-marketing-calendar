@@ -120,7 +120,7 @@
     <button class="signout" id="signout">Sign out this device</button>
   </div>
   <h1>Brooks</h1>
-  <div class="sub">Owner — portfolio overview · Aug 26 – Sep 1, 2026</div>
+  <div class="sub">Owner — portfolio overview · Sep 2 – Sep 8, 2026</div>
   <div class="sync" id="sync">⏳ Connecting…</div>
 
   <div class="section">
@@ -163,17 +163,22 @@ const FBCONF={
   messagingSenderId:"926415834204",
   appId:"1:926415834204:web:c6824762be375a180dea99"
 };
-const WEEK_LABEL="Aug 26 – Sep 1, 2026";
+const WEEK_LABEL="Sep 2 – Sep 8, 2026";
 const PORTFOLIOS=[
-  {key:"lehigh-2026-08-26",     name:"Lehigh",     total:31, accent:"#8B5E3C"},
+  {key:"lehigh-2026-09-02",     name:"Lehigh",     total:30, accent:"#8B5E3C"},
   {key:"binghamton-2026-08-26", name:"Binghamton", total:26, accent:"#2E7D32"},
-  {key:"savannah-2026-08-26",   name:"Savannah",   total:25, accent:"#C49000"},
+  {key:"savannah-2026-09-02",   name:"Savannah",   total:26, accent:"#C49000"},
   {key:"charleston-2026-08-26", name:"Charleston", total:24, accent:"#9B1B30"},
-  {key:"troy-2026-08-26",       name:"Troy",       total:26, accent:"#C62828"}
+  {key:"troy-2026-09-02",       name:"Troy",       total:27, accent:"#C62828"}
 ];
 const NKEY="brooks-notes";
 // Past weeks kept for safe keeping — read-only, live from their own boards.
 const ARCHIVE_WEEKS=[
+  {label:"Aug 26 – Sep 1, 2026", portfolios:[
+    {key:"lehigh-2026-08-26",     name:"Lehigh",     total:31, accent:"#8B5E3C"},
+    {key:"savannah-2026-08-26",   name:"Savannah",   total:25, accent:"#C49000"},
+    {key:"troy-2026-08-26",       name:"Troy",       total:26, accent:"#C62828"}
+  ]},
   {label:"Aug 12 – 18, 2026", portfolios:[
     {key:"lehigh-2026-08-12",     name:"Lehigh",     total:42, accent:"#8B5E3C"},
     {key:"binghamton-2026-08-12", name:"Binghamton", total:37, accent:"#2E7D32"},

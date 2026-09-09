@@ -237,27 +237,7 @@
 <script>
 
 const PKEY = "jake-private";
-const checklist = [
-  {id:"google_suites", t:"Get login for all Google Suites", d:"Confirm working access to every market's Google Workspace.", subs:[
-    {id:"gs_lehigh",label:"Lehigh"},{id:"gs_savannah",label:"Savannah"},{id:"gs_charleston",label:"Charleston"},
-    {id:"gs_binghamton",label:"Binghamton"},{id:"gs_troy",label:"Troy"},{id:"gs_tulane",label:"Tulane"}]},
-  {id:"reddit_logins", t:"Note down all new Reddit logins", d:"Track which accounts exist (keep actual passwords in your password manager). Jot the handles / notes below.", notes:true},
-  {id:"buy_followers", t:"Buy followers for all Instagrams", d:"Heads-up: this breaks Instagram's ToS and IG purges fake followers / can flag or suspend accounts. Organic local growth is safer \u2014 reconsider before spending."},
-  {id:"verify_insta", t:"Get verified for all Instagrams", d:"Apply for Meta verification on each market account."},
-  {id:"logins_everything", t:"GATHER logins for EVERYTHING", d:"Pull every account login into one place (a password manager vault)."},
-  {id:"checkins", t:"Check in with each market \u2014 Thu & Mon AM", d:"Record progress, gaps, and next steps in the market notes below.", subs:[
-    {id:"ci_savannah",label:"Savannah"},{id:"ci_charleston",label:"Charleston"},
-    {id:"ci_binghamton",label:"Binghamton"},{id:"ci_troy",label:"Troy"}]},
-  {id:"folders_char_sav", t:"Make folders for Charleston & Savannah", d:"Build out the OneDrive folder structure for both markets."},
-  {id:"marketing_budget", t:"Marketing budget", d:"Put the marketing budget together."},
-  {id:"saxbys_release", t:"Saxbys release", d:"Full launch checklist \u2014 work through each piece below.", subs:[
-    {id:"sax_tablecloth",label:"Table cloth ordered"},
-    {id:"sax_paper",label:"Brown & white call / paper"},
-    {id:"sax_windows",label:"Measure windows & get poster"},
-    {id:"sax_video",label:"Funny release video"},
-    {id:"sax_plan",label:"Finalize release plan"},
-    {id:"sax_merch",label:"Merch"}]}
-];
+const checklist = [];
 const markets = ["Lehigh","Savannah","Charleston","Binghamton","Troy","Tulane"];
 
 let state = {checked:{}, notes:{}, links:{}, itemNotes:{}};
@@ -390,9 +370,9 @@ const JK_PORT=[
   {key:"lehigh-2026-09-09",     name:"Lehigh",     total:19, accent:"#8B5E3C"},
   {key:"binghamton-2026-09-09", name:"Binghamton", total:21, accent:"#2E7D32"},
   {key:"savannah-2026-09-09",   name:"Savannah",   total:22, accent:"#C49000"},
-  {key:"charleston-2026-08-26", name:"Charleston", total:24, accent:"#9B1B30"},
   {key:"troy-2026-09-09",       name:"Troy",       total:22, accent:"#C62828"}
 ];
+const JK_HOLD=["Charleston"];
 const JK_ARCH=[
   {label:"Sep 2 – Sep 8, 2026", portfolios:[
     {key:"lehigh-2026-09-02",     name:"Lehigh",     total:30, accent:"#8B5E3C"},
@@ -429,8 +409,8 @@ function jkRenderCharts(){
   JK_PORT.forEach(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};totDone+=pr.done;totAll+=pr.total;pcts.push(pr.pct);});
   var avg=pcts.length?Math.round(pcts.reduce(function(a,b){return a+b;},0)/pcts.length):0;
   document.getElementById('jkOverall').innerHTML=jkDonut(avg,"#FFFFFF",110)+'<div><div class="oc-num">'+avg+'%</div><div class="oc-lab">Average completion across '+JK_PORT.length+' active portfolios<br>'+totDone+' of '+totAll+' tasks done this week</div></div>';
-  document.getElementById('jkDonuts').innerHTML=JK_PORT.map(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="donut-card">'+jkDonut(pr.pct,p.accent,84)+'<div class="dn">'+p.name+'</div><div class="dd">'+pr.done+'/'+pr.total+' tasks</div></div>';}).join("");
-  document.getElementById('jkBars').innerHTML=JK_PORT.map(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="bar-row"><div class="bl">'+p.name+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pr.pct+'%;background:'+p.accent+'"></div></div><div class="bp">'+pr.pct+'%</div></div>';}).join("");
+  document.getElementById('jkDonuts').innerHTML=JK_PORT.map(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="donut-card">'+jkDonut(pr.pct,p.accent,84)+'<div class="dn">'+p.name+'</div><div class="dd">'+pr.done+'/'+pr.total+' tasks</div></div>';}).join("")+JK_HOLD.map(function(n){return '<div class="donut-card" style="opacity:.5"><div style="width:84px;height:84px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:22px;">\u23f8</div><div class="dn">'+n+'</div><div class="dd" style="color:#C49000;font-weight:700;letter-spacing:1px;">ON HOLD</div></div>';}).join("");
+  document.getElementById('jkBars').innerHTML=JK_PORT.map(function(p){var pr=jkProg[p.key]||{done:0,total:p.total,pct:0};return '<div class="bar-row"><div class="bl">'+p.name+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pr.pct+'%;background:'+p.accent+'"></div></div><div class="bp">'+pr.pct+'%</div></div>';}).join("")+JK_HOLD.map(function(n){return '<div class="bar-row" style="opacity:.6"><div class="bl">'+n+'</div><div class="bar-track"><div class="bar-fill" style="width:0%"></div></div><div class="bp" style="color:#C49000;font-weight:700;">HOLD</div></div>';}).join("");
 }
 function jkRenderArch(){
   var host=document.getElementById('jakeArchiveDash'); if(!host) return;

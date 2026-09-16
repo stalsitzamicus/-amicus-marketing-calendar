@@ -183,7 +183,7 @@
     .tabs-bar{background:#101010;}
     .tab.active{color:#7a5f14;}
   </style>
-<style>.m-status.vp{width:auto!important;min-width:20px;height:auto!important;line-height:18px;padding:0 5px;font-size:10px;font-weight:800;border-radius:6px;}</style>
+<style>.vpost{display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center;}.vp{position:relative;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.10);}.vp.locked{cursor:default;}.vp svg{width:15px;height:15px;display:block;}.vp.ig{background:radial-gradient(circle at 30% 110%,#fdf497 0%,#fd5949 45%,#d6249f 70%,#285AEB 100%);}.vp.yt{background:#FF0000;}.vp.tt{background:#000;}.vp.g{background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.18);}.vp .vpchk{display:none;}.vp.on .vpchk{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(22,163,74,.9);color:#fff;font-weight:900;font-size:15px;}</style>
 </head>
 <body>
 <div class="header">
@@ -202,6 +202,7 @@
 <script>
 const ACCENT="#7a1f3d";
 const PORTFOLIO_KEY="charleston-2026-09-16";
+const SEED_VERSION=3;
 const MARKET_BASE="charleston";
 const DEMO_TODAY=new Date().toISOString().slice(0,10); // live date
 
@@ -255,7 +256,7 @@ function initFirebase(){
   });
   mediaRef.on("value",(snap)=>{
     const m=snap.val();
-    if(!m || Object.keys(m).length===0){ media=JSON.parse(JSON.stringify(MEDIA_SEED)); mediaRef.set(media); }
+    if(!m || Object.keys(m).length===0 || (m.__seedVersion||0) < SEED_VERSION){ media=JSON.parse(JSON.stringify(MEDIA_SEED)); media.__seedVersion=SEED_VERSION; mediaRef.set(media); }
     else { media=m; }
     mediaReady=true; if(taskReady){dbReady=true;} render();
   });
@@ -360,7 +361,7 @@ function renderGoalBar(cat,g,rawVal,key,isManual){
 const isoLabel={}; schedule.forEach(s=>{ if(s.iso) isoLabel[s.iso]=s.day; });
 function fmtIso(iso){ if(isoLabel[iso]) return isoLabel[iso]; var d=new Date(iso+'T12:00:00'); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate(); }
 function isOverdue(it){ return !it.posted && it.date < DEMO_TODAY; }
-function mediaList(){ return Object.values(media).filter(it=>it && !it.archived); }
+function mediaList(){ return Object.values(media).filter(it=>it && typeof it==='object' && it.id && !it.archived); }
 function firstIso(){ for(var i=0;i<schedule.length;i++){ if(schedule[i].iso) return schedule[i].iso; } return null; }
 function gatherDay(it){ var lead=(it.type==='video')?2:0; var d=new Date(it.date+'T12:00:00'); d.setDate(d.getDate()-lead); var g=d.toISOString().slice(0,10); var f=firstIso(); return (f&&g<f)?f:g; }
 function overdueItems(){ return mediaList().filter(isOverdue).sort((a,b)=>a.date<b.date?-1:1); }
@@ -541,7 +542,10 @@ function mediaTable(items,iso,compact){
   h+='</tbody></table>';
   return h;
 }
-function postedCell(it){ if(it.type!=='video') return statusCell(it,'posted'); var ed=canEditMedia(); var P=[['postIG','IG'],['postYT','YT'],['postTT','TT'],['postGoogle','G']]; var h='<span style="display:inline-flex;gap:3px;flex-wrap:wrap;">'; P.forEach(function(p){var on=!!it[p[0]]; var t=(p[0]==='postGoogle'?'Google (Jake)':p[1]); if(ed){h+='<span class="m-status vp'+(on?' on':'')+'" title="'+t+'" onclick="videoPost(\''+it.id+'\',\''+p[0]+'\')">'+(on?'\u2713':p[1])+'</span>';}else{h+='<span class="m-status vp'+(on?' on':'')+' locked" title="'+t+'">'+(on?'\u2713':p[1])+'</span>';}}); return h+'</span>'; }
+var VLOGO={ig:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="#fff" stroke="none"/></svg>',yt:'<svg viewBox="0 0 24 24"><path d="M9.2 8.3l6.4 3.7-6.4 3.7z" fill="#fff"/></svg>',tt:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M13.6 4c.4 1.9 1.8 3.2 3.9 3.4v2.5c-1.4 0-2.8-.5-3.9-1.3v5.6a4.4 4.4 0 1 1-4.4-4.4c.3 0 .6 0 .9.1v2.6a1.9 1.9 0 1 0 1.3 1.8V4z"/></svg>',g:'<svg viewBox="0 0 24 24"><text x="12" y="17.5" text-anchor="middle" font-size="16" font-weight="800" font-family="Arial,Helvetica,sans-serif" fill="#4285F4">G</text></svg>'};
+var VTITLE={ig:'Instagram',yt:'YouTube',tt:'TikTok',g:'Google (Jake)'};
+var VP=[['postIG','ig'],['postYT','yt'],['postTT','tt'],['postGoogle','g']];
+function postedCell(it){ if(it.type!=='video') return statusCell(it,'posted'); var ed=canEditMedia(); var h='<span class="vpost">'; VP.forEach(function(p){ var on=!!it[p[0]]; var oc=ed?(' onclick="videoPost(\''+it.id+'\',\''+p[0]+'\')"'):''; h+='<span class="vp '+p[1]+(on?' on':'')+(ed?'':' locked')+'" title="'+VTITLE[p[1]]+'"'+oc+'>'+VLOGO[p[1]]+'<span class="vpchk">✓</span></span>'; }); return h+'</span>'; }
 function videoPost(id,field){ if(!canEditMedia()||!media[id])return; var it=media[id]; it[field]=!it[field]; it.posted=!!(it.postIG&&it.postYT&&it.postTT&&it.postGoogle); saveMedia(); render(); }
 function statusCell(it,field){
   const on=!!it[field];

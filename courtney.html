@@ -88,7 +88,7 @@
   .type-select{border:1px solid #ddd;border-radius:6px;padding:4px 6px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
   .m-del{background:none;border:none;color:#c62828;cursor:pointer;font-size:15px;line-height:1;}
 </style>
-<style>.m-status.vp{width:auto!important;min-width:20px;height:auto!important;line-height:18px;padding:0 5px;font-size:10px;font-weight:800;border-radius:6px;}</style>
+<style>.vpost{display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center;}.vp{position:relative;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.10);}.vp.locked{cursor:default;}.vp svg{width:15px;height:15px;display:block;}.vp.ig{background:radial-gradient(circle at 30% 110%,#fdf497 0%,#fd5949 45%,#d6249f 70%,#285AEB 100%);}.vp.yt{background:#FF0000;}.vp.tt{background:#000;}.vp.g{background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.18);}.vp .vpchk{display:none;}.vp.on .vpchk{display:flex;position:absolute;inset:0;align-items:center;justify-content:center;background:rgba(22,163,74,.9);color:#fff;font-weight:900;font-size:15px;}</style>
 </head>
 <body>
 <div class="top"><div class="inner">
@@ -120,6 +120,7 @@ function fmt(iso){var d=new Date(iso+'T12:00:00');var wd=['Sun','Mon','Tue','Wed
 function isOverdue(it){ return !it.posted && it.date < DEMO_TODAY; }
 
 const WEEK="2026-09-16";
+const SEED_VERSION=3;
 function initFirebase(){
   firebase.initializeApp({
     apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
@@ -135,7 +136,7 @@ function initFirebase(){
     refs[m.base]=db.ref("media/"+m.base+"-"+WEEK);
     refs[m.base].on("value",snap=>{
       const v=snap.val();
-      if((!v || Object.keys(v).length===0) && SEEDS[m.base]){ refs[m.base].set(SEEDS[m.base]); mediaByMarket[m.base]=SEEDS[m.base]; }
+      if(SEEDS[m.base] && (!v || Object.keys(v).length===0 || (v.__seedVersion||0) < SEED_VERSION)){ var sd=JSON.parse(JSON.stringify(SEEDS[m.base])); sd.__seedVersion=SEED_VERSION; refs[m.base].set(sd); mediaByMarket[m.base]=sd; }
       else { mediaByMarket[m.base]=v||{}; }
       render();
     });
@@ -146,7 +147,7 @@ try{ if(localStorage.getItem('amicus_courtney_v1')==='9f2ab5d949cfefa8592eb05d54
 
 function allItems(){
   const out=[];
-  MARKETS.forEach(m=>{ const bag=mediaByMarket[m.base]||{}; Object.values(bag).forEach(it=>{ if(it&&!it.archived) out.push(Object.assign({},it,{_mk:m.base,_mkName:m.name,_mkColor:m.color})); }); });
+  MARKETS.forEach(m=>{ const bag=mediaByMarket[m.base]||{}; Object.values(bag).forEach(it=>{ if(it&&it.id&&!it.archived) out.push(Object.assign({},it,{_mk:m.base,_mkName:m.name,_mkColor:m.color})); }); });
   return out;
 }
 function toggleCollapse(k){ collapse[k]=!collapse[k]; try{localStorage.setItem('amicus_c_collapse',JSON.stringify(collapse));}catch(e){} render(); }
@@ -157,7 +158,10 @@ function cToggle(base,id,field){ const bag=mediaByMarket[base]||{}; const it=bag
 function cType(base,id,val){ if(refs[base]) refs[base].child(id).update({type:val}); }
 function cDelete(base,id){ if(!refs[base])return; if(!confirm('Archive this item? It stays in the database but hides here.')) return; refs[base].child(id).update({archived:true}); }
 
-function cPostedCell(it){ if(it.type!=='video') return statusCell(it,'posted'); var P=[['postIG','IG'],['postYT','YT'],['postTT','TT'],['postGoogle','G']]; var h='<span style="display:inline-flex;gap:3px;flex-wrap:wrap;">'; P.forEach(function(p){var on=!!it[p[0]]; var t=(p[0]==='postGoogle'?'Google (Jake)':p[1]); h+='<span class="m-status vp'+(on?' on':'')+'" title="'+t+'" onclick="cVideoPost(\''+it._mk+'\',\''+it.id+'\',\''+p[0]+'\')">'+(on?'\u2713':p[1])+'</span>';}); return h+'</span>'; }
+var VLOGO={ig:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.2" cy="6.8" r="1.1" fill="#fff" stroke="none"/></svg>',yt:'<svg viewBox="0 0 24 24"><path d="M9.2 8.3l6.4 3.7-6.4 3.7z" fill="#fff"/></svg>',tt:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M13.6 4c.4 1.9 1.8 3.2 3.9 3.4v2.5c-1.4 0-2.8-.5-3.9-1.3v5.6a4.4 4.4 0 1 1-4.4-4.4c.3 0 .6 0 .9.1v2.6a1.9 1.9 0 1 0 1.3 1.8V4z"/></svg>',g:'<svg viewBox="0 0 24 24"><text x="12" y="17.5" text-anchor="middle" font-size="16" font-weight="800" font-family="Arial,Helvetica,sans-serif" fill="#4285F4">G</text></svg>'};
+var VTITLE={ig:'Instagram',yt:'YouTube',tt:'TikTok',g:'Google (Jake)'};
+var VP=[['postIG','ig'],['postYT','yt'],['postTT','tt'],['postGoogle','g']];
+function cPostedCell(it){ if(it.type!=='video') return statusCell(it,'posted'); var h='<span class="vpost">'; VP.forEach(function(p){ var on=!!it[p[0]]; h+='<span class="vp '+p[1]+(on?' on':'')+'" title="'+VTITLE[p[1]]+'" onclick="cVideoPost(\''+it._mk+'\',\''+it.id+'\',\''+p[0]+'\')">'+VLOGO[p[1]]+'<span class="vpchk">✓</span></span>'; }); return h+'</span>'; }
 function cVideoPost(base,id,field){ var bag=mediaByMarket[base]||{}; var it=bag[id]; if(!it||!refs[base])return; var pg={postIG:!!it.postIG,postYT:!!it.postYT,postTT:!!it.postTT,postGoogle:!!it.postGoogle}; var nv=!it[field]; pg[field]=nv; var u={}; u[field]=nv; u.posted=!!(pg.postIG&&pg.postYT&&pg.postTT&&pg.postGoogle); refs[base].child(id).update(u); }
 function statusCell(it,field){ const on=!!it[field]; return '<span class="m-status'+(on?' on':'')+'" onclick="cToggle(\''+it._mk+'\',\''+it.id+'\',\''+field+'\')">'+(on?'✓':'')+'</span>'; }
 function gatherCell(it){

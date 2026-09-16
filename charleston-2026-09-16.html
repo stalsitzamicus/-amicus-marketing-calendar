@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ===== AMICUS PASSWORD GATE (start) ===== -->
+<style id="amicusGateStyle">
+  html.amicus-locked body > *:not(#amicusLock){display:none !important;}
+  #amicusLock{position:fixed;inset:0;z-index:99999;background:#0f0f0f;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;}
+  #amicusLock .lock-card{width:min(400px,90vw);text-align:center;padding:40px 32px;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:#161616;}
+  #amicusLock .lock-mark{font-family:'Playfair Display',serif;font-weight:900;font-size:32px;color:#fff;letter-spacing:2px;}
+  #amicusLock .lock-sub{color:rgba(255,255,255,0.55);font-size:13px;margin:6px 0 28px;letter-spacing:1px;text-transform:uppercase;}
+  #amicusLock input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:#0f0f0f;color:#fff;font-size:16px;outline:none;text-align:center;letter-spacing:1px;}
+  #amicusLock input:focus{border-color:rgba(255,255,255,0.5);}
+  #amicusLock button{width:100%;margin-top:14px;padding:14px 16px;border-radius:10px;border:none;background:#fff;color:#0f0f0f;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  #amicusLock button:hover{background:#e8e8e8;}
+  #amicusLock .lock-err{color:#ff6b6b;font-size:13px;margin-top:12px;min-height:18px;}
+  #amicusLock .lock-note{color:rgba(255,255,255,0.35);font-size:12px;margin-top:20px;}
+  .qty-row{margin-top:10px;font-size:13px;color:#555;}
+  .qty-select{margin-left:6px;padding:5px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;background:white;cursor:pointer;}
+  .qty-of{color:#999;font-size:12px;margin-left:4px;}
+</style>
+<script id="amicusGateScript">
+(function(){
+  var KEY = 'amicus_auth_v1';
+  var HASH = '576998560b830406a1a75b58651422a9d5dd7e09bec82310f52dc3200920a029';
+  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+  document.documentElement.classList.add('amicus-locked');
+  async function sha256(str){
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+  }
+  function buildLock(){
+    var wrap = document.createElement('div');
+    wrap.id = 'amicusLock';
+    wrap.innerHTML =
+      '<div class="lock-card">' +
+        '<div class="lock-mark">AMICUS</div>' +
+        '<div class="lock-sub">Team Access Only</div>' +
+        '<input type="password" id="amicusPw" placeholder="Enter team password" autocomplete="current-password"/>' +
+        '<button id="amicusGo">Unlock</button>' +
+        '<div class="lock-err" id="amicusErr"></div>' +
+        '<div class="lock-note">This device will stay signed in.</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+    var input = wrap.querySelector('#amicusPw');
+    var err = wrap.querySelector('#amicusErr');
+    async function attempt(){
+      var val = input.value.trim();
+      if (!val) return;
+      var h;
+      try { h = await sha256(val); }
+      catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === HASH){
+        try { localStorage.setItem(KEY, HASH); } catch(e) {}
+        document.documentElement.classList.remove('amicus-locked');
+        wrap.remove();
+      } else {
+        err.textContent = 'Incorrect password. Please try again.';
+        input.value = '';
+        input.focus();
+      }
+    }
+    wrap.querySelector('#amicusGo').addEventListener('click', attempt);
+    input.addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildLock);
+  } else { buildLock(); }
+})();
+</script>
+<!-- ===== AMICUS PASSWORD GATE (end) ===== -->
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Charleston — Amicus Marketing Checklist</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:#F7F5F2;min-height:100vh;}
+    .header{padding:36px 32px 28px;color:white;}
+    .header .inner{max-width:900px;margin:0 auto;}
+    .header .back{font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;letter-spacing:1px;text-transform:uppercase;display:inline-block;margin-bottom:16px;}
+    .header .back:hover{color:white;}
+    .header .top-row{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
+    .header .logo-wrap{width:58px;height:58px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+    .header .logo-wrap img{width:100%;height:100%;object-fit:contain;padding:4px;}
+    .header h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;}
+    .header .meta{font-size:12px;color:rgba(255,255,255,0.55);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+    .demo-flag{display:inline-block;margin-top:10px;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.35);color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 10px;border-radius:99px;}
+    .tabs-bar{padding:0 32px;overflow-x:auto;}
+    .tabs{max-width:900px;margin:0 auto;display:flex;}
+    .tab{background:transparent;color:rgba(255,255,255,0.5);border:none;padding:13px 16px;font-size:13px;font-weight:400;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+    .tab.active{background:#F7F5F2;font-weight:700;}
+    .content{max-width:900px;margin:0 auto;padding:28px 32px;}
+    .prog-wrap{margin-bottom:24px;}
+    .prog-meta{display:flex;justify-content:space-between;font-size:13px;color:#666;margin-bottom:7px;}
+    .prog-track{height:6px;background:#E0E0E0;border-radius:99px;overflow:hidden;}
+    .prog-fill{height:100%;border-radius:99px;transition:width 0.4s ease;}
+    .tasks{display:flex;flex-direction:column;gap:11px;}
+    .task-card{background:white;border-radius:12px;padding:15px 18px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:opacity 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .task-card.done{opacity:0.42;box-shadow:none;}
+    .checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #DDD;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:white;transition:all 0.2s;}
+    .checkbox .ck{display:none;color:white;font-size:12px;font-weight:700;}
+    .done .checkbox .ck{display:block;}
+    .task-icon{font-size:21px;flex-shrink:0;margin-top:1px;}
+    .task-body{flex:1;}
+    .plat-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
+    .task-title{font-size:15px;font-weight:600;color:#1a1a1a;}
+    .done .task-title{text-decoration:line-through;}
+    .task-detail{font-size:13px;color:#888;line-height:1.5;margin-top:3px;}
+    .tip{margin-top:24px;border-radius:12px;padding:16px 18px;}
+    .tip-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;}
+    .tip ul{padding-left:16px;font-size:13px;color:#555;line-height:2;}
+    .goals{display:flex;flex-direction:column;gap:14px;}
+    .gcard{background:white;border-radius:14px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    .gcard-head{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+    .gcard-head .gi{font-size:20px;}
+    .gcard-head .gn{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+    .gitems{display:flex;flex-direction:column;gap:16px;}
+    .grow-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px;}
+    .glabel{font-size:14px;font-weight:600;color:#1a1a1a;flex:1;}
+    .gcontrols{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+    .gcount{font-size:13px;font-weight:700;color:#333;min-width:90px;text-align:center;}
+    .gbtn{width:27px;height:27px;border-radius:7px;border:1px solid #E0E0E0;background:white;cursor:pointer;font-size:15px;font-weight:700;color:#666;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;line-height:1;flex-shrink:0;}
+    .gtrack{height:8px;background:#F0F0F0;border-radius:99px;overflow:hidden;}
+    .gfill{height:100%;border-radius:99px;transition:width 0.35s ease;}
+    .gpct{text-align:right;font-size:11px;color:#AAA;margin-top:3px;}
+    .gpct.reached{font-weight:700;}
+    .auto-note{font-size:12px;color:#999;text-align:center;margin-bottom:20px;font-style:italic;}
+    .sync-banner{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:10px;padding:10px 16px;margin-bottom:20px;font-size:13px;color:#2E7D32;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px;}
+
+    /* ===== MEDIA (Courtney) additions ===== */
+    .media-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+    .media-title{font-family:'Playfair Display',serif;font-size:22px;color:#1a1a1a;}
+    .media-legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .type-pill{font-size:11px;font-weight:700;letter-spacing:.3px;padding:3px 10px;border-radius:99px;white-space:nowrap;}
+    .type-video{background:#F5C518;color:#3a2f00;}
+    .type-photo{background:#34C759;color:#fff;}
+    .type-flyer{background:#FF4D6D;color:#fff;}
+    .edit-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid #eee;border-radius:10px;padding:10px 14px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+    .edit-bar .ebtn{padding:8px 14px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    .ebtn-lock{background:#1a1a1a;color:#fff;}
+    .ebtn-on{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7 !important;cursor:default;}
+    .overdue-pill{background:#FFEBEE;color:#C62828;border:1px solid #EF9A9A;font-size:12px;font-weight:700;padding:6px 12px;border-radius:99px;}
+    .day-group{margin-bottom:22px;}
+    .dg-head{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#888;margin:0 2px 8px;display:flex;align-items:center;gap:8px;}
+    .dg-head.today{color:#2E7D32;}
+    .dg-head.overdue{color:#C62828;}
+    .mtable-wrap{overflow-x:auto;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+    table.mtable{border-collapse:collapse;width:100%;min-width:820px;font-size:13px;}
+    table.mtable th{background:#22303C;color:#cfd8dc;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 10px;text-align:left;white-space:nowrap;}
+    table.mtable td{border-top:1px solid #eee;padding:8px 10px;vertical-align:middle;color:#333;}
+    table.mtable tr.mrow.overdue td{background:#FFF6F6;}
+    table.mtable tr.mrow.posted td{background:#F6FBF6;}
+    .m-input{width:100%;border:1px solid transparent;background:transparent;padding:5px 6px;border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;color:#1a1a1a;}
+    .m-input:hover{border-color:#e2e2e2;}
+    .m-input:focus{border-color:#90caf9;outline:none;background:#fff;}
+    .m-input[readonly]{cursor:default;}
+    .m-link{color:#1565C0;font-weight:700;text-decoration:none;font-size:12px;white-space:nowrap;}
+    .m-status{width:24px;height:24px;border-radius:6px;border:2px solid #ddd;background:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;cursor:pointer;user-select:none;}
+    .m-status.on{background:#2E7D32;border-color:#2E7D32;}
+    .m-status.locked{cursor:not-allowed;opacity:.65;}
+    .m-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;}
+    .badge-over{background:#C62828;color:#fff;}
+    .badge-ready{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;}
+    .badge-wait{background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;}
+    .m-del{background:none;border:none;color:#c62828;cursor:pointer;font-size:15px;line-height:1;}
+    .m-add{margin-top:8px;background:#fff;border:1px dashed #cfd8dc;color:#607D8B;font-weight:700;font-size:13px;padding:9px 14px;border-radius:10px;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;}
+    .m-add:hover{border-color:#90a4ae;color:#455A64;}
+    .type-select{border:1px solid #ddd;border-radius:6px;padding:4px 6px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+    /* collapsible Courtney section on day tabs */
+    .courtney-sec{margin-top:22px;border:1px solid #E3E7D3;border-radius:12px;background:#FBFCF6;overflow:hidden;}
+    .cs-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none;}
+    .cs-head .cs-caret{transition:transform .2s;font-size:12px;color:#8a9a5b;}
+    .cs-head.open .cs-caret{transform:rotate(90deg);}
+    .cs-title{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#6b7a3d;}
+    .cs-count{margin-left:auto;font-size:12px;color:#8a9a5b;font-weight:700;}
+    .cs-body{padding:0 14px 14px;}
+
+    .header{background:linear-gradient(135deg,#141414 0%,#2b2b2b 45%,#8a6d1a 100%);}
+    .tabs-bar{background:#101010;}
+    .tab.active{color:#7a5f14;}
+  </style>
+<style>.m-status.vp{width:auto!important;min-width:20px;height:auto!important;line-height:18px;padding:0 5px;font-size:10px;font-weight:800;border-radius:6px;}</style>
+</head>
+<body>
+<div class="header">
+  <div class="inner">
+    <a class="back" href="charleston.html">← Back to Charleston</a>
+    <div class="top-row">
+      <div class="logo-wrap" style="background:white;border-radius:14px;"><img src="data:image/jpeg;base64,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+GX/AEJGk/8AfL//ABVH/Co/hl/0JGk/98v/APFUfX6v8zD6/k//AEDfgv8AM8c/4bI+NX/Px4e/8FS//FVy/jn9oP4r/FDQY/C2s6lCLKaUbrPS7QQG6bPyq+3JcZ6L0z2PFfRf/Co/hl/0JGk/98v/APFVf0b4e+B/D2rLqei+FtNsrxAQk8SHcgPXBJOPqOaUsbUkrOTHHNMrpP2lLDWkttFueX/CT4FQ6GYPEvjS3SfVBiS3058PHbHs0nZpPbovuen034V8H3niG5E8u6GxU/PMerey+v1rS8IeBJdUMeo6qjR2X3kj6NL/AICvWYYYreBIII1jjQYVFGABXVg8vlWftKu3bufMZlmlXFVHObu/wXoQafp1npdglnZQrFEg6Dqfc+pq1RRX0CSirI8du4UUUUwCiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/9k=" alt="Charleston logo"/></div>
+      <div><h1>Charleston</h1><div class="meta">College of Charleston · Sep 16 – Sep 22, 2026</div></div>
+    </div>
+    
+  </div>
+</div>
+<div class="tabs-bar"><div class="tabs" id="tabs"></div></div>
+<div class="content" id="content"></div>
+
+<script>
+const ACCENT="#7a1f3d";
+const PORTFOLIO_KEY="charleston-2026-09-16";
+const MARKET_BASE="charleston";
+const DEMO_TODAY=new Date().toISOString().slice(0,10); // live date
+
+/* ---------- MARKET SCHEDULE (Facebook daily · Reddit 5 · Reviews 5 · DMs 20 · Google posts 3) ---------- */
+const schedule=[{"day": "Wed 9/16", "iso": "2026-09-16", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Posts", "icon": "📍", "task": "Publish Google Business post 1 of 3", "detail": "Availability, featured property, or event. Paste link.", "goalKey": "Google Posts|Posts published", "link": true, "linkPlaceholder": "Paste link…"}, {"platform": "Instagram", "icon": "✉️", "task": "Instagram DMs — outreach", "detail": "Running total toward 20 this week. Screenshot proof → admin link below.", "qtyGoal": "Instagram|DMs", "qtyMax": 20, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}, {"platform": "Reddit", "icon": "🧵", "task": "Reddit comments", "detail": "Running total toward 5 this week. Natural, helpful. Screenshot proof → admin link below.", "qtyGoal": "Reddit|Comments", "qtyMax": 5, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}]}, {"day": "Thu 9/17", "iso": "2026-09-17", "tasks": [{"platform": "Instagram", "icon": "✉️", "task": "Instagram DMs — outreach", "detail": "Running total toward 20 this week. Screenshot proof → admin link below.", "qtyGoal": "Instagram|DMs", "qtyMax": 20, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}, {"platform": "Reddit", "icon": "📝", "task": "Publish 1 Reddit post this week", "detail": "One genuine, helpful Reddit post (not an ad). Paste the link.", "goalKey": "Reddit|Post published", "link": true, "linkPlaceholder": "Paste Reddit post link…"}]}, {"day": "Fri 9/18", "iso": "2026-09-18", "tasks": [{"platform": "Google Posts", "icon": "📍", "task": "Publish Google Business post 2 of 3", "detail": "Availability, featured property, or event. Paste link.", "goalKey": "Google Posts|Posts published", "link": true, "linkPlaceholder": "Paste link…"}, {"platform": "Reddit", "icon": "🧵", "task": "Reddit comments", "detail": "Running total toward 5 this week. Natural, helpful. Screenshot proof → admin link below.", "qtyGoal": "Reddit|Comments", "qtyMax": 5, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}]}, {"day": "Sat 9/19", "iso": "2026-09-19", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Reviews", "icon": "⭐", "task": "Google review outreach", "detail": "A few personal messages to happy tenants. Bump the counter as reviews land (target 5).", "qtyGoal": "Google Reviews|New reviews", "qtyMax": 5}]}, {"day": "Sun 9/20", "iso": "2026-09-20", "tasks": [{"platform": "Google Reviews", "icon": "⭐", "task": "Google review outreach", "detail": "A few personal messages to happy tenants. Bump the counter as reviews land (target 5).", "qtyGoal": "Google Reviews|New reviews", "qtyMax": 5}]}, {"day": "Mon 9/21", "iso": "2026-09-21", "tasks": [{"platform": "Google Posts", "icon": "📍", "task": "Publish Google Business post 3 of 3", "detail": "Availability, featured property, or event. Paste link.", "goalKey": "Google Posts|Posts published", "link": true, "linkPlaceholder": "Paste link…"}, {"platform": "Instagram", "icon": "✉️", "task": "Instagram DMs — outreach", "detail": "Running total toward 20 this week. Screenshot proof → admin link below.", "qtyGoal": "Instagram|DMs", "qtyMax": 20, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}]}, {"day": "Tue 9/22", "iso": "2026-09-22", "tasks": [{"platform": "Google Reviews", "icon": "✅", "task": "All reviews responded — by AM", "detail": "Deadline: every review answered by this morning.", "goalKey": "Google Reviews|Reviews responded"}, {"platform": "Operations", "icon": "📤", "task": "Final wrap — confirm & link every deliverable", "detail": "Make sure every deliverable is sent to Jake with its link pasted. Cross-check the Goals tab and Courtney's Media tab."}]}, {"day": "📅 Calendar", "isCalendar": true, "tasks": []}, {"day": "📊 Goals", "isGoals": true, "tasks": []}, {"day": "🎬 Media", "isMedia": true, "tasks": []}];
+
+const goalCategories=[{"platform": "Facebook", "icon": "📘", "color": "#1877F2", "goals": [{"label": "Days at top of feed", "target": 7, "unit": "days", "mode": "auto"}]}, {"platform": "Reddit", "icon": "🧵", "color": "#FF4500", "goals": [{"label": "Comments", "target": 5, "unit": "comments", "mode": "qty"}, {"label": "Post published", "target": 1, "unit": "post", "mode": "auto"}]}, {"platform": "Instagram", "icon": "✉️", "color": "#E1306C", "goals": [{"label": "DMs", "target": 20, "unit": "DMs", "mode": "qty"}]}, {"platform": "Google Posts", "icon": "📍", "color": "#4285F4", "goals": [{"label": "Posts published", "target": 3, "unit": "posts", "mode": "auto"}]}, {"platform": "Google Reviews", "icon": "⭐", "color": "#FBBC04", "goals": [{"label": "New reviews", "target": 5, "unit": "reviews", "mode": "qty"}, {"label": "Reviews responded", "target": 1, "unit": "done", "mode": "auto"}]}];
+
+/* ---------- COURTNEY MEDIA SEED (example content, not real) ---------- */
+const MEDIA_SEED={"charleston_w1_tt1": {"id": "charleston_w1_tt1", "title": "Funny TikTok", "type": "video", "date": "2026-09-16", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Video 1 — post to IG, TT, YT, Google.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w1_lease1": {"id": "charleston_w1_lease1", "title": "Leasing flyer", "type": "flyer", "date": "2026-09-17", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars — Courtney."}, "charleston_w1_panning": {"id": "charleston_w1_panning", "title": "Panning video", "type": "video", "date": "2026-09-18", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Video 2 — post to IG, TT, YT, Google.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w1_housephotos": {"id": "charleston_w1_housephotos", "title": "House photos", "type": "photo", "date": "2026-09-19", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": ""}, "charleston_w1_housetour": {"id": "charleston_w1_housetour", "title": "House tour", "type": "video", "date": "2026-09-20", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Video 3 — post to IG, TT, YT, Google.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w1_lease2": {"id": "charleston_w1_lease2", "title": "Leasing flyer", "type": "flyer", "date": "2026-09-22", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars — Courtney."}, "charleston_yt_w1_1": {"id": "charleston_yt_w1_1", "title": "YouTube post 1 of 3", "type": "video", "date": "2026-09-16", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a TikTok, house tour, or panning clip.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_yt_w1_2": {"id": "charleston_yt_w1_2", "title": "YouTube post 2 of 3", "type": "video", "date": "2026-09-18", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a TikTok, house tour, or panning clip.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_yt_w1_3": {"id": "charleston_yt_w1_3", "title": "YouTube post 3 of 3", "type": "video", "date": "2026-09-20", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a TikTok, house tour, or panning clip.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_tt_w1_1": {"id": "charleston_tt_w1_1", "title": "TikTok post 1 of 3", "type": "video", "date": "2026-09-17", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a clip if needed.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_tt_w1_2": {"id": "charleston_tt_w1_2", "title": "TikTok post 2 of 3", "type": "video", "date": "2026-09-19", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a clip if needed.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_tt_w1_3": {"id": "charleston_tt_w1_3", "title": "TikTok post 3 of 3", "type": "video", "date": "2026-09-21", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a clip if needed.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w2_tt1": {"id": "charleston_w2_tt1", "title": "Funny TikTok", "type": "video", "date": "2026-09-23", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Video 1 — post to IG, TT, YT, Google.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w2_lease1": {"id": "charleston_w2_lease1", "title": "Leasing flyer", "type": "flyer", "date": "2026-09-24", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars — Courtney."}, "charleston_w2_panning": {"id": "charleston_w2_panning", "title": "Panning video", "type": "video", "date": "2026-09-25", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Video 2 — post to IG, TT, YT, Google.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w2_housephotos": {"id": "charleston_w2_housephotos", "title": "House photos", "type": "photo", "date": "2026-09-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": ""}, "charleston_w2_housetour": {"id": "charleston_w2_housetour", "title": "House tour", "type": "video", "date": "2026-09-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": true, "gathered": false, "monday": false, "notes": "Video 3 — post to IG, TT, YT, Google.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_w2_lease2": {"id": "charleston_w2_lease2", "title": "Leasing flyer", "type": "flyer", "date": "2026-09-29", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "From Regulars — Courtney."}, "charleston_yt_w2_1": {"id": "charleston_yt_w2_1", "title": "YouTube post 1 of 3", "type": "video", "date": "2026-09-23", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a TikTok, house tour, or panning clip.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_yt_w2_2": {"id": "charleston_yt_w2_2", "title": "YouTube post 2 of 3", "type": "video", "date": "2026-09-25", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a TikTok, house tour, or panning clip.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_yt_w2_3": {"id": "charleston_yt_w2_3", "title": "YouTube post 3 of 3", "type": "video", "date": "2026-09-27", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a TikTok, house tour, or panning clip.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_tt_w2_1": {"id": "charleston_tt_w2_1", "title": "TikTok post 1 of 3", "type": "video", "date": "2026-09-24", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a clip if needed.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_tt_w2_2": {"id": "charleston_tt_w2_2", "title": "TikTok post 2 of 3", "type": "video", "date": "2026-09-26", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a clip if needed.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}, "charleston_tt_w2_3": {"id": "charleston_tt_w2_3", "title": "TikTok post 3 of 3", "type": "video", "date": "2026-09-28", "mediaLink": "", "oneDrive": "", "editDone": false, "storyPin": false, "posted": false, "oneDriveDone": false, "needsGather": false, "gathered": false, "monday": false, "notes": "Weekly quota (Courtney) — reuse a clip if needed.", "postIG": false, "postYT": false, "postTT": false, "postGoogle": false}};
+
+const platformColors={"Instagram":"#E1306C","Facebook":"#1877F2","Reddit":"#FF4500","Google Reviews":"#FBBC04","Google Posts":"#4285F4","YouTube":"#FF0000","TikTok":"#EE1D52","Operations":"#607D8B","Media":"#3F51B5","Planning":"#FFB300","Events":"#8E24AA"};
+
+let activeDay=(function(){var t=new Date().toISOString().slice(0,10);var d=schedule.find(function(s){return s.iso===t;});if(d)return d.day;var f=schedule.find(function(s){return s.iso;});return f?f.day:schedule[0].day;})();
+let checked={}, manualGoals={}, manualBonus={}, taskQty={}, taskLinks={}, taskVerify={};
+let media={};
+let collapse={}; try{ collapse=JSON.parse(localStorage.getItem('amicus_media_collapse')||'{}'); }catch(e){ collapse={}; }
+
+const JAKE_HASH="e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a";
+const COURTNEY_HASH="9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422ac7afe";
+let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
+let courtneyMode=false; try{ courtneyMode=(localStorage.getItem("amicus_courtney_v1")===COURTNEY_HASH); }catch(e){}
+function canEditMedia(){ return jakeMode || courtneyMode; }
+let taskOverrides={},taskAdds={},taskEditMode=false;
+let calAdds={},calOverrides={};
+
+let dbReady=false, dbRef=null, mediaRef=null, taskReady=false, mediaReady=false;
+function safeKey(s){ return s.replace(/[^a-zA-Z0-9_]/g,'_'); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function initFirebase(){
+  firebase.initializeApp({
+    apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
+    authDomain:"amicus-marketing.firebaseapp.com",
+    databaseURL:"https://amicus-marketing-default-rtdb.firebaseio.com",
+    projectId:"amicus-marketing",
+    storageBucket:"amicus-marketing.firebasestorage.app",
+    messagingSenderId:"926415834204",
+    appId:"1:926415834204:web:c6824762be375a180dea99"
+  });
+  const db=firebase.database();
+  dbRef=db.ref("portfolios/"+PORTFOLIO_KEY);
+  mediaRef=db.ref("media/"+MARKET_BASE+"-"+PORTFOLIO_KEY.substring(MARKET_BASE.length+1));
+  dbRef.on("value",(snap)=>{
+    const data=snap.val()||{};
+    checked=data.checked||{}; manualGoals=data.manualGoals||{}; manualBonus=data.manualBonus||{};
+    taskQty=data.taskQty||{}; taskLinks=data.taskLinks||{}; taskVerify=data.taskVerify||{};
+    taskOverrides=data.taskOverrides||{}; taskAdds=data.taskAdds||{};
+    calAdds=data.calAdds||{}; calOverrides=data.calOverrides||{};
+    taskReady=true; if(mediaReady){dbReady=true;} render();
+  });
+  mediaRef.on("value",(snap)=>{
+    const m=snap.val();
+    if(!m || Object.keys(m).length===0){ media=JSON.parse(JSON.stringify(MEDIA_SEED)); mediaRef.set(media); }
+    else { media=m; }
+    mediaReady=true; if(taskReady){dbReady=true;} render();
+  });
+}
+function saveTasks(){ if(dbRef) dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify,taskOverrides,taskAdds,calAdds,calOverrides}); }
+function saveMedia(){ if(mediaRef) mediaRef.set(media); }
+function saveState(){ saveTasks(); }
+
+function computeAutoGoals(){
+  const counts={};
+  effectiveTasks().forEach(function(t){ if(t.goalKey && checked[t.uid]) counts[t.goalKey]=(counts[t.goalKey]||0)+1; });
+  return counts;
+}
+/* ===== Amicus: effective schedule (Jake day-moves / edits / adds) ===== */
+function effectiveTasks(){
+  let list=[];
+  schedule.forEach(function(day){ if(!day.iso) return; (day.tasks||[]).forEach(function(t,ti){ var uid=safeKey(day.day+'-'+ti); list.push(Object.assign({},t,{uid:uid,dayIso:day.iso})); }); });
+  Object.keys(taskAdds||{}).forEach(function(k){ var a=taskAdds[k]; list.push(Object.assign({},a,{uid:a.uid||k})); });
+  list=list.filter(function(t){ var o=taskOverrides[t.uid]; return !(o&&o.deleted); });
+  list.forEach(function(t){ var o=taskOverrides[t.uid]; if(o){ if(o.dayIso) t.dayIso=o.dayIso; if(o.task!=null) t.task=o.task; if(o.detail!=null) t.detail=o.detail; if(o.platform!=null) t.platform=o.platform; if(o.icon!=null) t.icon=o.icon; if(o.link!=null) t.link=o.link; if(o.linkPlaceholder!=null) t.linkPlaceholder=o.linkPlaceholder; } });
+  return list;
+}
+function tasksForIso(iso){ return effectiveTasks().filter(function(t){ return t.dayIso===iso; }); }
+
+/* ---- Jake admin: edit days & tasks ---- */
+function adminBar(){
+  return '<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
+    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake) \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to another day, rename it, add or remove.':'you can restructure this week.')+'</span>'
+    +'<button onclick="toggleTaskEdit()" style="background:'+(taskEditMode?'#8a6d0b':'#fff')+';color:'+(taskEditMode?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(taskEditMode?'Done editing':'\u270f\ufe0f Edit days & tasks')+'</button></div>';
+}
+function toggleTaskEdit(){ taskEditMode=!taskEditMode; render(); }
+function dayOptions(cur){ return schedule.filter(function(s){return s.iso;}).map(function(s){ return '<option value="'+s.iso+'"'+(s.iso===cur?' selected':'')+'>'+esc(s.day)+'</option>'; }).join(''); }
+function taskEditRow(t,curIso){
+  var q=String.fromCharCode(39);
+  return '<div class="qty-row" onclick="event.stopPropagation()" style="margin-top:10px;padding:10px;background:#FAFAF7;border:1px dashed #d9d4c7;border-radius:9px;display:flex;flex-direction:column;gap:7px;">'
+    +'<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;"><span style="font-size:11px;font-weight:700;color:#8a6d0b;letter-spacing:1px;">DAY</span>'
+    +'<select onchange="moveTask('+q+t.uid+q+',this.value)" class="qty-select">'+dayOptions(curIso)+'</select>'
+    +'<button onclick="deleteTask('+q+t.uid+q+')" style="margin-left:auto;background:#fff;color:#c62828;border:1px solid #ef9a9a;border-radius:7px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">Remove</button></div>'
+    +'<input value="'+esc(t.task||'')+'" onchange="editTaskField('+q+t.uid+q+','+q+'task'+q+',this.value)" placeholder="Task title" style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:7px;font-size:13px;font-weight:700;box-sizing:border-box;"/>'
+    +'<input value="'+esc(t.detail||'')+'" onchange="editTaskField('+q+t.uid+q+','+q+'detail'+q+',this.value)" placeholder="Detail (optional)" style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:7px;font-size:13px;box-sizing:border-box;"/>'
+    +'<label style="display:flex;align-items:center;gap:7px;font-size:12px;color:#555;cursor:pointer;margin-top:2px;"><input type="checkbox" '+(t.link?'checked':'')+' onchange="toggleTaskLink('+q+t.uid+q+',this.checked)" style="width:16px;height:16px;"/> Show a paste-link box on this card</label>'
+    +(t.link?'<input value="'+esc(t.linkPlaceholder||'')+'" onchange="editTaskField('+q+t.uid+q+','+q+'linkPlaceholder'+q+',this.value)" placeholder="Link box hint (e.g. Paste link\u2026)" style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:7px;font-size:12px;box-sizing:border-box;"/>':'')
+    +'</div>';
+}
+function moveTask(uid,iso){ if(!jakeMode) return; taskOverrides[uid]=Object.assign({},taskOverrides[uid],{dayIso:iso}); saveTasks(); render(); }
+function editTaskField(uid,field,val){ if(!jakeMode) return; var o=Object.assign({},taskOverrides[uid]); o[field]=val; taskOverrides[uid]=o; saveTasks(); render(); }
+function toggleTaskLink(uid,on){ if(!jakeMode) return; var o=Object.assign({},taskOverrides[uid]); o.link=!!on; taskOverrides[uid]=o; saveTasks(); render(); }
+function deleteTask(uid){ if(!jakeMode) return; if(!confirm('Remove this task from the week?')) return; if(String(uid).indexOf('add_')===0){ delete taskAdds[uid]; } else { taskOverrides[uid]=Object.assign({},taskOverrides[uid],{deleted:true}); } saveTasks(); render(); }
+function addTask(iso){ if(!jakeMode) return; var uid='add_'+Date.now(); taskAdds[uid]={uid:uid,dayIso:iso,platform:'Operations',icon:'\ud83d\udccc',task:'New task',detail:'',link:false}; saveTasks(); render(); }
+
+/* ---- Media day-move (Jake / Courtney, on the Media tab) ---- */
+function mediaMove(id,iso){ if(!canEditMedia()||!media[id]) return; media[id].date=iso; saveMedia(); render(); }
+
+/* ---- Film TikToks tab: film 2 days before Courtney posts ---- */
+function isTikTokItem(it){ if(!it||it.archived||it.type!=='video') return false; var t=(it.title||'').toLowerCase(); return t.indexOf('tiktok')>-1||t.indexOf('tik tok')>-1||/(^|[^a-z])tt([^a-z]|$)/.test(t); }
+function filmByIso(iso){ var d=new Date(iso+'T12:00:00'); d.setDate(d.getDate()-2); return d.toISOString().slice(0,10); }
+function renderTikTok(){
+  var items=mediaList().filter(isTikTokItem).slice().sort(function(a,b){ return filmByIso(a.date)<filmByIso(b.date)?-1:1; });
+  var html='<div class="sync-banner">\ud83d\udd34 Live \u2014 changes sync instantly for all users</div>';
+  html+='<p class="auto-note">Film each TikTok <b>2 days before</b> Courtney posts it. Drop the clip in OneDrive, paste the link, then check it off when filmed.</p>';
+  if(items.length===0){ return html+'<div style="text-align:center;color:#999;padding:40px;">No TikToks scheduled. Courtney adds them on the \ud83c\udfac Media tab.</div>'; }
+  var groups={}; items.forEach(function(it){ var f=filmByIso(it.date); (groups[f]=groups[f]||[]).push(it); });
+  var days=Object.keys(groups).sort();
+  var today=DEMO_TODAY;
+  html+='<div class="tasks">';
+  days.forEach(function(f){
+    var isToday=(f===today), overdue=(f<today), lbl=fmtIso(f);
+    html+='<div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:'+(overdue?'#c62828':(isToday?ACCENT:'#999'))+';margin:16px 0 2px;">\ud83c\udfac Film by '+lbl+(isToday?' \u00b7 TODAY':'')+(overdue?' \u00b7 OVERDUE':'')+'</div>';
+    groups[f].forEach(function(it){
+      var filmed=!!it.filmed, c='#EE1D52', lv=esc(it.mediaLink||'');
+      var extra='<div class="qty-row" style="color:#777;">Courtney posts: <b>'+fmtIso(it.date)+'</b>'+(it.notes?' \u00b7 '+esc(it.notes):'')+'</div>'
+        +'<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><b style="font-weight:800">\ud83d\udd17 ONEDRIVE:</b> <input type="url" placeholder="Paste OneDrive link\u2026" value="'+lv+'" onchange="setFilmLink('+String.fromCharCode(39)+it.id+String.fromCharCode(39)+',this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:700;"/>'+(it.mediaLink?'<a href="'+esc(it.mediaLink)+'" target="_blank" rel="noopener" style="font-size:13px;color:'+ACCENT+';font-weight:700;text-decoration:none;">Open \u2197</a>':'')+'</div>';
+      html+='<div class="task-card'+(filmed?' done':'')+'" style="border-left:4px solid '+c+'" onclick="toggleFilmed('+String.fromCharCode(39)+it.id+String.fromCharCode(39)+')"><div class="checkbox" style="'+(filmed?'background:'+ACCENT+';border-color:'+ACCENT:'')+'"><span class="ck">\u2713</span></div><div class="task-icon">\ud83c\udfa5</div><div class="task-body"><div class="plat-label" style="color:'+c+'">TikTok \u00b7 to film</div><div class="task-title">'+esc(it.title)+'</div>'+extra+'</div>'+goalDonut(filmed?100:0,c,filmed)+'</div>';
+    });
+  });
+  return html+'</div>';
+}
+function toggleFilmed(id){ if(!media[id]) return; media[id].filmed=!media[id].filmed; saveMedia(); render(); }
+function setFilmLink(id,val){ if(!media[id]) return; media[id].mediaLink=(val||'').trim(); saveMedia(); }
+
+function render(){renderTabs();renderContent();}
+function renderTabs(){
+  const el=document.getElementById("tabs");el.innerHTML="";
+  schedule.forEach(s=>{ const b=document.createElement("button"); b.className="tab"+(s.day===activeDay?" active":""); b.textContent=s.day; b.onclick=()=>{activeDay=s.day;render();}; el.appendChild(b); });
+}
+function goalDonut(pct,color,atTarget){
+  var r=15,c=2*Math.PI*r,off=c*(1-pct/100);
+  return '<div style="position:relative;width:46px;height:46px;flex-shrink:0;"><svg width="46" height="46" viewBox="0 0 46 46" style="transform:rotate(-90deg);"><circle cx="23" cy="23" r="'+r+'" fill="none" stroke="#ECECEC" stroke-width="5"/><circle cx="23" cy="23" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'" style="transition:stroke-dashoffset .45s ease"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:'+(atTarget?color:'#666')+';">'+(atTarget?'\u2713':pct+'%')+'</div></div>';
+}
+function renderGoalBar(cat,g,rawVal,key,isManual){
+  const atTarget=rawVal>=g.target;
+  const pct=atTarget?100:Math.min(99,Math.round((rawVal/g.target)*100));
+  const bar=atTarget?'linear-gradient(90deg,'+cat.color+','+cat.color+'cc)':'linear-gradient(90deg,'+cat.color+'99,'+cat.color+')';
+  let controls="";
+  if(isManual){ controls='<button class="gbtn" onclick="adjManual(\''+key+'\',-1)">−</button><span class="gcount" style="'+(atTarget?'color:'+cat.color:'')+'">'+rawVal+' / '+g.target+' '+g.unit+'</span><button class="gbtn" onclick="adjManual(\''+key+'\',1)" style="'+(atTarget?'background:'+cat.color+';color:white;border-color:'+cat.color:'')+'">+</button>'+(atTarget?'<span style="font-size:16px">✅</span>':''); }
+  else if(atTarget){ controls='<button class="gbtn" onclick="adjBonus(\''+key+'\',-1)">−</button><span class="gcount" style="color:'+cat.color+'">'+rawVal+' / '+g.target+' '+g.unit+'</span><button class="gbtn" onclick="adjBonus(\''+key+'\',1)" style="background:'+cat.color+';color:white;border-color:'+cat.color+'">+</button><span style="font-size:16px">✅</span>'; }
+  else { controls='<span class="gcount">'+rawVal+' / '+g.target+' '+g.unit+'</span>'; }
+  return '<div class="growwrap" style="display:flex;align-items:center;gap:14px;"><div style="flex:1;min-width:0;"><div class="grow-top"><span class="glabel">'+g.label+'</span><div class="gcontrols">'+controls+'</div></div><div class="gtrack"><div class="gfill" style="width:'+pct+'%;background:'+bar+'"></div></div><div class="gpct'+(atTarget?' reached':'')+'" style="'+(atTarget?'color:'+cat.color:'')+'">'+(atTarget?'Goal reached! 🎉':pct+'%')+'</div></div>'+goalDonut(pct,cat.color,atTarget)+'</div>';
+}
+
+/* ---------- media helpers ---------- */
+const isoLabel={}; schedule.forEach(s=>{ if(s.iso) isoLabel[s.iso]=s.day; });
+function fmtIso(iso){ if(isoLabel[iso]) return isoLabel[iso]; var d=new Date(iso+'T12:00:00'); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate(); }
+function isOverdue(it){ return !it.posted && it.date < DEMO_TODAY; }
+function mediaList(){ return Object.values(media).filter(it=>it && !it.archived); }
+function firstIso(){ for(var i=0;i<schedule.length;i++){ if(schedule[i].iso) return schedule[i].iso; } return null; }
+function gatherDay(it){ var lead=(it.type==='video')?2:0; var d=new Date(it.date+'T12:00:00'); d.setDate(d.getDate()-lead); var g=d.toISOString().slice(0,10); var f=firstIso(); return (f&&g<f)?f:g; }
+function overdueItems(){ return mediaList().filter(isOverdue).sort((a,b)=>a.date<b.date?-1:1); }
+
+/* ---------- content ---------- */
+function renderContent(){
+  const el=document.getElementById("content");
+  const day=schedule.find(s=>s.day===activeDay);
+  if(!day)return;
+  if(!dbReady){ el.innerHTML='<div style="text-align:center;padding:60px;color:#999;">🔄 Connecting to live database…</div>'; return; }
+
+  if(day.isMedia){ el.innerHTML=renderMedia(); return; }
+  if(day.isCalendar){ el.innerHTML=renderCalendar(); return; }
+  if(day.isTikTok){ el.innerHTML=renderTikTok(); return; }
+
+  if(day.isGoals){
+    const autoCounts=computeAutoGoals();
+    let html='<div class="sync-banner">🔴 Live — updates instantly for all users</div>';
+    html+='<p class="auto-note">Market goals only. Courtney\'s posting targets live on the 🎬 Media tab.</p><div class="goals">';
+    goalCategories.forEach(cat=>{
+      html+='<div class="gcard" style="border-left:4px solid '+cat.color+'"><div class="gcard-head"><span class="gi">'+cat.icon+'</span><span class="gn" style="color:'+cat.color+'">'+cat.platform+'</span></div><div class="gitems">';
+      cat.goals.forEach(g=>{ const key=cat.platform+'|'+g.label; const safeK=safeKey(key); let rawVal,isManual; if(g.mode==='auto'){ rawVal=(autoCounts[key]||0)+(manualBonus[safeK]||0); isManual=false; } else { rawVal=(manualGoals[safeK]||0); isManual=true; } html+=renderGoalBar(cat,g,rawVal,safeK,isManual); });
+      html+='</div></div>';
+    });
+    html+='</div>';
+    el.innerHTML=html; return;
+  }
+
+  // regular day (effective tasks — supports Jake's day moves / edits / adds)
+  const dayTasks=tasksForIso(day.iso);
+  const total=dayTasks.length;
+  const done=dayTasks.filter(t=>checked[t.uid]).length;
+  const pct=total?Math.round((done/total)*100):0;
+  let html='<div class="sync-banner">🔴 Live — changes sync instantly for all users</div>';
+  if(jakeMode){ html+=adminBar(); }
+  html+='<div class="prog-wrap"><div class="prog-meta"><span>'+done+' of '+total+' tasks complete</span><span style="color:'+ACCENT+';font-weight:700">'+pct+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+pct+'%;background:'+ACCENT+'"></div></div></div><div class="tasks">';
+  dayTasks.forEach(t=>{
+    const key=t.uid;
+    const isDone=!!checked[key];
+    const c=platformColors[t.platform]||"#888";
+    const editing=(jakeMode&&taskEditMode);
+    let extra="";
+    if(t.qtyGoal){ const gk=safeKey(t.qtyGoal); const cur=manualGoals[gk]||0; let opts=""; for(let n=0;n<=t.qtyMax;n++){opts+='<option value="'+n+'"'+(n===cur?' selected':'')+'>'+n+'</option>';} extra+='<div class="qty-row" onclick="event.stopPropagation()">Running total: <select class="qty-select" onchange="setManual(\''+gk+'\',this.value)">'+opts+'</select><span class="qty-of"> of '+t.qtyMax+'</span></div>'; }
+    if(t.link){ const lv=(taskLinks[key]||'').replace(/"/g,'&quot;'); extra+='<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><b style="font-weight:800">🔗 LINK:</b> <input type="url" placeholder="'+(t.linkPlaceholder||'Paste link…')+'" value="'+lv+'" onchange="setLink(\''+key+'\',this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:700;"/>'+(taskLinks[key]?'<a href="'+taskLinks[key]+'" target="_blank" rel="noopener" style="font-size:13px;color:'+ACCENT+';font-weight:700;text-decoration:none;white-space:nowrap;">Open ↗</a>':'')+jakeVerifyCtrl(key)+'</div>'; }
+    if(editing){ extra+=taskEditRow(t,day.iso); }
+    html+='<div class="task-card'+(isDone?' done':'')+'" style="border-left:4px solid '+c+'" onclick="'+(editing?'event.stopPropagation()':'toggle(\''+key+'\')')+'"><div class="checkbox" style="'+(isDone?'background:'+ACCENT+';border-color:'+ACCENT:'')+'" onclick="event.stopPropagation();toggle(\''+key+'\')"><span class="ck">✓</span></div><div class="task-icon">'+(t.icon||'📌')+'</div><div class="task-body"><div class="plat-label" style="color:'+c+'">'+esc(t.platform||'')+'</div><div class="task-title">'+esc(t.task||'')+'</div>'+(t.detail?'<div class="task-detail">'+esc(t.detail)+'</div>':'')+extra+'</div>'+taskDonut(t,key,c)+'</div>';
+  });
+  if(jakeMode&&taskEditMode){ html+='<div style="margin-top:10px;"><button onclick="addTask(\''+day.iso+'\')" style="background:'+ACCENT+';color:#fff;border:none;border-radius:9px;padding:10px 14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">+ Add task to '+esc(day.day)+'</button></div>'; }
+  html+='</div>';
+  html+=renderCourtneySection(day); // collapsible Courtney panel on the day tab
+  el.innerHTML=html;
+  updateAllDoneGlow(total>0 && done===total);
+}
+
+/* ---------- collapsible Courtney section on a day tab ---------- */
+function renderCourtneySection(day){
+  const isToday=(day.iso===DEMO_TODAY);
+  let items=mediaList().filter(it=>it.date===day.iso);
+  if(isToday){ overdueItems().forEach(o=>{ if(!items.some(x=>x.id===o.id)) items.push(o); }); } // carry overdue onto today
+  const open=collapse['day-'+day.iso]===true; // default collapsed
+  const overCnt=items.filter(isOverdue).length;
+  let head='<div class="cs-head'+(open?' open':'')+'" onclick="toggleCollapse(\'day-'+day.iso+'\')"><span class="cs-caret">▶</span><span class="cs-title">🎬 Courtney — Media</span><span class="cs-count">'+items.length+' item'+(items.length===1?'':'s')+(overCnt?' · <span style=\"color:#C62828\">'+overCnt+' overdue</span>':'')+'</span></div>';
+  let body='';
+  if(open){
+    if(items.length===0){ body='<div style="color:#8a9a5b;font-size:13px;padding:6px 2px;">Nothing scheduled for Courtney '+(isToday?'today':'this day')+'.</div>'; }
+    else { body='<div class="mtable-wrap" style="box-shadow:none;">'+mediaTable(items,day.iso,true)+'</div>'; }
+    if(canEditMedia()){ body+='<button class="m-add" onclick="mediaAdd(\''+day.iso+'\')">+ Add idea for '+day.day+'</button>'; }
+    else { body+='<div style="margin-top:8px;font-size:12px;color:#8a9a5b;">🔒 View only. <a href="#" onclick="unlockCourtney();return false;" style="color:#6b7a3d;font-weight:700;">Unlock to edit (Courtney / Jake)</a></div>'; }
+  }
+  return '<div class="courtney-sec">'+head+(open?'<div class="cs-body">'+body+'</div>':'')+'</div>';
+}
+
+const CAL_EVENTS=[{"id": "foxy911", "date": "2026-09-11", "title": "Foxy Loxy", "detail": "Join us."}, {"id": "fall914", "date": "2026-09-14", "title": "Fall begins · Back-to-School Bags", "detail": "Move-in bags 14th–16th at office."}, {"id": "bts915", "date": "2026-09-15", "title": "Back-to-School Bags", "detail": ""}, {"id": "bts916", "date": "2026-09-16", "title": "Back-to-School Bags", "detail": "Upcoming."}, {"id": "parade918", "date": "2026-09-18", "title": "Welcome Back Parade", "detail": "Upcoming."}];
+/* ---------- Calendar events: Jake-editable, Firebase-synced (mirrors day-tab taskAdds/taskOverrides) ---------- */
+function effectiveEvents(){
+  var list=CAL_EVENTS.map(function(e){ return Object.assign({},e); });
+  Object.keys(calAdds||{}).forEach(function(k){ var a=calAdds[k]; list.push(Object.assign({},a,{id:a.id||k})); });
+  list=list.filter(function(e){ var o=calOverrides[e.id]; return !(o&&o.deleted); });
+  list.forEach(function(e){ var o=calOverrides[e.id]; if(o){ if(o.date!=null)e.date=o.date; if(o.title!=null)e.title=o.title; if(o.detail!=null)e.detail=o.detail; } });
+  return list;
+}
+function addEvent(){ if(!jakeMode) return; var id='cadd_'+Date.now(); calAdds[id]={id:id,date:DEMO_TODAY,title:'New event',detail:''}; saveTasks(); render(); }
+function deleteEvent(id){ if(!jakeMode) return; if(!confirm('Remove this event from the calendar?')) return; if(String(id).indexOf('cadd_')===0){ delete calAdds[id]; } else { calOverrides[id]=Object.assign({},calOverrides[id],{deleted:true}); } saveTasks(); render(); }
+function editEventField(id,field,val){ if(!jakeMode) return; val=(val==null?'':val); if(String(id).indexOf('cadd_')===0){ if(calAdds[id]) calAdds[id][field]=val; } else { var o=Object.assign({},calOverrides[id]); o[field]=val; calOverrides[id]=o; } saveTasks(); render(); }
+function renderCalendar(){
+  let html='<div class="sync-banner">🔴 Live — event uploads sync to Jake &amp; Courtney</div>';
+  html+='<p class="auto-note">Market events this month. After each event, drop the photos in OneDrive and paste the link so Courtney can pull recap content.</p>';
+  var editing=(jakeMode&&taskEditMode);
+  if(jakeMode){
+    html+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;background:#faf6e9;border:1px solid #e6d9a8;border-radius:10px;">'
+      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">🔧 Admin (Jake) — '+(editing?'edit mode ON — add, rename, re-date, or remove events.':'you can edit this market&#39;s events.')+'</span>'
+      +'<button onclick="toggleTaskEdit()" style="background:'+(editing?'#8a6d0b':'#fff')+';color:'+(editing?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(editing?'Done editing':'✏️ Edit events')+'</button></div>';
+  }
+  var evs=effectiveEvents().slice().sort(function(a,b){return a.date<b.date?-1:1;});
+  if(!evs.length && !editing){ return html+'<div style="color:#999;padding:20px;">No events yet.</div>'; }
+  html+='<div class="tasks">';
+  evs.forEach(function(ev){
+    var c='#8E24AA'; var key='cal_'+ev.id; var lv=(taskLinks[key]||'').replace(/"/g,'&quot;'); var past=ev.date<DEMO_TODAY;
+    if(editing){
+      html+='<div class="task-card" style="border-left:4px solid '+c+';cursor:default;"><div class="task-icon">📅</div><div class="task-body">'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px;"><input type="date" value="'+esc(ev.date)+'" onchange="editEventField(&#39;'+ev.id+'&#39;,&#39;date&#39;,this.value)" style="padding:5px 8px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:700;font-family:inherit;"/><button onclick="deleteEvent(&#39;'+ev.id+'&#39;)" style="margin-left:auto;background:#fff;color:#c62828;border:1px solid #e0b4b4;border-radius:8px;padding:5px 10px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">Remove</button></div>'
+        +'<input type="text" value="'+esc(ev.title)+'" placeholder="Event title" onchange="editEventField(&#39;'+ev.id+'&#39;,&#39;title&#39;,this.value)" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:14px;font-weight:800;font-family:inherit;margin-bottom:6px;"/>'
+        +'<input type="text" value="'+esc(ev.detail||'')+'" placeholder="Detail (optional)" onchange="editEventField(&#39;'+ev.id+'&#39;,&#39;detail&#39;,this.value)" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;"/>'
+        +'</div></div>';
+    } else {
+      html+='<div class="task-card" style="border-left:4px solid '+c+';cursor:default;"><div class="task-icon">📅</div><div class="task-body"><div class="plat-label" style="color:'+c+'">'+fmtIso(ev.date)+(past?' · past':'')+'</div><div class="task-title">'+esc(ev.title)+'</div>'+(ev.detail?'<div class="task-detail">'+esc(ev.detail)+'</div>':'')+'<div class="qty-row" onclick="event.stopPropagation()" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;"><b style="font-weight:800">📸 POST-EVENT PHOTOS:</b> <input type="url" placeholder="Paste OneDrive link to event photos…" value="'+lv+'" onchange="setLink(&#39;'+key+'&#39;,this.value)" style="flex:1;min-width:0;padding:6px 10px;border:1px solid #ccc;border-radius:8px;font-size:13px;font-weight:700;"/>'+(taskLinks[key]?'<a href="'+taskLinks[key]+'" target="_blank" rel="noopener" style="font-size:13px;color:'+ACCENT+';font-weight:700;text-decoration:none;white-space:nowrap;">Open ↗</a>':'')+'</div></div></div>';
+    }
+  });
+  html+='</div>';
+  if(editing){ html+='<div style="margin-top:12px;"><button onclick="addEvent()" style="background:#8E24AA;color:#fff;border:none;border-radius:9px;padding:10px 14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">+ Add event</button></div>'; }
+  return html;
+}
+/* ---------- full Media tab ---------- */
+function renderMedia(){
+  const editable=canEditMedia();
+  const over=overdueItems();
+  let html='<div class="sync-banner">🔴 Live — changes sync instantly for Courtney & Jake</div>';
+  html+='<div class="media-head"><div class="media-title">Courtney — Media Tracker</div><div class="media-legend"><span class="type-pill type-video">Video</span><span class="type-pill type-photo">Photo</span><span class="type-pill type-flyer">Flyer</span></div></div>';
+
+  // edit bar
+  html+='<div class="edit-bar">';
+  if(editable){ html+='<button class="ebtn ebtn-on">✏️ Edit mode on — '+(jakeMode?'Jake':'Courtney')+'</button><span style="font-size:12px;color:#777">Tap any field to change it. Everything saves live.</span>'; }
+  else { html+='<button class="ebtn ebtn-lock" onclick="unlockCourtney()">🔒 Unlock to edit</button><span style="font-size:12px;color:#777">Courtney &amp; Jake only.</span>'; }
+  if(over.length){ html+='<span class="overdue-pill" style="margin-left:auto">⚠ '+over.length+' overdue</span>'; }
+  html+='</div>';
+
+  // progress
+  const all=mediaList().filter(it=>it.date>='2026-09-16'&&it.date<='2026-09-22');
+  const posted=all.filter(it=>it.posted).length;
+  const pct=all.length?Math.round(posted/all.length*100):0;
+  html+='<div class="prog-wrap"><div class="prog-meta"><span>'+posted+' of '+all.length+' posted this week</span><span style="color:'+ACCENT+';font-weight:700">'+pct+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+pct+'%;background:'+ACCENT+'"></div></div></div>';
+
+  // overdue group (carried forward) — collapsible
+  if(over.length){
+    const oOpen=collapse['media-over']!==true; // default open
+    html+='<div class="day-group"><div class="dg-head overdue" style="cursor:pointer;user-select:none;" onclick="toggleCollapse(\'media-over\')"><span style="display:inline-block;transition:transform .2s;transform:rotate('+(oOpen?90:0)+'deg)">▶</span>&nbsp; ⚠ Overdue — needs attention · '+over.length+'</div>'+(oOpen?'<div class="mtable-wrap">'+mediaTable(over,null,false)+'</div>':'')+'</div>';
+  }
+  // per-day groups Wed→Tue
+  schedule.filter(s=>s.iso).forEach(s=>{
+    let items=mediaList().filter(it=>it.date===s.iso && !isOverdue(it));
+    const isToday=s.iso===DEMO_TODAY;
+    if(items.length===0 && !editable) return;
+    html+='<div class="day-group"><div class="dg-head'+(isToday?' today':'')+'">'+s.day+(isToday?' · TODAY':'')+'</div>';
+    if(items.length){ html+='<div class="mtable-wrap">'+mediaTable(items,s.iso,false)+'</div>'; }
+    else { html+='<div style="color:#bbb;font-size:13px;padding:4px 2px;">— no items —</div>'; }
+    if(editable){ html+='<button class="m-add" onclick="mediaAdd(\''+s.iso+'\')">+ Add idea for '+s.day+'</button>'; }
+    html+='</div>';
+  });
+  return html;
+}
+
+function mediaTable(items,iso,compact){
+  const editable=canEditMedia();
+  let h='<table class="mtable"><thead><tr>'+
+    '<th>Idea</th><th>Type</th><th>Media link</th><th>Gather?</th><th>Edit</th><th>Story / PIN</th><th>Posted / Sched.</th><th>OneDrive?</th><th>OneDrive link</th><th>Notes</th><th>Monday?</th>'+(editable?'<th></th>':'')+'</tr></thead><tbody>';
+  items.forEach(it=>{
+    const over=isOverdue(it);
+    const cls='mrow'+(over?' overdue':'')+(it.posted?' posted':'');
+    let badges='';
+    if(over) badges+='<span class="m-badge badge-over">OVERDUE</span>';
+    const title = editable ? '<input class="m-input" style="font-weight:700" value="'+esc(it.title)+'" onchange="mediaSet(\''+it.id+'\',\'title\',this.value)"><div style="margin-top:4px;font-size:11px;color:#8a6d0b;">Day: <select class="type-select" onchange="mediaMove(\''+it.id+'\',this.value)">'+dayOptions(it.date)+'</select></div>'
+                           : '<span style="font-weight:700">'+esc(it.title)+'</span>';
+    const type = editable ? '<select class="type-select type-'+it.type+'" onchange="mediaType(\''+it.id+'\',this.value)"><option value="video"'+(it.type==='video'?' selected':'')+'>Video</option><option value="photo"'+(it.type==='photo'?' selected':'')+'>Photo</option><option value="flyer"'+(it.type==='flyer'?' selected':'')+'>Flyer</option></select>'
+                          : '<span class="type-pill type-'+it.type+'">'+it.type.charAt(0).toUpperCase()+it.type.slice(1)+'</span>';
+    const mlink = editable ? '<input class="m-input" placeholder="https://…" value="'+esc(it.mediaLink)+'" onchange="mediaSet(\''+it.id+'\',\'mediaLink\',this.value)">'
+                           : (it.mediaLink?'<a class="m-link" href="'+esc(it.mediaLink)+'" target="_blank" rel="noopener">Open ↗</a>':'<span style="color:#ccc">—</span>');
+    const dlink = editable ? '<input class="m-input" placeholder="OneDrive…" value="'+esc(it.oneDrive)+'" onchange="mediaSet(\''+it.id+'\',\'oneDrive\',this.value)">'
+                           : (it.oneDrive?'<a class="m-link" href="'+esc(it.oneDrive)+'" target="_blank" rel="noopener">Folder ↗</a>':'<span style="color:#ccc">—</span>');
+    const notes = editable ? '<input class="m-input" value="'+esc(it.notes)+'" onchange="mediaSet(\''+it.id+'\',\'notes\',this.value)">'
+                           : '<span style="color:#666">'+esc(it.notes)+'</span>';
+    h+='<tr class="'+cls+'"><td style="min-width:200px">'+title+badges+'</td><td>'+type+'</td><td style="min-width:110px">'+mlink+'</td>'+
+       '<td style="min-width:120px">'+gatherCell(it)+'</td>'+
+       '<td>'+statusCell(it,'editDone')+'</td><td>'+statusCell(it,'storyPin')+'</td><td>'+postedCell(it)+'</td><td>'+statusCell(it,'oneDriveDone')+'</td>'+
+       '<td style="min-width:110px">'+dlink+'</td><td style="min-width:150px">'+notes+'</td>'+
+       '<td>'+statusCell(it,'monday')+'</td>'+
+       (editable?'<td><button class="m-del" title="Archive" onclick="mediaDelete(\''+it.id+'\')">🗑</button></td>':'')+'</tr>';
+  });
+  h+='</tbody></table>';
+  return h;
+}
+function postedCell(it){ if(it.type!=='video') return statusCell(it,'posted'); var ed=canEditMedia(); var P=[['postIG','IG'],['postYT','YT'],['postTT','TT'],['postGoogle','G']]; var h='<span style="display:inline-flex;gap:3px;flex-wrap:wrap;">'; P.forEach(function(p){var on=!!it[p[0]]; var t=(p[0]==='postGoogle'?'Google (Jake)':p[1]); if(ed){h+='<span class="m-status vp'+(on?' on':'')+'" title="'+t+'" onclick="videoPost(\''+it.id+'\',\''+p[0]+'\')">'+(on?'\u2713':p[1])+'</span>';}else{h+='<span class="m-status vp'+(on?' on':'')+' locked" title="'+t+'">'+(on?'\u2713':p[1])+'</span>';}}); return h+'</span>'; }
+function videoPost(id,field){ if(!canEditMedia()||!media[id])return; var it=media[id]; it[field]=!it[field]; it.posted=!!(it.postIG&&it.postYT&&it.postTT&&it.postGoogle); saveMedia(); render(); }
+function statusCell(it,field){
+  const on=!!it[field];
+  if(canEditMedia()){ return '<span class="m-status'+(on?' on':'')+'" onclick="mediaToggle(\''+it.id+'\',\''+field+'\')">'+(on?'✓':'')+'</span>'; }
+  return '<span class="m-status'+(on?' on':'')+' locked">'+(on?'✓':'')+'</span>';
+}
+// Gather column: Courtney flips "needs gather"; market flips "gathered" on their day tab; status relays both ways.
+function gatherCell(it){
+  const editable=canEditMedia();
+  const on=!!it.gathered;
+  const box = editable
+    ? '<span class="m-status'+(on?' on':'')+'" title="Check when the media has been gathered" onclick="mediaToggle(\''+it.id+'\',\'gathered\')">'+(on?'✓':'')+'</span>'
+    : '<span class="m-status'+(on?' on':'')+' locked">'+(on?'✓':'')+'</span>';
+  const badge = on ? '<span class="m-badge badge-ready">✓ GATHERED</span>' : '<span class="m-badge badge-wait">⏳ WAITING</span>';
+  return '<span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;">'+box+badge+'</span>';
+}
+
+/* ---------- actions ---------- */
+function toggle(key){ checked[key]=!checked[key]; if(!checked[key]) delete checked[key]; saveState(); }
+function toggleGathered(id){ if(!media[id]) return; media[id].gathered=!media[id].gathered; saveMedia(); render(); }
+function adjManual(key,d){ manualGoals[key]=Math.max(0,(manualGoals[key]||0)+d); saveState(); }
+function adjBonus(key,d){ manualBonus[key]=Math.max(0,(manualBonus[key]||0)+d); saveState(); }
+function setManual(goalKey,val){ manualGoals[goalKey]=parseInt(val)||0; saveState(); render(); }
+function setLink(key,val){ val=(val||'').trim(); if(val){taskLinks[key]=val;} else {delete taskLinks[key];} saveState(); render(); }
+function toggleCollapse(k){ collapse[k]=!collapse[k]; try{localStorage.setItem('amicus_media_collapse',JSON.stringify(collapse));}catch(e){} render(); }
+
+function mediaSet(id,field,val){ if(!canEditMedia()||!media[id]) return; media[id][field]=(val||'').trim(); saveMedia(); }
+function mediaToggle(id,field){ if(!canEditMedia()||!media[id]) return; media[id][field]=!media[id][field]; saveMedia(); render(); }
+function mediaType(id,val){ if(!canEditMedia()||!media[id]) return; media[id].type=val; saveMedia(); render(); }
+function mediaAdd(iso){ if(!canEditMedia()) return; const id='m'+Date.now(); media[id]={id:id,title:"New idea",type:"video",date:iso,mediaLink:"",oneDrive:"",editDone:false,storyPin:false,posted:false,oneDriveDone:false,needsGather:false,gathered:false,monday:false,notes:""}; saveMedia(); render(); }
+function mediaDelete(id){ if(!canEditMedia()||!media[id]) return; if(!confirm('Archive this item? It will be hidden but kept in the database.')) return; media[id].archived=true; saveMedia(); render(); }
+
+async function unlockCourtney(){
+  const pw=prompt("Courtney / Jake password to edit media:");
+  if(!pw) return;
+  try{
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw.trim()));
+    const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    if(h===COURTNEY_HASH){ courtneyMode=true; try{localStorage.setItem('amicus_courtney_v1',COURTNEY_HASH);}catch(e){} render(); }
+    else if(h===JAKE_HASH){ jakeMode=true; try{localStorage.setItem('amicus_jake_v1',JAKE_HASH);}catch(e){} render(); }
+    else alert('Incorrect password.');
+  }catch(e){ alert('Unlock not available in this browser.'); }
+}
+
+/* ---------- market donuts / jake verify / confetti (unchanged engine) ---------- */
+function goalTargetFor(gk){ for(var i=0;i<goalCategories.length;i++){var cat=goalCategories[i];for(var j=0;j<cat.goals.length;j++){if(cat.platform+'|'+cat.goals[j].label===gk)return cat.goals[j].target||1;}} return 1; }
+function taskPct(t,key){ if(t.qtyGoal){var gk=safeKey(t.qtyGoal);var cur=manualGoals[gk]||0;var mx=t.qtyMax||1;return Math.min(100,Math.round(cur/mx*100));} return checked[key]?100:0; }
+function taskDonut(t,key,c){ var p=taskPct(t,key); return '<div style="margin-left:auto;align-self:center;padding-left:8px;">'+goalDonut(p,c,p>=100)+'</div>'; }
+function jakeVerifyCtrl(key){
+  var q=String.fromCharCode(39); var ver=!!taskVerify[key];
+  var box='<span style="width:18px;height:18px;border-radius:5px;border:2px solid '+(ver?'#2e7d32':(jakeMode?'#bbb':'#ddd'))+';background:'+(ver?'#2e7d32':(jakeMode?'#fff':'#f3f3f3'))+';color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;">'+(ver?'\u2713':'')+'</span>';
+  var label='<b style="font-weight:800;color:'+(ver?'#2e7d32':(jakeMode?'#777':'#aaa'))+';">J</b>';
+  if(jakeMode){ return '<span onclick="event.stopPropagation();setVerify('+q+key+q+')" title="Jake: mark as seen / done" style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">'+box+label+'</span>'; }
+  return '<span title="Only Jake can check this" style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;">'+box+label+'</span>';
+}
+function setVerify(key){ if(!jakeMode) return; if(taskVerify[key]) delete taskVerify[key]; else taskVerify[key]=true; saveState(); render(); }
+var allDoneState={};
+function dropConfetti(){ var host=document.getElementById('confettiHost'); if(!host){host=document.createElement('div');host.id='confettiHost';host.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden;';document.body.appendChild(host);} var tb=document.querySelector('.tabs-bar');var startY=tb?Math.round(tb.getBoundingClientRect().bottom):60;var colors=['#4CAF50','#81C784','#FFD54F','#FFFFFF','#2E7D32',ACCENT];for(var i=0;i<90;i++){var d=document.createElement('div');var size=6+Math.random()*8;var col=colors[Math.floor(Math.random()*colors.length)];var dur=2200+Math.random()*1600,delay=Math.random()*250,rot=Math.random()*360,xdrift=Math.random()*160-80;d.style.cssText='position:absolute;top:'+startY+'px;left:'+(Math.random()*100)+'vw;width:'+size+'px;height:'+(size*0.5)+'px;background:'+col+';border-radius:1px;';host.appendChild(d);var anim=d.animate([{transform:'translate(0,0) rotate('+rot+'deg)',opacity:1},{transform:'translate('+xdrift+'px,'+(window.innerHeight+40)+'px) rotate('+(rot+720)+'deg)',opacity:1,offset:0.85},{transform:'translate('+xdrift+'px,'+(window.innerHeight+90)+'px) rotate('+(rot+800)+'deg)',opacity:0}],{duration:dur,delay:delay,easing:'cubic-bezier(.22,.6,.36,1)',fill:'forwards'});anim.onfinish=(function(el){return function(){el.remove();};})(d);} setTimeout(function(){if(host)host.innerHTML='';},4400); }
+function updateAllDoneGlow(on){ var g=document.getElementById('allDoneGlow'); if(!g){g=document.createElement('div');g.id='allDoneGlow';g.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9990;opacity:0;transition:opacity 1.1s ease;background:rgba(76,175,80,0.09);';document.body.appendChild(g);} var prev=allDoneState[activeDay];var justDone=(prev!==undefined&&!prev&&on);allDoneState[activeDay]=on;if(justDone){dropConfetti();var d=activeDay;setTimeout(function(){if(activeDay===d)g.style.opacity='1';},450);}else{g.style.opacity=on?'1':'0';} }
+
+initFirebase();
+</script>
+</body>
+</html>

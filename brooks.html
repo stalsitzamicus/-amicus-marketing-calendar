@@ -120,7 +120,7 @@
     <button class="signout" id="signout">Sign out this device</button>
   </div>
   <h1>Brooks</h1>
-  <div class="sub">Owner — portfolio overview · Sep 9 – Sep 15, 2026</div>
+  <div class="sub" id="brSub">Owner — portfolio overview</div>
   <div class="sync" id="sync">⏳ Connecting…</div>
 
   <div class="section">
@@ -153,6 +153,7 @@
   </div>
 </div>
 
+<script src="amicus-weeks.js"></script>
 <script>
 const FBCONF={
   apiKey:"AIzaSyAU63lFT6Hs71oAHVV0aAixOqxFrhA6asc",
@@ -163,18 +164,13 @@ const FBCONF={
   messagingSenderId:"926415834204",
   appId:"1:926415834204:web:c6824762be375a180dea99"
 };
-const WEEK_LABEL="Sep 16 – Sep 22, 2026";
-const PORTFOLIOS=[
-  {key:"lehigh-2026-09-16",        name:"Lehigh",      total:28, accent:"#8B5E3C"},
-  {key:"binghamton-2026-09-16",    name:"Binghamton",  total:20, accent:"#2E7D32"},
-  {key:"troy-2026-09-16",          name:"Troy",        total:19, accent:"#C62828"},
-  {key:"savannah-2026-09-16",      name:"Savannah",    total:16, accent:"#C49000"},
-  {key:"charleston-2026-09-16",    name:"Charleston",  total:15, accent:"#9B1B30"}
-];
-const HOLD=[];
+const WEEK_LABEL=AMICUS.label(AMICUS.currentWeek());   // auto-rolls every Wednesday
+try{document.getElementById("brSub").textContent="Owner — portfolio overview · "+WEEK_LABEL;}catch(e){}
+const PORTFOLIOS=AMICUS.currentPortfolios();
+const HOLD=AMICUS.HOLD.slice();   // Charleston on hold
 const NKEY="brooks-notes";
 // Past weeks kept for safe keeping — read-only, live from their own boards.
-const ARCHIVE_WEEKS=[
+const ARCHIVE_WEEKS=AMICUS.pastWeeks().concat([   // finished weeks roll in here automatically
   {label:"Sep 9 – Sep 15, 2026", portfolios:[
     {key:"lehigh-2026-09-09",     name:"Lehigh",     total:19, accent:"#8B5E3C"},
     {key:"binghamton-2026-09-09", name:"Binghamton", total:21, accent:"#2E7D32"},
@@ -206,7 +202,7 @@ const ARCHIVE_WEEKS=[
     {key:"charleston-2026-08-05", name:"Charleston", total:54, accent:"#9B1B30"},
     {key:"troy-2026-08-05",       name:"Troy",       total:52, accent:"#C62828"}
   ]}
-];
+]);
 
 let progress={};                 // key -> {done,total,pct}
 let archProgress={};             // archived key -> {done,total,pct}

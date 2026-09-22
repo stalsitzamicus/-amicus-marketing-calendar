@@ -123,76 +123,36 @@
 </div>
 
 <div class="section-label">Weekly Checklists</div>
-<div class="weeks">
-  <!-- current week -->
-  <a class="week-card" href="savannah-2026-09-16.html">
-    <div class="week-kicker">Current Week</div>
-    <div class="week-title">Sep 16 &ndash; 22, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-</div>
+<div class="weeks" id="curGrid"></div>
+
 <div class="archive-wrap">
-  <button class="archive-toggle" onclick="toggleArchive()"><span>📦 Archive · 11 earlier weeks</span><span class="arch-caret">▸</span></button>
-  <div class="weeks archive-grid" id="archiveGrid">
-    <a class="week-card" href="savannah-2026-09-09.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">Sep 9 &ndash; 15, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-    </a>
-    <a class="week-card" href="savannah-2026-09-02.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">Sep 2 &ndash; 8, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-    </a>
-    <a class="week-card" href="savannah-2026-08-26.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">Aug 26 &ndash; Sep 1, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-08-12.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">Aug 12 &ndash; 18, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-08-05.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">Aug 5 &ndash; 11, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-07-29.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">July 29 &ndash; Aug 4, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-07-22.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">July 22 &ndash; 28, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-07-15.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">July 15 &ndash; 21, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-07-08.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">July 8 &ndash; 14, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-06-17.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">June 17 &ndash; 23, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-    <a class="week-card" href="savannah-2026-06-10.html">
-    <div class="week-kicker">Previous Week</div>
-    <div class="week-title">June 10 &ndash; 16, 2026</div>
-    <div class="week-pill">&rarr; Open Checklist</div>
-  </a>
-  </div>
+  <button class="archive-toggle" onclick="toggleGrid('futureGrid',this)"><span id="futLbl">🔮 Future</span><span class="arch-caret">▸</span></button>
+  <div class="weeks archive-grid" id="futureGrid"></div>
+  <div style="height:14px"></div>
+  <button class="archive-toggle" onclick="toggleGrid('archiveGrid',this)"><span id="archLbl">📦 Archive</span><span class="arch-caret">▸</span></button>
+  <div class="weeks archive-grid" id="archiveGrid"></div>
 </div>
 
-<div class="footer">Amicus Property Management &middot; Savannah Portfolio</div>
+<script>
+/* Week cards auto-roll every Wednesday: current week up top, upcoming weeks under Future, past under Archive. */
+var WEEK_LIST=[{"start": "2026-06-10", "href": "savannah-2026-06-10.html", "title": "June 10 &ndash; 16, 2026"}, {"start": "2026-06-17", "href": "savannah-2026-06-17.html", "title": "June 17 &ndash; 23, 2026"}, {"start": "2026-07-08", "href": "savannah-2026-07-08.html", "title": "July 8 &ndash; 14, 2026"}, {"start": "2026-07-15", "href": "savannah-2026-07-15.html", "title": "July 15 &ndash; 21, 2026"}, {"start": "2026-07-22", "href": "savannah-2026-07-22.html", "title": "July 22 &ndash; 28, 2026"}, {"start": "2026-07-29", "href": "savannah-2026-07-29.html", "title": "July 29 &ndash; Aug 4, 2026"}, {"start": "2026-08-05", "href": "savannah-2026-08-05.html", "title": "Aug 5 &ndash; 11, 2026"}, {"start": "2026-08-12", "href": "savannah-2026-08-12.html", "title": "Aug 12 &ndash; 18, 2026"}, {"start": "2026-08-26", "href": "savannah-2026-08-26.html", "title": "Aug 26 &ndash; Sep 1, 2026"}, {"start": "2026-09-02", "href": "savannah-2026-09-02.html", "title": "Sep 2 &ndash; 8, 2026"}, {"start": "2026-09-09", "href": "savannah-2026-09-09.html", "title": "Sep 9 &ndash; 15, 2026"}, {"start": "2026-09-16", "href": "savannah-2026-09-16.html", "title": "Sep 16 &ndash; 22, 2026"}, {"start": "2026-09-23", "href": "savannah-2026-09-23.html", "title": "Sep 23 &ndash; 29, 2026"}, {"start": "2026-09-30", "href": "savannah-2026-09-30.html", "title": "Sep 30 &ndash; Oct 6, 2026"}, {"start": "2026-10-07", "href": "savannah-2026-10-07.html", "title": "Oct 7 &ndash; 13, 2026"}, {"start": "2026-10-14", "href": "savannah-2026-10-14.html", "title": "Oct 14 &ndash; 20, 2026"}, {"start": "2026-10-21", "href": "savannah-2026-10-21.html", "title": "Oct 21 &ndash; 27, 2026"}, {"start": "2026-10-28", "href": "savannah-2026-10-28.html", "title": "Oct 28 &ndash; Nov 3, 2026"}];
+(function(){
+  function pad(n){return (n<10?'0':'')+n;}
+  var d=new Date(); var back=(d.getDay()-3+7)%7; d.setDate(d.getDate()-back);
+  var thisWk=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  var past=WEEK_LIST.filter(function(w){return w.start<=thisWk;});
+  var cur=past.length?past[past.length-1]:WEEK_LIST[0];
+  function card(w,kicker){return '<a class="week-card" href="'+w.href+'"><div class="week-kicker">'+kicker+'</div><div class="week-title">'+w.title+'</div><div class="week-pill">&rarr; Open Checklist</div></a>';}
+  var fut=WEEK_LIST.filter(function(w){return w.start>cur.start;});
+  var arch=WEEK_LIST.filter(function(w){return w.start<cur.start;}).reverse();
+  document.getElementById('curGrid').innerHTML=card(cur,'Current Week');
+  document.getElementById('futureGrid').innerHTML=fut.map(function(w){return card(w,'Upcoming Week');}).join('')||'<div style="opacity:.5;font-size:13px;">No upcoming weeks planned yet.</div>';
+  document.getElementById('archiveGrid').innerHTML=arch.map(function(w){return card(w,'Previous Week');}).join('');
+  document.getElementById('futLbl').textContent='🔮 Future · '+fut.length+' upcoming week'+(fut.length===1?'':'s');
+  document.getElementById('archLbl').textContent='📦 Archive · '+arch.length+' earlier week'+(arch.length===1?'':'s');
+})();
+function toggleGrid(id,btn){var g=document.getElementById(id);var c=btn.querySelector('.arch-caret');var open=g.style.display==='grid';g.style.display=open?'none':'grid';c.textContent=open?'▸':'▾';}
+</script>
 
 <script>
 function toggleArchive(){var g=document.getElementById('archiveGrid');if(!g)return;var t=document.querySelector('.archive-toggle');var c=t.querySelector('.arch-caret');var open=g.style.display==='grid';g.style.display=open?'none':'grid';c.textContent=open?'▸':'▾';}

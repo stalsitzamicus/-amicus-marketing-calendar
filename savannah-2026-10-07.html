@@ -260,7 +260,7 @@ function initFirebase(){
     taskQty=data.taskQty||{}; taskLinks=data.taskLinks||{}; taskVerify=data.taskVerify||{};
     taskOverrides=data.taskOverrides||{}; taskAdds=data.taskAdds||{}; goalConfig=normGoals(data.goalConfig);
     calAdds=data.calAdds||{}; calOverrides=data.calOverrides||{};
-    taskReady=true; if(mediaReady){dbReady=true;} render();
+    taskReady=true; if(mediaReady){dbReady=true;} render(); syncSummary(data.summary);
   });
   mediaRef.on("value",(snap)=>{
     const m=snap.val();
@@ -269,7 +269,9 @@ function initFirebase(){
     mediaReady=true; if(taskReady){dbReady=true;} render();
   });
 }
-function saveTasks(){ if(dbRef) dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify,taskOverrides,taskAdds,calAdds,calOverrides,goalConfig:goalConfig||null}); }
+function computeSummary(){ var l=effectiveTasks(); var d=l.filter(function(t){return !!checked[t.uid];}).length; return {done:d,total:l.length}; }
+function syncSummary(prev){ if(!dbRef) return; var s=computeSummary(); if(!prev||prev.done!==s.done||prev.total!==s.total) dbRef.child('summary').set(s); }
+function saveTasks(){ if(dbRef) dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify,taskOverrides,taskAdds,calAdds,calOverrides,goalConfig:goalConfig||null,summary:computeSummary()}); }
 function saveMedia(){ if(mediaRef) mediaRef.set(media); }
 function saveState(){ saveTasks(); }
 

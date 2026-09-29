@@ -293,9 +293,9 @@ function init(){
     db.ref("portfolios/"+p.key).on("value",snap=>{
       const d=snap.val()||{};
       const checked=d.checked||{};
-      let done=0; Object.keys(checked).forEach(k=>{ if(checked[k]) done++; });
-      done=Math.min(done,p.total);
-      progress[p.key]={done,total:p.total,pct:Math.round(done/p.total*100)};
+      let done=0,total=p.total; const sm=d.summary;
+      if(sm&&sm.total){ total=sm.total; done=Math.min(sm.done||0,total); } else { Object.keys(checked).forEach(k=>{ if(checked[k]) done++; }); done=Math.min(done,total); }
+      progress[p.key]={done,total,pct:Math.round(done/total*100)};
       connected++;
       document.getElementById('sync').innerHTML="✅ Live — synced with all boards";
       renderCharts();
@@ -304,9 +304,9 @@ function init(){
   ARCHIVE_WEEKS.forEach(w=>{ w.portfolios.forEach(p=>{
     db.ref("portfolios/"+p.key).on("value",snap=>{
       const d=snap.val()||{}; const checked=d.checked||{};
-      let done=0; Object.keys(checked).forEach(k=>{ if(checked[k]) done++; });
-      done=Math.min(done,p.total);
-      archProgress[p.key]={done,total:p.total,pct:Math.round(done/p.total*100)};
+      let done=0,total=p.total; const sm=d.summary;
+      if(sm&&sm.total){ total=sm.total; done=Math.min(sm.done||0,total); } else { Object.keys(checked).forEach(k=>{ if(checked[k]) done++; }); done=Math.min(done,total); }
+      archProgress[p.key]={done,total,pct:Math.round(done/total*100)};
       renderArchive();
     },()=>{});
   }); });

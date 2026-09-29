@@ -204,7 +204,15 @@ const ACCENT="#B71C1C";
 const PORTFOLIO_KEY="troy-2026-09-30";
 const SEED_VERSION=3;
 const MARKET_BASE="troy";
-const DEMO_TODAY=new Date().toISOString().slice(0,10); // live date
+/* AMICUS_PATCH_v2 cross-week + goals edit */
+function localIso(d){ d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function addDaysIso(iso,n){ var d=new Date(iso+'T12:00:00'); d.setDate(d.getDate()+n); return localIso(d); }
+function weekStartOf(iso){ var d=new Date(iso+'T12:00:00'); var back=(d.getDay()-3+7)%7; d.setDate(d.getDate()-back); return localIso(d); }
+function isoDayLabel(iso){ var d=new Date(iso+'T12:00:00'); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]+' '+(d.getMonth()+1)+'/'+d.getDate(); }
+var MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function weekRangeLabel(ws){ var a=new Date(ws+'T12:00:00'), b=new Date(addDaysIso(ws,6)+'T12:00:00'); return MONS[a.getMonth()]+' '+a.getDate()+' \u2013 '+MONS[b.getMonth()]+' '+b.getDate(); }
+var MOVE_WEEKS_AHEAD=12;
+const DEMO_TODAY=localIso(); // live date (local, not UTC)
 
 /* ---------- MARKET SCHEDULE (Facebook daily · Reddit 5 · Reviews 5 · DMs 20 · Google posts 3) ---------- */
 const schedule=[{"day": "Wed 9/30", "iso": "2026-09-30", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Posts", "icon": "📍", "task": "Publish Google Business post 1 of 3", "detail": "Availability, featured property, or event. Paste link.", "goalKey": "Google Posts|Posts published", "link": true, "linkPlaceholder": "Paste link…"}, {"platform": "Reddit", "icon": "🧵", "task": "Reddit comments", "detail": "Running total toward 5 this week. Natural, helpful. Screenshot proof → admin link below.", "qtyGoal": "Reddit|Comments", "qtyMax": 5, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}]}, {"day": "Thu 10/1", "iso": "2026-10-01", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Reddit", "icon": "📝", "task": "Publish 1 Reddit post this week", "detail": "One genuine, helpful post (not an ad) — can be about anything related to off-campus housing or your market. Paste the link.", "goalKey": "Reddit|Post published", "link": true, "linkPlaceholder": "Paste Reddit post link…"}, {"platform": "Instagram", "icon": "✉️", "task": "Instagram DM check-in", "detail": "Running total toward 20 this week. Screenshot proof → admin link below.", "qtyGoal": "Instagram|DMs", "qtyMax": 20, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}, {"platform": "Google Reviews", "icon": "⭐", "task": "Google review outreach", "detail": "A few personal messages to happy tenants. Bump the counter as reviews land (target 5).", "qtyGoal": "Google Reviews|New reviews", "qtyMax": 5}, {"platform": "Planning", "icon": "🤝", "task": "JAKE CHECK-IN", "detail": "Meet with Jake — make sure you're on pace with this week."}]}, {"day": "Fri 10/2", "iso": "2026-10-02", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Posts", "icon": "📍", "task": "Publish Google Business post 2 of 3", "detail": "Availability, featured property, or event. Paste link.", "goalKey": "Google Posts|Posts published", "link": true, "linkPlaceholder": "Paste link…"}, {"platform": "Reddit", "icon": "🧵", "task": "Reddit comments", "detail": "Comment on your own thread from another account + 4 other threads (5 total). Screenshot proof → admin link below.", "qtyGoal": "Reddit|Comments", "qtyMax": 5, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}, {"platform": "Media", "icon": "🎥", "task": "Film house tour", "detail": "Film it and drop the raw clip in OneDrive for Courtney.", "link": true, "linkPlaceholder": "Paste OneDrive folder…"}]}, {"day": "Sat 10/3", "iso": "2026-10-03", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Reviews", "icon": "⭐", "task": "Google review outreach", "detail": "A few personal messages to happy tenants. Bump the counter as reviews land (target 5).", "qtyGoal": "Google Reviews|New reviews", "qtyMax": 5}, {"platform": "Events", "icon": "🍖", "task": "BBQ", "detail": "Event day — show up, engage with students, and get content."}, {"platform": "Media", "icon": "📸", "task": "BBQ — gather photos/videos", "detail": "Gather photos/videos at BBQ for Courtney.", "link": true, "linkPlaceholder": "Paste BBQ OneDrive folder…"}]}, {"day": "Sun 10/4", "iso": "2026-10-04", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}]}, {"day": "Mon 10/5", "iso": "2026-10-05", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Posts", "icon": "📍", "task": "Publish Google Business post 3 of 3", "detail": "Availability, featured property, or event. Paste link.", "goalKey": "Google Posts|Posts published", "link": true, "linkPlaceholder": "Paste link…"}, {"platform": "Instagram", "icon": "✉️", "task": "Instagram DMs — outreach", "detail": "Running total toward 20 this week. Screenshot proof → admin link below.", "qtyGoal": "Instagram|DMs", "qtyMax": 20, "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for screenshot uploads…"}, {"platform": "Planning", "icon": "🤝", "task": "Meet with Jake — on-pace check", "detail": "Meet with Jake — make sure you're on pace with this week."}]}, {"day": "Tue 10/6", "iso": "2026-10-06", "tasks": [{"platform": "Facebook", "icon": "📘", "task": "Keep Amicus at the top of the feed", "detail": "Post today so Amicus stays at the top of the local feed. Upload the screenshot to the OneDrive link below.", "goalKey": "Facebook|Days at top of feed", "link": true, "linkPlaceholder": "Admin: paste OneDrive folder link for post screenshots…"}, {"platform": "Google Reviews", "icon": "✅", "task": "Respond to all new reviews", "detail": "Every new review answered today.", "goalKey": "Google Reviews|Reviews responded"}, {"platform": "Instagram", "icon": "💬", "task": "Answer Instagram DMs", "detail": "Reply to every open DM before end of day."}, {"platform": "Operations", "icon": "📤", "task": "Confirm all files / links are uploaded and working", "detail": "Make sure every deliverable is sent to Jake with its link pasted and opening correctly. Cross-check the Goals tab and Courtney's Media tab."}, {"platform": "Media", "icon": "🎥", "task": "Film TikTok", "detail": "Film it and drop the raw clip in OneDrive for Courtney.", "link": true, "linkPlaceholder": "Paste OneDrive folder…"}]}, {"day": "📅 Calendar", "isCalendar": true, "tasks": []}, {"day": "📊 Goals", "isGoals": true, "tasks": []}, {"day": "🎬 Media", "isMedia": true, "tasks": []}];
@@ -216,7 +224,7 @@ const MEDIA_SEED={"troy_0930_00": {"id": "troy_0930_00", "title": "Panning video
 
 const platformColors={"Instagram":"#E1306C","Facebook":"#1877F2","Reddit":"#FF4500","Google Reviews":"#FBBC04","Google Posts":"#4285F4","YouTube":"#FF0000","TikTok":"#EE1D52","Operations":"#607D8B","Media":"#3F51B5","Planning":"#FFB300","Events":"#8E24AA"};
 
-let activeDay=(function(){var t=new Date().toISOString().slice(0,10);var d=schedule.find(function(s){return s.iso===t;});if(d)return d.day;var f=schedule.find(function(s){return s.iso;});return f?f.day:schedule[0].day;})();
+let activeDay=(function(){var t=localIso();var d=schedule.find(function(s){return s.iso===t;});if(d)return d.day;var f=schedule.find(function(s){return s.iso;});return f?f.day:schedule[0].day;})();
 let checked={}, manualGoals={}, manualBonus={}, taskQty={}, taskLinks={}, taskVerify={};
 let media={};
 let collapse={}; try{ collapse=JSON.parse(localStorage.getItem('amicus_media_collapse')||'{}'); }catch(e){ collapse={}; }
@@ -226,7 +234,7 @@ const COURTNEY_HASH="9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422a
 let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
 let courtneyMode=false; try{ courtneyMode=(localStorage.getItem("amicus_courtney_v1")===COURTNEY_HASH); }catch(e){}
 function canEditMedia(){ return jakeMode || courtneyMode; }
-let taskOverrides={},taskAdds={},taskEditMode=false;
+let taskOverrides={},taskAdds={},taskEditMode=false,goalConfig=null;
 let calAdds={},calOverrides={};
 
 let dbReady=false, dbRef=null, mediaRef=null, taskReady=false, mediaReady=false;
@@ -250,7 +258,7 @@ function initFirebase(){
     const data=snap.val()||{};
     checked=data.checked||{}; manualGoals=data.manualGoals||{}; manualBonus=data.manualBonus||{};
     taskQty=data.taskQty||{}; taskLinks=data.taskLinks||{}; taskVerify=data.taskVerify||{};
-    taskOverrides=data.taskOverrides||{}; taskAdds=data.taskAdds||{};
+    taskOverrides=data.taskOverrides||{}; taskAdds=data.taskAdds||{}; goalConfig=normGoals(data.goalConfig);
     calAdds=data.calAdds||{}; calOverrides=data.calOverrides||{};
     taskReady=true; if(mediaReady){dbReady=true;} render();
   });
@@ -261,7 +269,7 @@ function initFirebase(){
     mediaReady=true; if(taskReady){dbReady=true;} render();
   });
 }
-function saveTasks(){ if(dbRef) dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify,taskOverrides,taskAdds,calAdds,calOverrides}); }
+function saveTasks(){ if(dbRef) dbRef.set({checked,manualGoals,manualBonus,taskQty,taskLinks,taskVerify,taskOverrides,taskAdds,calAdds,calOverrides,goalConfig:goalConfig||null}); }
 function saveMedia(){ if(mediaRef) mediaRef.set(media); }
 function saveState(){ saveTasks(); }
 
@@ -273,7 +281,7 @@ function computeAutoGoals(){
 /* ===== Amicus: effective schedule (Jake day-moves / edits / adds) ===== */
 function effectiveTasks(){
   let list=[];
-  schedule.forEach(function(day){ if(!day.iso) return; (day.tasks||[]).forEach(function(t,ti){ var uid=safeKey(day.day+'-'+ti); list.push(Object.assign({},t,{uid:uid,dayIso:day.iso})); }); });
+  schedule.forEach(function(day){ if(!day.iso) return; (day.tasks||[]).forEach(function(t,ti){ if(t.hidden) return; var uid=safeKey(day.day+'-'+ti); list.push(Object.assign({},t,{uid:uid,dayIso:day.iso})); }); });
   Object.keys(taskAdds||{}).forEach(function(k){ var a=taskAdds[k]; list.push(Object.assign({},a,{uid:a.uid||k})); });
   list=list.filter(function(t){ var o=taskOverrides[t.uid]; return !(o&&o.deleted); });
   list.forEach(function(t){ var o=taskOverrides[t.uid]; if(o){ if(o.dayIso) t.dayIso=o.dayIso; if(o.task!=null) t.task=o.task; if(o.detail!=null) t.detail=o.detail; if(o.platform!=null) t.platform=o.platform; if(o.icon!=null) t.icon=o.icon; if(o.link!=null) t.link=o.link; if(o.linkPlaceholder!=null) t.linkPlaceholder=o.linkPlaceholder; } });
@@ -284,11 +292,24 @@ function tasksForIso(iso){ return effectiveTasks().filter(function(t){ return t.
 /* ---- Jake admin: edit days & tasks ---- */
 function adminBar(){
   return '<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
-    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake) \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to another day, rename it, add or remove.':'you can restructure this week.')+'</span>'
+    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake) \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to any day (this week or a future week), rename it, add or remove.':'you can restructure this week.')+'</span>'
     +'<button onclick="toggleTaskEdit()" style="background:'+(taskEditMode?'#8a6d0b':'#fff')+';color:'+(taskEditMode?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(taskEditMode?'Done editing':'\u270f\ufe0f Edit days & tasks')+'</button></div>';
 }
 function toggleTaskEdit(){ taskEditMode=!taskEditMode; render(); }
-function dayOptions(cur){ return schedule.filter(function(s){return s.iso;}).map(function(s){ return '<option value="'+s.iso+'"'+(s.iso===cur?' selected':'')+'>'+esc(s.day)+'</option>'; }).join(''); }
+function thisWeekIsos(){ return schedule.filter(function(s){return s.iso;}).map(function(s){return s.iso;}); }
+function dayOptions(cur){
+  var here=schedule.filter(function(s){return s.iso;});
+  var html='<optgroup label="This week">'+here.map(function(s){ return '<option value="'+s.iso+'"'+(s.iso===cur?' selected':'')+'>'+esc(s.day)+'</option>'; }).join('')+'</optgroup>';
+  if(!here.length) return html;
+  var ws=weekStartOf(here[0].iso);
+  for(var k=1;k<=MOVE_WEEKS_AHEAD;k++){
+    var w=addDaysIso(ws,7*k);
+    html+='<optgroup label="Week of '+weekRangeLabel(w)+'">';
+    for(var i=0;i<7;i++){ var iso=addDaysIso(w,i); html+='<option value="'+iso+'">'+isoDayLabel(iso)+'</option>'; }
+    html+='</optgroup>';
+  }
+  return html;
+}
 function taskEditRow(t,curIso){
   var q=String.fromCharCode(39);
   return '<div class="qty-row" onclick="event.stopPropagation()" style="margin-top:10px;padding:10px;background:#FAFAF7;border:1px dashed #d9d4c7;border-radius:9px;display:flex;flex-direction:column;gap:7px;">'
@@ -301,7 +322,21 @@ function taskEditRow(t,curIso){
     +(t.link?'<input value="'+esc(t.linkPlaceholder||'')+'" onchange="editTaskField('+q+t.uid+q+','+q+'linkPlaceholder'+q+',this.value)" placeholder="Link box hint (e.g. Paste link\u2026)" style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:7px;font-size:12px;box-sizing:border-box;"/>':'')
     +'</div>';
 }
-function moveTask(uid,iso){ if(!jakeMode) return; taskOverrides[uid]=Object.assign({},taskOverrides[uid],{dayIso:iso}); saveTasks(); render(); }
+function moveTask(uid,iso){
+  if(!jakeMode) return;
+  if(thisWeekIsos().indexOf(iso)>-1){ taskOverrides[uid]=Object.assign({},taskOverrides[uid],{dayIso:iso}); saveTasks(); render(); return; }
+  var t=effectiveTasks().find(function(x){return x.uid===uid;}); if(!t){ render(); return; }
+  var tw=weekStartOf(iso), tkey=MARKET_BASE+'-'+tw;
+  if(!confirm('Move "'+(t.task||'task')+'" to '+isoDayLabel(iso)+' (week of '+weekRangeLabel(tw)+')?\n\nIt leaves this week and shows up on that week\u2019s checklist.')){ render(); return; }
+  var nuid='add_'+Date.now()+'_'+Math.floor(Math.random()*1000);
+  var payload={uid:nuid,dayIso:iso,movedFrom:PORTFOLIO_KEY,link:!!t.link};
+  ['platform','icon','task','detail','linkPlaceholder','goalKey','qtyGoal','qtyMax'].forEach(function(f){ if(t[f]!=null&&t[f]!=='') payload[f]=t[f]; });
+  var upd={}; upd['taskAdds/'+nuid]=payload; if(taskLinks[uid]) upd['taskLinks/'+nuid]=taskLinks[uid];
+  firebase.database().ref('portfolios/'+tkey).update(upd).then(function(){
+    if(String(uid).indexOf('add_')===0){ delete taskAdds[uid]; } else { taskOverrides[uid]=Object.assign({},taskOverrides[uid],{deleted:true,movedTo:tkey}); }
+    delete checked[uid]; saveTasks(); render();
+  }).catch(function(e){ alert('Move failed: '+(e&&e.message||e)); render(); });
+}
 function editTaskField(uid,field,val){ if(!jakeMode) return; var o=Object.assign({},taskOverrides[uid]); o[field]=val; taskOverrides[uid]=o; saveTasks(); render(); }
 function toggleTaskLink(uid,on){ if(!jakeMode) return; var o=Object.assign({},taskOverrides[uid]); o.link=!!on; taskOverrides[uid]=o; saveTasks(); render(); }
 function deleteTask(uid){ if(!jakeMode) return; if(!confirm('Remove this task from the week?')) return; if(String(uid).indexOf('add_')===0){ delete taskAdds[uid]; } else { taskOverrides[uid]=Object.assign({},taskOverrides[uid],{deleted:true}); } saveTasks(); render(); }
@@ -377,18 +412,7 @@ function renderContent(){
   if(day.isCalendar){ el.innerHTML=renderCalendar(); return; }
   if(day.isTikTok){ el.innerHTML=renderTikTok(); return; }
 
-  if(day.isGoals){
-    const autoCounts=computeAutoGoals();
-    let html='<div class="sync-banner">🔴 Live — updates instantly for all users</div>';
-    html+='<p class="auto-note">Market goals only. Courtney\'s posting targets live on the 🎬 Media tab.</p><div class="goals">';
-    goalCategories.forEach(cat=>{
-      html+='<div class="gcard" style="border-left:4px solid '+cat.color+'"><div class="gcard-head"><span class="gi">'+cat.icon+'</span><span class="gn" style="color:'+cat.color+'">'+cat.platform+'</span></div><div class="gitems">';
-      cat.goals.forEach(g=>{ const key=cat.platform+'|'+g.label; const safeK=safeKey(key); let rawVal,isManual; if(g.mode==='auto'){ rawVal=(autoCounts[key]||0)+(manualBonus[safeK]||0); isManual=false; } else { rawVal=(manualGoals[safeK]||0); isManual=true; } html+=renderGoalBar(cat,g,rawVal,safeK,isManual); });
-      html+='</div></div>';
-    });
-    html+='</div>';
-    el.innerHTML=html; return;
-  }
+  if(day.isGoals){ el.innerHTML=renderGoalsTab(); return; }
 
   // regular day (effective tasks — supports Jake's day moves / edits / adds)
   const dayTasks=tasksForIso(day.iso);
@@ -591,7 +615,66 @@ async function unlockCourtney(){
 }
 
 /* ---------- market donuts / jake verify / confetti (unchanged engine) ---------- */
-function goalTargetFor(gk){ for(var i=0;i<goalCategories.length;i++){var cat=goalCategories[i];for(var j=0;j<cat.goals.length;j++){if(cat.platform+'|'+cat.goals[j].label===gk)return cat.goals[j].target||1;}} return 1; }
+function goalTargetFor(gk){ var gc=effGoals(); for(var i=0;i<gc.length;i++){var cat=gc[i];for(var j=0;j<(cat.goals||[]).length;j++){if(gKey(cat,cat.goals[j])===gk)return cat.goals[j].target||1;}} return 1; }
+/* ---------- Goals tab (editable by Jake in edit mode) ---------- */
+function normGoals(gc){ if(!gc) return null; var arr=Array.isArray(gc)?gc:Object.values(gc); return arr.filter(Boolean).map(function(c){ var gs=c.goals||[]; gs=Array.isArray(gs)?gs:Object.values(gs); return Object.assign({},c,{goals:gs.filter(Boolean)}); }); }
+function effGoals(){ return goalConfig||goalCategories; }
+function gKey(cat,g){ return g.key||(cat.platform+'|'+g.label); }
+function ensureGoalConfig(){ if(!goalConfig){ goalConfig=JSON.parse(JSON.stringify(goalCategories)); } goalConfig.forEach(function(c){ c.goals=c.goals||[]; c.goals.forEach(function(g){ if(!g.key) g.key=c.platform+'|'+g.label; }); }); }
+function gSave(){ saveTasks(); render(); }
+function goalEdit(ci,gi,f,v){ if(!jakeMode) return; ensureGoalConfig(); var g=goalConfig[ci]&&goalConfig[ci].goals[gi]; if(!g) return; if(f==='target'){ v=Math.max(1,parseInt(v,10)||1); } g[f]=v; gSave(); }
+function goalAdd(ci){ if(!jakeMode) return; ensureGoalConfig(); goalConfig[ci].goals.push({key:'custom_'+Date.now(),label:'New goal',target:1,unit:'done',mode:'qty'}); gSave(); }
+function goalDel(ci,gi){ if(!jakeMode) return; if(!confirm('Remove this goal?')) return; ensureGoalConfig(); goalConfig[ci].goals.splice(gi,1); gSave(); }
+function goalCatEdit(ci,f,v){ if(!jakeMode) return; ensureGoalConfig(); goalConfig[ci].goals.forEach(function(g){ if(!g.key) g.key=goalConfig[ci].platform+'|'+g.label; }); goalConfig[ci][f]=v; gSave(); }
+function goalCatAdd(){ if(!jakeMode) return; ensureGoalConfig(); goalConfig.push({platform:'New category',icon:'\ud83c\udfaf',color:'#607D8B',goals:[{key:'custom_'+Date.now(),label:'New goal',target:1,unit:'done',mode:'qty'}]}); gSave(); }
+function goalCatDel(ci){ if(!jakeMode) return; if(!confirm('Remove this whole goal category?')) return; ensureGoalConfig(); goalConfig.splice(ci,1); gSave(); }
+function goalsReset(){ if(!jakeMode) return; if(!confirm('Reset this week\u2019s goals back to the original plan? (Counts are kept.)')) return; goalConfig=null; gSave(); }
+function renderGoalsTab(){
+  const autoCounts=computeAutoGoals();
+  const editing=(jakeMode&&taskEditMode);
+  let html='<div class="sync-banner">\ud83d\udd34 Live \u2014 updates instantly for all users</div>';
+  if(jakeMode){
+    html+='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
+      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake) \u2014 '+(editing?'edit mode ON \u2014 rename goals, change targets/units, add or remove.':'you can edit this week\u2019s goals.')+'</span>'
+      +'<span style="display:flex;gap:8px;">'+(editing&&goalConfig?'<button onclick="goalsReset()" style="background:#fff;color:#8a6d0b;border:1px solid #d9c27a;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">Reset to plan</button>':'')
+      +'<button onclick="toggleTaskEdit()" style="background:'+(editing?'#8a6d0b':'#fff')+';color:'+(editing?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(editing?'Done editing':'\u270f\ufe0f Edit goals')+'</button></span></div>';
+  }
+  html+='<p class="auto-note">Market goals only. Courtney\'s posting targets live on the \ud83c\udfac Media tab.</p><div class="goals">';
+  var inp='padding:6px 9px;border:1px solid #ccc;border-radius:7px;font-size:13px;font-family:inherit;box-sizing:border-box;';
+  var rmBtn='background:#fff;color:#c62828;border:1px solid #ef9a9a;border-radius:7px;padding:5px 9px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;';
+  effGoals().forEach(function(cat,ci){
+    html+='<div class="gcard" style="border-left:4px solid '+cat.color+'">';
+    if(editing){
+      html+='<div class="gcard-head" style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">'
+        +'<input value="'+esc(cat.icon||'')+'" onchange="goalCatEdit('+ci+',\'icon\',this.value)" style="'+inp+'width:48px;text-align:center;"/>'
+        +'<input value="'+esc(cat.platform||'')+'" onchange="goalCatEdit('+ci+',\'platform\',this.value)" placeholder="Category" style="'+inp+'flex:1;min-width:120px;font-weight:700;"/>'
+        +'<input type="color" value="'+esc(cat.color||'#607D8B')+'" onchange="goalCatEdit('+ci+',\'color\',this.value)" title="Color" style="width:38px;height:32px;border:1px solid #ccc;border-radius:7px;padding:2px;background:#fff;cursor:pointer;"/>'
+        +'<button onclick="goalCatDel('+ci+')" style="'+rmBtn+'">Remove category</button></div><div class="gitems">';
+      (cat.goals||[]).forEach(function(g,gi){
+        var sk=safeKey(gKey(cat,g));
+        html+='<div style="padding:10px;background:#FAFAF7;border:1px dashed #d9d4c7;border-radius:9px;display:flex;flex-direction:column;gap:7px;">'
+          +'<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;"><input value="'+esc(g.label||'')+'" onchange="goalEdit('+ci+','+gi+',\'label\',this.value)" placeholder="Goal name" style="'+inp+'flex:1;min-width:140px;font-weight:700;"/>'
+          +'<button onclick="goalDel('+ci+','+gi+')" style="'+rmBtn+'">Remove</button></div>'
+          +'<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:12px;color:#666;font-weight:700;">'
+          +'TARGET <input type="number" min="1" value="'+(g.target||1)+'" onchange="goalEdit('+ci+','+gi+',\'target\',this.value)" style="'+inp+'width:70px;"/>'
+          +'UNIT <input value="'+esc(g.unit||'')+'" onchange="goalEdit('+ci+','+gi+',\'unit\',this.value)" style="'+inp+'width:100px;"/>'
+          +'<select onchange="goalEdit('+ci+','+gi+',\'mode\',this.value)" style="'+inp+'"><option value="qty"'+(g.mode!=='auto'?' selected':'')+'>Counter (+ / \u2212)</option><option value="auto"'+(g.mode==='auto'?' selected':'')+'>Auto (counts checked tasks)</option></select>'
+          +(g.mode!=='auto'?'CURRENT <input type="number" min="0" value="'+(manualGoals[sk]||0)+'" onchange="setManual(\''+sk+'\',this.value)" style="'+inp+'width:70px;"/>':'')
+          +'</div></div>';
+      });
+      html+='<button onclick="goalAdd('+ci+')" style="align-self:flex-start;background:#fff;color:'+cat.color+';border:1px dashed '+cat.color+';border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">+ Add goal</button>';
+      html+='</div></div>';
+    } else {
+      html+='<div class="gcard-head"><span class="gi">'+esc(cat.icon||'')+'</span><span class="gn" style="color:'+cat.color+'">'+esc(cat.platform||'')+'</span></div><div class="gitems">';
+      (cat.goals||[]).forEach(function(g){ const key=gKey(cat,g); const safeK=safeKey(key); let rawVal,isManual; if(g.mode==='auto'){ rawVal=(autoCounts[key]||0)+(manualBonus[safeK]||0); isManual=false; } else { rawVal=(manualGoals[safeK]||0); isManual=true; } html+=renderGoalBar(cat,Object.assign({},g,{label:esc(g.label||''),unit:esc(g.unit||''),target:g.target||1}),rawVal,safeK,isManual); });
+      html+='</div></div>';
+    }
+  });
+  html+='</div>';
+  if(editing){ html+='<div style="margin-top:12px;"><button onclick="goalCatAdd()" style="background:'+ACCENT+';color:#fff;border:none;border-radius:9px;padding:10px 14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">+ Add goal category</button></div>'; }
+  return html;
+}
+
 function taskPct(t,key){ if(t.qtyGoal){var gk=safeKey(t.qtyGoal);var cur=manualGoals[gk]||0;var mx=t.qtyMax||1;return Math.min(100,Math.round(cur/mx*100));} return checked[key]?100:0; }
 function taskDonut(t,key,c){ var p=taskPct(t,key); return '<div style="margin-left:auto;align-self:center;padding-left:8px;">'+goalDonut(p,c,p>=100)+'</div>'; }
 function jakeVerifyCtrl(key){

@@ -30,7 +30,10 @@
   var HASH = '576998560b830406a1a75b58651422a9d5dd7e09bec82310f52dc3200920a029';
 
   // Already unlocked on this device? Let the page load normally.
-  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+  var MCK_HASH = 'feab5ada73c8ac57a981125a41320b920d70d84c4450da7914d90500ca5dd58c'; /* McKinsey: Savannah only */
+  var MCK_OK = /^savannah/i.test(decodeURIComponent(location.pathname.split('/').pop()||''));
+  try { var _sv = localStorage.getItem(KEY); if (_sv === HASH) return;
+    if (_sv === MCK_HASH) { if (MCK_OK) return; document.documentElement.classList.add('amicus-locked'); location.replace('savannah.html'); return; } } catch(e) {}
 
   document.documentElement.classList.add('amicus-locked');
 
@@ -62,6 +65,11 @@
       var h;
       try { h = await sha256(val); }
       catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === MCK_HASH){
+        try { localStorage.setItem(KEY, MCK_HASH); } catch(e) {}
+        if (!MCK_OK) { location.replace('savannah.html'); return; }
+        document.documentElement.classList.remove('amicus-locked'); wrap.remove(); return;
+      }
       if (h === HASH){
         try { localStorage.setItem(KEY, HASH); } catch(e) {}
         document.documentElement.classList.remove('amicus-locked');

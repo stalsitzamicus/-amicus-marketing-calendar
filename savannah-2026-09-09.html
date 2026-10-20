@@ -22,7 +22,10 @@
 (function(){
   var KEY = 'amicus_auth_v1';
   var HASH = '576998560b830406a1a75b58651422a9d5dd7e09bec82310f52dc3200920a029';
-  try { if (localStorage.getItem(KEY) === HASH) return; } catch(e) {}
+  var MCK_HASH = 'feab5ada73c8ac57a981125a41320b920d70d84c4450da7914d90500ca5dd58c'; /* McKinsey: Savannah only */
+  var MCK_OK = /^savannah/i.test(decodeURIComponent(location.pathname.split('/').pop()||''));
+  try { var _sv = localStorage.getItem(KEY); if (_sv === HASH) return;
+    if (_sv === MCK_HASH) { if (MCK_OK) return; document.documentElement.classList.add('amicus-locked'); location.replace('savannah.html'); return; } } catch(e) {}
   document.documentElement.classList.add('amicus-locked');
   async function sha256(str){
     var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -49,6 +52,11 @@
       var h;
       try { h = await sha256(val); }
       catch(e){ err.textContent = 'Unlock unavailable in this browser.'; return; }
+      if (h === MCK_HASH){
+        try { localStorage.setItem(KEY, MCK_HASH); } catch(e) {}
+        if (!MCK_OK) { location.replace('savannah.html'); return; }
+        document.documentElement.classList.remove('amicus-locked'); wrap.remove(); return;
+      }
       if (h === HASH){
         try { localStorage.setItem(KEY, HASH); } catch(e) {}
         document.documentElement.classList.remove('amicus-locked');
@@ -223,6 +231,8 @@ const JAKE_HASH="e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221
 const COURTNEY_HASH="9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422ac7afe";
 let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
 let courtneyMode=false; try{ courtneyMode=(localStorage.getItem("amicus_courtney_v1")===COURTNEY_HASH); }catch(e){}
+if(courtneyMode) jakeMode=true; /* Courtney has full Jake-level edit access */
+function adminWho(){ return courtneyMode?'Courtney':'Jake'; }
 function canEditMedia(){ return jakeMode || courtneyMode; }
 let taskOverrides={},taskAdds={},taskEditMode=false;
 let calAdds={},calOverrides={};
@@ -282,7 +292,7 @@ function tasksForIso(iso){ return effectiveTasks().filter(function(t){ return t.
 /* ---- Jake admin: edit days & tasks ---- */
 function adminBar(){
   return '<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
-    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake) \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to another day, rename it, add or remove.':'you can restructure this week.')+'</span>'
+    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin ('+adminWho()+') \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to another day, rename it, add or remove.':'you can restructure this week.')+'</span>'
     +'<button onclick="toggleTaskEdit()" style="background:'+(taskEditMode?'#8a6d0b':'#fff')+';color:'+(taskEditMode?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(taskEditMode?'Done editing':'\u270f\ufe0f Edit days & tasks')+'</button></div>';
 }
 function toggleTaskEdit(){ taskEditMode=!taskEditMode; render(); }
@@ -450,7 +460,7 @@ function renderCalendar(){
   var editing=(jakeMode&&taskEditMode);
   if(jakeMode){
     html+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;background:#faf6e9;border:1px solid #e6d9a8;border-radius:10px;">'
-      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">🔧 Admin (Jake) — '+(editing?'edit mode ON — add, rename, re-date, or remove events.':'you can edit this market&#39;s events.')+'</span>'
+      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">🔧 Admin ('+adminWho()+') — '+(editing?'edit mode ON — add, rename, re-date, or remove events.':'you can edit this market&#39;s events.')+'</span>'
       +'<button onclick="toggleTaskEdit()" style="background:'+(editing?'#8a6d0b':'#fff')+';color:'+(editing?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(editing?'Done editing':'✏️ Edit events')+'</button></div>';
   }
   var evs=effectiveEvents().slice().sort(function(a,b){return a.date<b.date?-1:1;});
@@ -481,7 +491,7 @@ function renderMedia(){
 
   // edit bar
   html+='<div class="edit-bar">';
-  if(editable){ html+='<button class="ebtn ebtn-on">✏️ Edit mode on — '+(jakeMode?'Jake':'Courtney')+'</button><span style="font-size:12px;color:#777">Tap any field to change it. Everything saves live.</span>'; }
+  if(editable){ html+='<button class="ebtn ebtn-on">✏️ Edit mode on — '+adminWho()+'</button><span style="font-size:12px;color:#777">Tap any field to change it. Everything saves live.</span>'; }
   else { html+='<button class="ebtn ebtn-lock" onclick="unlockCourtney()">🔒 Unlock to edit</button><span style="font-size:12px;color:#777">Courtney &amp; Jake only.</span>'; }
   if(over.length){ html+='<span class="overdue-pill" style="margin-left:auto">⚠ '+over.length+' overdue</span>'; }
   html+='</div>';
@@ -577,7 +587,7 @@ async function unlockCourtney(){
   try{
     const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw.trim()));
     const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    if(h===COURTNEY_HASH){ courtneyMode=true; try{localStorage.setItem('amicus_courtney_v1',COURTNEY_HASH);}catch(e){} render(); }
+    if(h===COURTNEY_HASH){ courtneyMode=true; jakeMode=true; try{localStorage.setItem('amicus_courtney_v1',COURTNEY_HASH);}catch(e){} render(); }
     else if(h===JAKE_HASH){ jakeMode=true; try{localStorage.setItem('amicus_jake_v1',JAKE_HASH);}catch(e){} render(); }
     else alert('Incorrect password.');
   }catch(e){ alert('Unlock not available in this browser.'); }

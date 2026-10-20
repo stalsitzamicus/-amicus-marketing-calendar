@@ -173,6 +173,22 @@
   .city-card .hold-tag{position:absolute;top:10px;right:10px;background:#7a1f1f;color:#fff;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 10px;border-radius:6px;z-index:3;}
 </style>
 <body>
+<style id="amicusLogoutStyle">
+  #amicusLogout{position:fixed;top:16px;right:16px;z-index:9998;height:44px;padding:0 18px;border-radius:22px;
+    background:linear-gradient(135deg,#2b2b2b,#141414);border:1px solid rgba(255,255,255,0.18);color:#fff;
+    font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:transform .15s,border-color .15s;}
+  #amicusLogout:hover{transform:scale(1.04);border-color:rgba(255,255,255,0.45);}
+</style>
+<button id="amicusLogout" type="button" onclick="amicusLogout()" title="Log out of this device">⎋ Log out</button>
+<script>
+function amicusLogout(){
+  if(!confirm('Log out of Amicus on this device?')) return;
+  ['amicus_auth_v1','amicus_jake_v1','amicus_courtney_v1','amicus_brooks_v1'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  location.replace('amicus-marketing-hub.html');
+}
+</script>
+
 <a id="jakeIcon" href="jake.html" title="Jake — private" aria-label="Jake private tab">J<span class="lockdot">🔒</span></a>
 <a id="brooksIcon" href="brooks.html" title="Brooks — owner" aria-label="Brooks owner tab">B<span class="lockdot">🔒</span></a>
 <a id="courtneyIcon" href="courtney.html" title="Courtney — media" aria-label="Courtney media tab">C<span class="lockdot">🔒</span></a>

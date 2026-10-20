@@ -120,6 +120,22 @@
   </style>
 </head>
 <body>
+<style id="amicusLogoutStyle">
+  #amicusLogout{position:fixed;top:16px;right:16px;z-index:9998;height:44px;padding:0 18px;border-radius:22px;
+    background:linear-gradient(135deg,#2b2b2b,#141414);border:1px solid rgba(255,255,255,0.18);color:#fff;
+    font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;cursor:pointer;
+    box-shadow:0 4px 14px rgba(0,0,0,0.4);transition:transform .15s,border-color .15s;}
+  #amicusLogout:hover{transform:scale(1.04);border-color:rgba(255,255,255,0.45);}
+</style>
+<button id="amicusLogout" type="button" onclick="amicusLogout()" title="Log out of this device">⎋ Log out</button>
+<script>
+function amicusLogout(){
+  if(!confirm('Log out of Amicus on this device?')) return;
+  ['amicus_auth_v1','amicus_jake_v1','amicus_courtney_v1','amicus_brooks_v1'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  location.replace('amicus-marketing-hub.html');
+}
+</script>
+
 <div class="header">
   <div class="inner">
     <a class="back" href="amicus-marketing-hub.html">&larr; Back to Hub</a>

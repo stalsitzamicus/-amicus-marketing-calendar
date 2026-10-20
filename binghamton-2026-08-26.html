@@ -232,7 +232,8 @@ const COURTNEY_HASH="9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422a
 let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
 let courtneyMode=false; try{ courtneyMode=(localStorage.getItem("amicus_courtney_v1")===COURTNEY_HASH); }catch(e){}
 if(courtneyMode) jakeMode=true; /* Courtney has full Jake-level edit access */
-function adminWho(){ return courtneyMode?'Courtney':'Jake'; }
+var jakeOwn=false; try{ jakeOwn=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
+function adminWho(){ return jakeOwn?'Jake':'Courtney'; }
 function canEditMedia(){ return jakeMode || courtneyMode; }
 
 let dbReady=false, dbRef=null, mediaRef=null, taskReady=false, mediaReady=false;
@@ -477,7 +478,7 @@ async function unlockCourtney(){
     const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw.trim()));
     const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     if(h===COURTNEY_HASH){ courtneyMode=true; jakeMode=true; try{localStorage.setItem('amicus_courtney_v1',COURTNEY_HASH);}catch(e){} render(); }
-    else if(h===JAKE_HASH){ jakeMode=true; try{localStorage.setItem('amicus_jake_v1',JAKE_HASH);}catch(e){} render(); }
+    else if(h===JAKE_HASH){ jakeMode=true; jakeOwn=true; try{localStorage.setItem('amicus_jake_v1',JAKE_HASH);}catch(e){} render(); }
     else alert('Incorrect password.');
   }catch(e){ alert('Unlock not available in this browser.'); }
 }

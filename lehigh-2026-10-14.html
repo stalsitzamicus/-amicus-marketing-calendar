@@ -242,7 +242,8 @@ const COURTNEY_HASH="9f2ab5d949cfefa8592eb05d544229f5c93e827f29fe3ed46c921c3422a
 let jakeMode=false; try{ jakeMode=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
 let courtneyMode=false; try{ courtneyMode=(localStorage.getItem("amicus_courtney_v1")===COURTNEY_HASH); }catch(e){}
 if(courtneyMode) jakeMode=true; /* Courtney has full Jake-level edit access */
-function adminWho(){ return courtneyMode?'Courtney':'Jake'; }
+var jakeOwn=false; try{ jakeOwn=(localStorage.getItem("amicus_jake_v1")===JAKE_HASH); }catch(e){}
+function adminWho(){ return jakeOwn?'Jake':'Courtney'; }
 function canEditMedia(){ return jakeMode || courtneyMode; }
 let taskOverrides={},taskAdds={},taskEditMode=false,goalConfig=null;
 let calAdds={},calOverrides={};
@@ -309,7 +310,7 @@ function tasksForIso(iso){ return effectiveTasks().filter(function(t){ return t.
 /* ---- Jake admin: edit days & tasks ---- */
 function adminBar(){
   return '<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
-    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin ('+adminWho()+') \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to any day (this week or a future week), rename it, add or remove.':'you can restructure this week.')+'</span>'
+    +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake & Courtney) \u2014 '+(taskEditMode?'edit mode ON \u2014 move any task to any day (this week or a future week), rename it, add or remove.':'you can restructure this week.')+'</span>'
     +'<button onclick="toggleTaskEdit()" style="background:'+(taskEditMode?'#8a6d0b':'#fff')+';color:'+(taskEditMode?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(taskEditMode?'Done editing':'\u270f\ufe0f Edit days & tasks')+'</button></div>';
 }
 function toggleTaskEdit(){ taskEditMode=!taskEditMode; render(); }
@@ -493,7 +494,7 @@ function renderCalendar(){
   var editing=(jakeMode&&taskEditMode);
   if(jakeMode){
     html+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;background:#faf6e9;border:1px solid #e6d9a8;border-radius:10px;">'
-      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">🔧 Admin ('+adminWho()+') — '+(editing?'edit mode ON — add, rename, re-date, or remove events.':'you can edit this market&#39;s events.')+'</span>'
+      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">🔧 Admin (Jake & Courtney) — '+(editing?'edit mode ON — add, rename, re-date, or remove events.':'you can edit this market&#39;s events.')+'</span>'
       +'<button onclick="toggleTaskEdit()" style="background:'+(editing?'#8a6d0b':'#fff')+';color:'+(editing?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(editing?'Done editing':'✏️ Edit events')+'</button></div>';
   }
   var evs=effectiveEvents().slice().sort(function(a,b){return a.date<b.date?-1:1;});
@@ -626,7 +627,7 @@ async function unlockCourtney(){
     const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw.trim()));
     const h=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     if(h===COURTNEY_HASH){ courtneyMode=true; jakeMode=true; try{localStorage.setItem('amicus_courtney_v1',COURTNEY_HASH);}catch(e){} render(); }
-    else if(h===JAKE_HASH){ jakeMode=true; try{localStorage.setItem('amicus_jake_v1',JAKE_HASH);}catch(e){} render(); }
+    else if(h===JAKE_HASH){ jakeMode=true; jakeOwn=true; try{localStorage.setItem('amicus_jake_v1',JAKE_HASH);}catch(e){} render(); }
     else alert('Incorrect password.');
   }catch(e){ alert('Unlock not available in this browser.'); }
 }
@@ -652,7 +653,7 @@ function renderGoalsTab(){
   let html='<div class="sync-banner">\ud83d\udd34 Live \u2014 updates instantly for all users</div>';
   if(jakeMode){
     html+='<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">'
-      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin ('+adminWho()+') \u2014 '+(editing?'edit mode ON \u2014 rename goals, change targets/units, add or remove.':'you can edit this week\u2019s goals.')+'</span>'
+      +'<span style="font-size:13px;color:#8a6d0b;font-weight:700;">\ud83d\udd27 Admin (Jake & Courtney) \u2014 '+(editing?'edit mode ON \u2014 rename goals, change targets/units, add or remove.':'you can edit this week\u2019s goals.')+'</span>'
       +'<span style="display:flex;gap:8px;">'+(editing&&goalConfig?'<button onclick="goalsReset()" style="background:#fff;color:#8a6d0b;border:1px solid #d9c27a;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">Reset to plan</button>':'')
       +'<button onclick="toggleTaskEdit()" style="background:'+(editing?'#8a6d0b':'#fff')+';color:'+(editing?'#fff':'#8a6d0b')+';border:1px solid #8a6d0b;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">'+(editing?'Done editing':'\u270f\ufe0f Edit goals')+'</button></span></div>';
   }
